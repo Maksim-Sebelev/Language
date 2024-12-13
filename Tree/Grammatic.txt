@@ -1,0 +1,17 @@
+// Tree    ::= AddSub '$'
+// AddSub  ::= MulDiv { ['+' '-'] MulDiv } *
+// MulDiv  ::= Pow { ['*' '/'] Pow } *
+// Pow     ::= Func { '^' Func } *
+// Func    ::= Minus | Bracket | { Ln | Sin | .. | Arccos }
+
+// Minus   ::= '-' MulDiv
+
+// Ln      :: 'ln' '(' AddSub ')'
+// Sin     :: 'sin' '(' MulDiv ')'
+// Cos     :: 'cos' '(' MulDiv ')'
+// ...
+// Arccos  ::= 'arccos' '(' MulDiv ')'
+
+// Bracket ::= '(' Func ')' | Var | Number
+// Var     ::= 'x'
+// Nunmber ::= ['0' - '9']+
