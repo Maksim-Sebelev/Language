@@ -1,5 +1,5 @@
 Tree    ::= Assign '$'
-Assign  ::= Var '=' AddSub ';'
+Assign  ::= Name '=' AddSub ';'
 AddSub  ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv  ::= Pow { ['*' '/'] Pow } *
 Pow     ::= Func { '^' Func } *
@@ -13,6 +13,6 @@ Cos     :: 'cos'     '(' AddSub ')'
 ...
 Arccos  ::= 'arccos' '(' AddSub ')'
 
-Bracket ::= '(' Func ')' | Var | Number
-Var     ::= 'x'
-Nunmber ::= ['0' - '9']+
+Bracket ::= '(' Func ')' | Name | Number
+Name    ::= [letter] { [letter/number] } *
+Number  ::= ['0' - '9'] +

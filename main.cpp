@@ -9,21 +9,24 @@ int main()
     const char* inputFile = "programm.txt";
 
     Tree_t tree = {};
-    TREE_ASSERT(TreeCtor(&tree, inputFile));
+
+    char* s = nullptr;
+
+    TREE_ASSERT(TreeCtor(&tree, inputFile, &s));
 
     TREE_GRAPHIC_DUMP(tree.root);
 
 
     TREE_ASSERT(TreeDtor(&tree));
 
-    char* danger = nullptr;
 
-    for (size_t i = 0; i < 10; i++)
-    {
-        printf("%c", *(danger + 0x504000000010 + i));
-    }
+    // printf("\n\n");
+    // for (size_t i = 0; i < 10; i++)
+    // {
+    //     printf("%c", *(s + i));
+    // }
+    // printf("\n\n");
 
-    free(danger + 0x504000000010);
-
+    free(s);
     return EXIT_SUCCESS;
 }

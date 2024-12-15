@@ -5,10 +5,12 @@
 #include "../Tokens/Token.hpp"
 #include "../SyntaxErr/SyntaxErr.hpp"
 #include "../ReadTreeGlobalnclude.hpp"
+#include "../../TreeDump/TreeDump.hpp"
 #include "RecursiveDescent.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetAssign            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetNumber            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetName              (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetAddSub            (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -27,10 +29,13 @@ static Function  GetTokenFunction   (const Token_t* token, const size_t* tp);
 
 static bool IsTokenEnd              (const Token_t* token, const size_t* tp);
 static bool IsTokenNum              (const Token_t* token, const size_t* tp);
-static bool IsTokenName         (const Token_t* token, const size_t* tp);
+static bool IsTokenName             (const Token_t* token, const size_t* tp);
 static bool IsTokenOperation        (const Token_t* token, const size_t* tp);
 static bool IsTokenFunction         (const Token_t* token, const size_t* tp);
 
+
+static bool IsTokenAssign           (const Token_t* token, const size_t* tp);
+static bool IsTokenSemicolon        (const Token_t* token, const size_t* tp);
 static bool IsAddSub                (const Token_t* token, const size_t* tp);
 static bool IsMulDiv                (const Token_t* token, const size_t* tp);
 static bool IsPow                   (const Token_t* token, const size_t* tp);
@@ -40,6 +45,7 @@ static bool IsOperationBeforeMinus  (const Token_t* token, const size_t* tp);
 static bool IsTokenMinus            (const Token_t* token, const size_t* tp);
 static bool IsOperationToken        (const Token_t* token,       size_t  tp);
 
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
@@ -47,7 +53,7 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     assert(tokens);
 
     size_t tp = 0;
-    Node_t* node = GetAddSub(tokens, &tp, inputData);
+    Node_t* node = GetAssign(tokens, &tp, inputData);
 
     if (!IsTokenEnd(tokens, &tp))
         SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '$'");
@@ -57,6 +63,40 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     TreeErr err = {};
 
     TREE_ASSERT(NODE_VERIF(node, err));
+
+    return node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(tp);
+    assert(token);
+
+    size_t old_tp = *tp;
+
+    Node_t* node = GetName(token, tp, inputData);
+
+    if (old_tp == *tp)
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected math variable.");
+
+    if(!IsTokenAssign(token, tp))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '='");
+
+    (*tp)++;
+
+    Node_t* node2 = GetAddSub(token, tp, inputData);
+
+    if (!IsTokenSemicolon(token, tp))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
+    
+    (*tp)++;
+
+    Node_t* assign_node = {};
+    _ASG(&assign_node, node, node2);
+
+    TREE_ASSERT(SwapNode(&node, &assign_node));
 
     return node;
 }
@@ -273,7 +313,9 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     assert(token);
     
     if (!IsTokenName(token, tp))
+    {
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expetcted variable name");
+    }
 
     Name name = GetTokenName(token, tp);
     (*tp)++;
@@ -363,6 +405,34 @@ static bool IsTokenFunction(const Token_t* token, const size_t* tp)
     TokenType type = token[*tp].type;
 
     return (type == TokenType::Function_t);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenAssign(const Token_t* token, const size_t* tp)
+{
+    assert(token);
+
+    Token_t temp = token[*tp];
+
+    TokenType type = temp.type;
+
+    return  (type == TokenType::Operation_t) &&
+            (temp.data.operation == Operation::assign);   
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenSemicolon(const Token_t* token, const size_t* tp)
+{
+    assert(token);
+
+    Token_t temp = token[*tp];
+
+    TokenType type = temp.type;
+
+    return  (type == TokenType::Separator_t) &&
+            (temp.data.separator == Separator::semicolon);   
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -55,12 +55,12 @@ enum class NodeArgType
 enum class Operation
 {
     undefined_operation,
-    plus   = '+', 
-    minus  = '-',
-    mul    = '*', 
-    dive   = '/',
-    power  = '^',
-    assign = '=',
+    plus  , 
+    minus ,
+    mul   , 
+    dive  ,
+    power ,
+    assign,
 };
 
 
@@ -113,8 +113,7 @@ struct Tree_t
     size_t  size;
 };
     
-
-TreeErr TreeCtor               (Tree_t* tree, const char* input);
+TreeErr TreeCtor               (Tree_t* tree, const char* input, char** s);
 TreeErr TreeDtor               (Tree_t*  root);
 TreeErr NodeCtor               (Node_t** node, NodeArgType type, NodeData_t data, Node_t* left, Node_t* right);
 TreeErr NodeDtor               (Node_t*  node);

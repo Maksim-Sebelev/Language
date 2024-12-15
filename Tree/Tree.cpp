@@ -6,17 +6,16 @@
 #include "ReadTree/Tokens/Token.hpp"
 #include "../Common/ColorPrint.hpp"
 #include "../Common/GlobalInclude.hpp"
+#include "ReadTree/Tokens/TokensDump/TokenDump.hpp"
 
 
 static bool         IsError                        (const TreeErr* err);
 static bool         HasntNumChild                  (const Node_t* node);
-// static bool         HasntVarChild                  (const Node_t* node);
 static bool         HasOperationChildren           (const Node_t* node);
 static bool         HasFuncLeftChildOnly           (const Node_t* node);
 
 static bool         IsNodeTypeOperationDataCorrect (const Node_t* node);
 static bool         IsNodeTypeFunctionDataCorrect  (const Node_t* node);
-// static bool         IsNodeVariableTypeUndef        (const Node_t* node);
 
 //======================================================================================================================================================================
 
@@ -26,7 +25,7 @@ static TreeErr      AllNodeVerif               (const Node_t* node, size_t* tree
 //============================== Tree functions ============================================================================================================================
 
 
-TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
+TreeErr TreeCtor(Tree_t* tree, const char* inputFile, char** s)
 {
     TreeErr err = {};
 
@@ -46,9 +45,8 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
     TOKEN_GRAPHIC_DUMP(token, tokenQuant);
     tree->root = GetTree(token, &inputData);
 
-    COLOR_PRINT(RED, "str = %p\n", inputData.inputStr);
-
     TokenDtor(token);
+    *s = inputData.inputStr;
     // InputDataDtor(&inputData);
 
     return TREE_VERIF(tree, err);

@@ -41,7 +41,7 @@ static size_t GetNewCtorCapacity  (size_t NameTableDataSize);
 static size_t GetNewPushCapacity  (const NameTable_t* nameTable);
 static size_t GetNewPopCapacity   (const NameTable_t* nameTable);
 
-static NameTabelErrorType CtorCalloc   (NameTable_t* nameTable, size_t NameTableDataSize);
+static NameTabelErrorType CtorCalloc   (NameTable_t* nameTable);
 static NameTabelErrorType DtorFreeData (NameTable_t* nameTable);
 static NameTabelErrorType PushRealloc  (NameTable_t* nameTable);
 static NameTabelErrorType PopRealloc   (NameTable_t* nameTable);
@@ -98,7 +98,7 @@ NameTabelErrorType NameTableCtor(NameTable_t* nameTable, size_t NameTableDataSiz
     nameTable->size = 0;
 
     nameTable->capacity = GetNewCtorCapacity(NameTableDataSize);
-    NAME_TABLE_ASSERT(CtorCalloc(nameTable, NameTableDataSize));
+    NAME_TABLE_ASSERT(CtorCalloc(nameTable));
 
     ON_NAME_TABLE_DATA_CANARY
     (
@@ -239,31 +239,6 @@ NameTabelErrorType NameTablePop(NameTable_t* nameTable, Name* PopElem)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-NameTabelErrorType PrintNameTable(NameTable_t* nameTable)
-{
-    NameTabelErrorType err = {};
-    RETURN_IF_ERR_OR_WARN(nameTable, err);
-
-    printf("\nNameTable:\n");
-    for (size_t NameTable_i = 0; NameTable_i < nameTable->size; NameTable_i++)
-    {
-        printf("%d ", nameTable->data[NameTable_i]);
-    }
-    printf("\nNameTable end\n\n");
-
-    return NAME_TABLE_VERIF(nameTable, err);
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-NameTabelErrorType PrintLastNameTableElem(NameTable_t* nameTable)
-{
-    NameTabelErrorType err = {};
-    RETURN_IF_ERR_OR_WARN(nameTable, err);
-    COLOR_PRINT(WHITE, "Last nameTable Elem = %d\n", nameTable->data[nameTable->size - 1]);
-    return NAME_TABLE_VERIF(nameTable, err);
-}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -472,7 +447,7 @@ static NameTabelErrorType PopRealloc(NameTable_t* nameTable)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static NameTabelErrorType CtorCalloc(NameTable_t* nameTable, size_t NameTableDataSize)
+static NameTabelErrorType CtorCalloc(NameTable_t* nameTable)
 {
     NameTabelErrorType err = {};
     assert(nameTable);
@@ -821,101 +796,6 @@ static void PrintError(NameTabelErrorType Error)
 
 ON_NAME_TABLE_DEBUG
 (
-void Dump(const NameTable_t* nameTable, const char* file, int line, const char* func)
-{   
-    COLOR_PRINT(GREEN, "\nDump BEGIN\n\n");
-
-    #define DANG_DUMP
-
-    #ifndef DANG_DUMP
-        ON_NAME_TABLE_HASH
-        (
-        if (nameTable->nameTableHash != CalcNameTableHash(nameTable))
-        {
-            COLOR_PRINT(RED, "Incorrect hash.\n");
-            COLOR_PRINT(WHITE, "Correct hash    = %d\n", CalcNameTableHash(nameTable));
-            COLOR_PRINT(WHITE, "nameTable.nameTableHash = %d\n", nameTable->nameTableHash);
-            return;
-        }
-        )
-    #else
-        COLOR_PRINT(YELLOW, "WARNING: Dump is in dangerous mode.\n");
-        COLOR_PRINT(YELLOW, "Undefined bahavior is possible.\n\n");
-    #endif
-
-    #undef DANG_DUMP
-
-    COLOR_PRINT(VIOLET, "Where Dump made:\n");
-    PrintPlace(file, line, func);
-
-    COLOR_PRINT(VIOLET, "nameTable data during NameTableCtor:\n");
-
-    if (nameTable == nullptr)
-    {
-        COLOR_PRINT(RED, "nameTable = nullptr\n");
-        return;
-    }
-
-    if (nameTable->data == nullptr)
-    {
-        COLOR_PRINT(RED, "nameTable.data = nullptr");
-        return;
-    }
-
-    COLOR_PRINT(VIOLET, "&nameTable = 0x%p\n", nameTable);
-    COLOR_PRINT(VIOLET, "&data  = 0x%p\n\n", nameTable->data);
-
-    ON_NAME_TABLE_DATA_CANARY
-    (
-    COLOR_PRINT(YELLOW, "Left  nameTable Canary = 0x%lx = %lu\n",   nameTable->leftNameTableCanary,    nameTable->leftNameTableCanary);
-    COLOR_PRINT(YELLOW, "Right nameTable Canary = 0x%lx = %lu\n\n", nameTable->rightNameTableCanary,   nameTable->rightNameTableCanary);
-    )
-    ON_NAME_TABLE_DATA_CANARY
-    (
-    COLOR_PRINT(YELLOW, "Left  data  Canary = 0x%lx = %lu\n",   GetLeftDataCanary(nameTable),  GetLeftDataCanary(nameTable));
-    COLOR_PRINT(YELLOW, "Right data  Canary = 0x%lx = %lu\n\n", GetRightDataCanary(nameTable), GetRightDataCanary(nameTable));
-    )
-
-    ON_NAME_TABLE_HASH (COLOR_PRINT(BLUE, "nameTable Hash = %lu\n",   nameTable->nameTableHash);)
-    ON_NAME_TABLE_DATA_HASH (COLOR_PRINT(BLUE, "data  Hash = %lu\n\n", nameTable->dataHash);)
-
-    COLOR_PRINT(CYAN, "size = %lu\n", nameTable->size);
-    COLOR_PRINT(CYAN, "capacity = %lu\n\n", nameTable->capacity);
-
-
-    ON_NAME_TABLE_DATA_POISON (COLOR_PRINT(GREEN, "Poison = 0x%x = %d\n\n", Poison, Poison);)
-
-    COLOR_PRINT(BLUE, "data = \n{\n");
-    for (size_t data_i = 0; data_i < nameTable->size; data_i++)
-    {
-        COLOR_PRINT(BLUE, "*[%2lu] %d\n", data_i, nameTable->data[data_i]);
-    }
-
-    for (size_t data_i = nameTable->size; data_i < nameTable->capacity; data_i++)
-    {
-        COLOR_PRINT(CYAN, " [%2lu] 0x%x\n", data_i, nameTable->data[data_i]);   
-    }
-    COLOR_PRINT(BLUE, "};\n\n");
-
-
-    COLOR_PRINT(VIOLET, "data ptrs = \n{\n");
-    for (size_t data_i = 0; data_i < nameTable->size; data_i++)
-    {
-        COLOR_PRINT(VIOLET, "*[%2lu] 0x%p\n", data_i, &nameTable->data[data_i]);
-    }
-
-    for (size_t data_i = nameTable->size; data_i < nameTable->capacity; data_i++)
-    {
-        COLOR_PRINT(CYAN, " [%2lu] 0x%p\n", data_i, &nameTable->data[data_i]);   
-    }
-    COLOR_PRINT(VIOLET, "};\n");
-
-    COLOR_PRINT(GREEN, "\n\nDump END\n\n");
-    return;
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static void ErrPlaceCtor (NameTabelErrorType* err, const char* file, int line, const char* func)
 {
     assert(err);

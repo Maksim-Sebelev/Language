@@ -1,27 +1,11 @@
 digraph G{
 rankdir=TB
 graph [bgcolor="#000000"];
-place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [main.cpp] | line: [14] | func: [main] | autor: Maksimka | I'm not gay } "color = "#000000"];
-node0x5060000003e0[shape=Mrecord, style=filled, fillcolor="#177d20"label = "+", color = "#777777"];
-node0x506000000320[shape=Mrecord, style=filled, fillcolor="#177d20"label = "+", color = "#777777"];
-node0x506000000260[shape=Mrecord, style=filled, fillcolor="#177d20"label = "+", color = "#777777"];
-node0x5060000001a0[shape=Mrecord, style=filled, fillcolor="#177d20"label = "+", color = "#777777"];
-node0x506000000080[shape=Mrecord, style=filled, fillcolor="#218617"label = "arcsin", color = "#777777"];
-node0x506000000020[shape=Mrecord, style=filled, fillcolor="#832316"label = "privet", color = "#777777"];
-node0x506000000140[shape=Mrecord, style=filled, fillcolor="#218617"label = "arccos", color = "#777777"];
-node0x5060000000e0[shape=Mrecord, style=filled, fillcolor="#832316"label = "hello", color = "#777777"];
-node0x506000000200[shape=Mrecord, style=filled, fillcolor="#832316"label = "qwwr", color = "#777777"];
-node0x5060000002c0[shape=Mrecord, style=filled, fillcolor="#832316"label = "wknc", color = "#777777"];
-node0x506000000380[shape=Mrecord, style=filled, fillcolor="#832316"label = "ac", color = "#777777"];
+place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [main.cpp] | line: [17] | func: [main] | autor: Maksimka | I'm not gay } "color = "#000000"];
+node0x5060000000e0[shape=Mrecord, style=filled, fillcolor="#177d20"label = "=", color = "#777777"];
+node0x506000000020[shape=Mrecord, style=filled, fillcolor="#832316"label = "Arman", color = "#777777"];
+node0x506000000080[shape=Mrecord, style=filled, fillcolor="#1662b7"label = "228", color = "#777777"];
 edge[color="#373737"];
-node0x5060000003e0->node0x506000000320;
-node0x506000000320->node0x506000000260;
-node0x506000000260->node0x5060000001a0;
-node0x5060000001a0->node0x506000000080;
-node0x506000000080->node0x506000000020;
-node0x5060000001a0->node0x506000000140;
-node0x506000000140->node0x5060000000e0;
-node0x506000000260->node0x506000000200;
-node0x506000000320->node0x5060000002c0;
-node0x5060000003e0->node0x506000000380;
+node0x5060000000e0->node0x506000000020;
+node0x5060000000e0->node0x506000000080;
 }

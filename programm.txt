@@ -1,5 +1,2 @@
-arcsin(privet)+
-arccos(hello)+
-qwwr+
-wknc+
-ac
+Arman = 228;
+$

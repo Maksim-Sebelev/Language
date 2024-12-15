@@ -26,6 +26,7 @@ static void TokenCtor        (Token_t* token, TokenType type, void* value, size_
 
 static void HandleNumber       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleOperation    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+static void HandleSeparator    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
@@ -45,6 +46,7 @@ static void UpdatePointersAfterSlashN (Pointers* pointer);
 static bool IsEndSymbol             (const char* input, size_t pointer);
 static bool IsNumSymbol             (const char* input, size_t pointer);
 static bool IsOperationSymbol       (const char* input, size_t pointer);
+static bool IsSeparatorSymbol       (const char* input, size_t pointer);
 static bool IsLetterSymbol          (const char* input, size_t pointer);
 static bool IsLetterOrNumberSymbol  (const char* input, size_t pointer);
 static bool IsBracketSymbol         (const char* input, size_t pointer);
@@ -90,6 +92,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
 
         if      (IsNumSymbol       (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
         else if (IsOperationSymbol (input, pointer.ip))    HandleOperation (inputData, tokenArr, &pointer);
+        else if (IsSeparatorSymbol (input, pointer.ip))    HandleSeparator (inputData, tokenArr, &pointer);
         else if (IsLetterSymbol    (input, pointer.ip))    HandleLetter    (inputData, tokenArr, &pointer);
         else if (IsBracketSymbol   (input, pointer.ip))    HandleBracket   (inputData, tokenArr, &pointer);
         else if (IsEndSymbol       (input, pointer.ip))    HandleEndSymbol (inputData, tokenArr, &pointer);
@@ -153,6 +156,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::Number_t:    token->data.number    = *(Number   *) value;   break;
         case TokenType::Name_t:      token->data.name      = *(Name     *) value;   break;
         case TokenType::Operation_t: token->data.operation = *(Operation*) value;   break;
+        case TokenType::Separator_t: token->data.separator = *(Separator*) value;   break;
         case TokenType::Function_t:  token->data.function  = *(Function *) value;   break;
         case TokenType::Bracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
         case TokenType::EndSymbol_t: token->data.end       = *(EndSymbol*) value;   break;
@@ -197,6 +201,27 @@ static void HandleOperation(const InputData* inputData, Token_t* tokenArr, Point
     pointer->tp++;
     pointer->ip++;
     pointer->sp += operationSize;
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void HandleSeparator(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
+{
+    assert(inputData);
+    assert(inputData->inputStr);
+    assert(inputData->inputStream);
+    assert(tokenArr);
+    assert(pointer);
+
+    const char* input = inputData->inputStr;
+
+    Separator separator = (Separator) input[pointer->ip];
+    
+    TokenCtor(&tokenArr[pointer->tp], TokenType::Separator_t, &separator, pointer->lp, pointer->sp);
+    pointer->tp++;
+    pointer->ip++;
+    pointer->sp++;
     return;
 }
 
@@ -401,7 +426,28 @@ static bool IsOperationSymbol(const char* input, size_t pointer)
             (c == '-') ||
             (c == '*') ||
             (c == '/') ||
-            (c == '^');
+            (c == '^') ||
+            (c == '=');
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsSeparatorSymbol(const char* input, size_t pointer)
+{
+    assert(input);
+
+    char c = input[pointer];
+
+    switch (c)
+    {
+        case Separator::comma:
+        case Separator::point:
+        case Separator::colon:
+        case Separator::semicolon: break;
+        default: return false;
+    }
+
+    return true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -412,7 +458,7 @@ static bool IsLetterSymbol(const char* input, size_t pointer)
     char c = input[pointer];
 
     return  ('a' <= c && c <= 'z') ||
-             ('A' <= c && c <= 'Z');
+            ('A' <= c && c <= 'Z');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -499,7 +545,7 @@ static Operation GetOperation(const char* operation, Pointers* pointer, size_t* 
     {
         const char* name = DefaultOperations[operation_i].name;
         Operation   oper = DefaultOperations[operation_i].value;
-    
+
         RETURN_IF_TRUE(STRNCMP(name), oper, *operationSize = 1);
     }
 
@@ -510,7 +556,7 @@ static Operation GetOperation(const char* operation, Pointers* pointer, size_t* 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(function) (strncmp(word, function, wordSize) == 0)
+#define STRNCMP(function) (strncmp(word, function, wordSize) == 0 && wordSize == strlen(DefaultFunctions[function_i].name))
 
 static Function GetFunction(const char* word, size_t wordSize)
 {
@@ -531,8 +577,6 @@ static Function GetFunction(const char* word, size_t wordSize)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(name) (strncmp(word, name, wordSize) == 0)
-
 static Name GetName(const char* word, size_t wordSize)
 {
     assert(word);
@@ -544,8 +588,6 @@ static Name GetName(const char* word, size_t wordSize)
 
     return name;
 }
-
-#undef STRNCMP    
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
