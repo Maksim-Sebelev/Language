@@ -2,9 +2,10 @@
 #define TREE_HPP
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "../Common/ColorPrint.hpp"
 #include "../Common/GlobalInclude.hpp"
-
+// #include "NameTable/NameTable.hpp"
 
 enum TreeErrorType
 {
@@ -54,12 +55,12 @@ enum NodeArgType
 enum Operation
 {
     undefined_operation,
-    plus = '+', 
-    minus = '-',
-    mul = '*', 
-    dive = '/',
-    power = '^',
-    assign = '='
+    plus   = '+', 
+    minus  = '-',
+    mul    = '*', 
+    dive   = '/',
+    power  = '^',
+    assign = '=',
 };
 
 
