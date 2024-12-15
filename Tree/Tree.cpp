@@ -10,13 +10,13 @@
 
 static bool         IsError                        (const TreeErr* err);
 static bool         HasntNumChild                  (const Node_t* node);
-static bool         HasntVarChild                  (const Node_t* node);
+// static bool         HasntVarChild                  (const Node_t* node);
 static bool         HasOperationChildren           (const Node_t* node);
 static bool         HasFuncLeftChildOnly           (const Node_t* node);
 
 static bool         IsNodeTypeOperationDataCorrect (const Node_t* node);
 static bool         IsNodeTypeFunctionDataCorrect  (const Node_t* node);
-static bool         IsNodeVariableTypeUndef        (const Node_t* node);
+// static bool         IsNodeVariableTypeUndef        (const Node_t* node);
 
 //======================================================================================================================================================================
 
@@ -24,6 +24,7 @@ static void         PrintError                 (const TreeErr* err);
 static TreeErr      AllNodeVerif               (const Node_t* node, size_t* treeSize);
 
 //============================== Tree functions ============================================================================================================================
+
 
 TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
 {
@@ -43,12 +44,12 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
     }
 
     TOKEN_GRAPHIC_DUMP(token, tokenQuant);
-
     tree->root = GetTree(token, &inputData);
 
-    TokenDtor(token);
-    InputDataDtor(&inputData);
+    COLOR_PRINT(RED, "str = %p\n", inputData.inputStr);
 
+    TokenDtor(token);
+    // InputDataDtor(&inputData);
 
     return TREE_VERIF(tree, err);
 }
@@ -193,10 +194,12 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
             _SET_NUM(copy, number);
             break;
         }
-        case NodeArgType::variable:  
+        case NodeArgType::name:  
         {
-            Variable variable = node->data.var;
-            _SET_VAR(copy, variable);
+            // Variable variable = node->data.var;
+            // _SET_VAR(copy, variable);
+            Name name = node->data.name;
+            _SET_NAME(copy, name);
             break;
         }
         case NodeArgType::operation: 
@@ -301,10 +304,10 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
             break;
         }
 
-        case NodeArgType::variable:
+        case NodeArgType::name:
         {
-            RETURN_IF_FALSE(IsNodeVariableTypeUndef(node), *err, err->err = TreeErrorType::VAR_TYPE_NODES_ARG_IS_UNDEFINED);
-            RETURN_IF_FALSE(HasntVarChild          (node), *err, err->err = TreeErrorType::VAR_HAS_INCORRECT_CHILD_QUANT);
+            // RETURN_IF_FALSE(IsNodeVariableTypeUndef(node), *err, err->err = TreeErrorType::VAR_TYPE_NODES_ARG_IS_UNDEFINED);
+            // RETURN_IF_FALSE(HasntVarChild          (node), *err, err->err = TreeErrorType::VAR_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
 
@@ -345,15 +348,15 @@ static bool HasntNumChild(const Node_t* node)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool HasntVarChild(const Node_t* node)
-{
-    assert(node);
-    assert(node->type == NodeArgType::variable);
+// static bool HasntVarChild(const Node_t* node)
+// {
+//     assert(node);
+//     assert(node->type == NodeArgType::variable);
 
-    return !(node->left) && !(node->right);
-}
+//     return !(node->left) && !(node->right);
+// }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static bool HasOperationChildren(const Node_t* node)
 {
@@ -442,25 +445,25 @@ static bool IsNodeTypeFunctionDataCorrect(const Node_t* node)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsNodeVariableTypeUndef(const Node_t* node)
-{
-    assert(node);
-    assert(node->type == NodeArgType::variable);
+// static bool IsNodeVariableTypeUndef(const Node_t* node)
+// {
+//     assert(node);
+//     assert(node->type == NodeArgType::variable);
 
-    Variable variable = node->data.var;
+//     Variable variable = node->data.var;
 
-    switch (variable)
-    {
-        case Variable::x:
-        case Variable::y: break;
-        case Variable::undefined_variable:
-        default: return false;
-    }
+//     switch (variable)
+//     {
+//         case Variable::x:
+//         case Variable::y: break;
+//         case Variable::undefined_variable:
+//         default: return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static TreeErr AllNodeVerif(const Node_t* node, size_t* treeSize)
 {
@@ -573,9 +576,9 @@ static void PrintError(const TreeErr* Err)
             COLOR_PRINT(RED, "Error: Node has 'function' type, but not only her 'function' type is defined.\n");
             break;
 
-        case TreeErrorType::NODE_IS_VARIABLE_TYPE_BUT_OTHER_NODE_TYPED_IS_UNDEFINED:
-            COLOR_PRINT(RED, "Error: Node has 'variable' type, but not only her 'variable' type is defined.\n");
-            break;
+        // case TreeErrorType::NODE_IS_VARIABLE_TYPE_BUT_OTHER_NODE_TYPED_IS_UNDEFINED:
+        //     COLOR_PRINT(RED, "Error: Node has 'variable' type, but not only her 'variable' type is defined.\n");
+        //     break;
         
         case TreeErrorType::UNDEFINED_FUNCTION_TYPE:
             COLOR_PRINT(RED, "Error: Node has 'function' type, bit it is undefined.\n");

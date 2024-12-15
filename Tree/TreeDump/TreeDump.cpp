@@ -6,6 +6,7 @@
 #include "../Tree.hpp"
 #include "../ReadTree/Tokens/Token.hpp"
 #include "../../Common/GlobalInclude.hpp"
+#include "../NameTable/NameTable.hpp"
 
 
 static void TokenGraphicDumpHelper(const Token_t* tokenArr, size_t arrSize, const char* dotFileName, const char* file, const int line, const char* func);
@@ -30,7 +31,6 @@ static void TreeDumpHelper        (const Node_t* node, const char* dotFileName, 
 static const char* GetNodeColor       (const Node_t* node);
 static const char* GetNodeTypeInStr   (const Node_t* node);
 static const char* GetNodeDataInStr   (const Node_t* node);
-static const char* GetVariableInStr   (Variable var);
 static const char* GetOperationInStr  (Operation oper);
 static const char* GetFuncInStr       (Function func);
 
@@ -176,16 +176,29 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
     if (type == TokenType::Number_t)
     {
         Number number = token->data.number;
-        fprintf(dotFile, " %lf | ", number);
+        fprintf(dotFile, "%lf", number);
     }
+
+    else if (type == TokenType::Name_t)
+    {
+        const char* name = token->data.name.name;
+        size_t nameLen = token->data.name.nameLen;
+
+        for (size_t i = 0; i < nameLen; i++)
+        {
+            fprintf(dotFile, "%c", name[i]);
+        }
+    }
+
 
     else
     {
         const char* tokenData  = GetTokenDataInStr(token);
         assert(tokenData);
-        fprintf(dotFile, "%s | ", tokenData);
+        fprintf(dotFile, "%s", tokenData);
     }
 
+    fprintf(dotFile, " | ");
     fprintf(dotFile, " token[%lu] | ", pointer + 1);
     fprintf(dotFile, " input::%lu::%lu } \", ", token->place.line, token->place.placeInLine);
     fprintf(dotFile, "color = \"#777777\"];\n");
@@ -204,7 +217,16 @@ static const char* GetTokenColor(const Token_t* token)
     switch (type)
     {
         case TokenType::Number_t:      return "#1cb9ff";
-        case TokenType::Variable_t:    return "#f31807";
+        case TokenType::Name_t:        
+        {
+            NameType nameType = token->data.name.type;
+            switch (nameType)
+            {
+                case NameType::Function: return "#f1481a";
+                case NameType::Variable: return "#f31807";
+                default: assert(0 && "undefined name type");
+            }
+        }
         case TokenType::Operation_t:   return "#00ca2c";
         case TokenType::Function_t:    return "#0cf108";
         case TokenType::Bracket_t:     return "#e69c0c";
@@ -227,11 +249,20 @@ static const char* GetTokenTypeInStr(const Token_t* token)
     switch (type)
     {
         case TokenType::Number_t:    return "number";
-        case TokenType::Variable_t:  return "variable";
         case TokenType::Operation_t: return "operation";
         case TokenType::Function_t:  return "function";
         case TokenType::Bracket_t:   return "bracket";
         case TokenType::EndSymbol_t: return "end";
+        case TokenType::Name_t:
+        {
+            NameType nameType = token->data.name.type;
+            switch (nameType)
+            {
+                case NameType::Variable: return "name/variable";
+                case NameType::Function: return "name/function";
+                default: assert(0 && "undef name type");
+            }
+        }
         default: assert(0 && "nudefindef type."); return "undefined";
     }
 
@@ -254,16 +285,9 @@ static const char* GetTokenDataInStr(const Token_t* token)
             return "undefined";
         }
 
-        case TokenType::Variable_t:
+        case TokenType::Name_t:
         {
-            Variable variable = token->data.variable;
-            switch (variable)
-            {
-                case Variable::x: return "x";
-                case Variable::y: return "y";
-                case Variable::undefined_variable:
-                default: assert(0 && "undefined variable."); break;
-            }
+            assert(0 && "Name is drugaja situation.");
             break;
         }
     
@@ -333,15 +357,31 @@ void NodeTextDump(const Node_t* node, const char* file, const int line, const ch
 
     NodeArgType type = node->type;
 
+
+    COLOR_PRINT(CYAN, "data = '");
+
     if (type == NodeArgType::number)
     {
-        COLOR_PRINT(CYAN, "data = '%lf'\n", node->data.num);
+        COLOR_PRINT(CYAN, "%lf", node->data.num);
+    }
+
+    else if (type == NodeArgType::name)
+    {
+        const char* name     = node->data.name.name;
+        size_t nameLen = node->data.name.nameLen;
+
+        for (size_t i = 0; i < nameLen; i++)
+        {
+            COLOR_PRINT(CYAN, "%c", name[i]);
+        }
     }
 
     else
     {
-        COLOR_PRINT(CYAN,  "data = '%s'\n", GetNodeDataInStr(node));
+        COLOR_PRINT(CYAN,  "%s", GetNodeDataInStr(node));
     }
+
+    COLOR_PRINT(CYAN, "'\n");
 
     COLOR_PRINT(VIOLET, "left  = %p\n", node->left);
     COLOR_PRINT(VIOLET, "right = %p\n", node->right);
@@ -445,6 +485,18 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
         }
         
     }
+
+    else if (type == NodeArgType::name)
+    {
+        const char* name = node->data.name.name;
+        size_t nameLen   = node->data.name.nameLen;
+
+        for (size_t i = 0; i < nameLen; i++)
+        {
+            fprintf(dotFile, "%c", name[i]);
+        }
+    }
+
     else
     {
         const char* arg = GetNodeDataInStr(node);
@@ -518,7 +570,7 @@ static const char* GetNodeColor(const Node_t* node)
     {
         case NodeArgType::number:    return "#1662b7";
         case NodeArgType::operation: return "#177d20";
-        case NodeArgType::variable:  return "#832316";
+        case NodeArgType::name:      return "#832316";
         case NodeArgType::function:  return "#218617";
         case NodeArgType::undefined: return "red";
         default:
@@ -550,8 +602,8 @@ static const char* GetNodeTypeInStr(const Node_t* node)
         case NodeArgType::function:
             return "function";
 
-        case NodeArgType::variable:
-            return "variable";
+        case NodeArgType::name:
+            return "name";
 
         case NodeArgType::undefined:
             return "undefined";
@@ -581,6 +633,12 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return "undefined";
         }
 
+        case NodeArgType::name:
+        {
+            assert(0 && "name is drugaja situation.");
+            return "undefined";
+        }
+
         case NodeArgType::operation:
         {
             Operation oper = node->data.oper;
@@ -591,12 +649,6 @@ static const char* GetNodeDataInStr(const Node_t* node)
         {
             Function func = node->data.func;
             return GetFuncInStr(func);
-        }
-
-        case NodeArgType::variable:
-        {
-            Variable var = node->data.var;
-            return GetVariableInStr(var);
         }
 
         case NodeArgType::undefined:
@@ -637,24 +689,6 @@ static void DotCreateDumpPlace(FILE* dotFile, const char* file, const int line, 
     fprintf(dotFile, "color = \"#000000\"];\n");
 
     return;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static const char* GetVariableInStr(Variable var)
-{
-    switch (var)
-    {
-        case Variable::x: return "x";
-        case Variable::y: return "y";
-        case Variable::undefined_variable: return "undefined";
-        default:
-            assert(0 && "You forgot about some variable name in graphic dump.\n");
-            return "undefined";
-    }
-
-    assert(0 && "we must not be here.\n");
-    return "wtf?";
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

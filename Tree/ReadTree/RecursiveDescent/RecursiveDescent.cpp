@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static Node_t* GetNumber            (const Token_t* token, size_t* tp, const InputData* inputData);
-static Node_t* GetVariable          (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetName              (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetAddSub            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetMulDiv            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetBracket           (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -21,13 +21,13 @@ static Node_t* GetMinus             (const Token_t* token, size_t* tp, const Inp
 
 
 static Number    GetTokenNumber     (const Token_t* token, const size_t* tp);
-static Variable  GetTokenVariable   (const Token_t* token, const size_t* tp);
+static Name      GetTokenName       (const Token_t* token, const size_t* tp);
 static Operation GetTokenOperation  (const Token_t* token, const size_t* tp);
 static Function  GetTokenFunction   (const Token_t* token, const size_t* tp);
 
 static bool IsTokenEnd              (const Token_t* token, const size_t* tp);
 static bool IsTokenNum              (const Token_t* token, const size_t* tp);
-static bool IsTokenVariable         (const Token_t* token, const size_t* tp);
+static bool IsTokenName         (const Token_t* token, const size_t* tp);
 static bool IsTokenOperation        (const Token_t* token, const size_t* tp);
 static bool IsTokenFunction         (const Token_t* token, const size_t* tp);
 
@@ -260,26 +260,26 @@ static Node_t* GetBracket(const Token_t* token, size_t* tp, const InputData* inp
         return node;
     }
 
-    RETURN_IF_TRUE(IsTokenVariable(token, tp), GetVariable(token, tp, inputData));
+    RETURN_IF_TRUE(IsTokenName(token, tp), GetName(token, tp, inputData));
 
     return GetNumber(token, tp, inputData);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetVariable(const Token_t* token, size_t* tp, const InputData* inputData)
+static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(tp);
     assert(token);
     
-    if (!IsTokenVariable(token, tp))
+    if (!IsTokenName(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expetcted variable name");
 
-    Variable variable = GetTokenVariable(token, tp);
+    Name name = GetTokenName(token, tp);
     (*tp)++;
 
     Node_t* node = {};
-    _VAR(&node, variable);
+    _NAME(&node, name);
 
     return node;
 }
@@ -331,14 +331,14 @@ static bool IsTokenNum(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenVariable(const Token_t* token, const size_t* tp)
+static bool IsTokenName(const Token_t* token, const size_t* tp)
 {
     assert(token);
     assert(tp);
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::Variable_t);
+    return (type == TokenType::Name_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -501,15 +501,15 @@ static Number GetTokenNumber(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Variable GetTokenVariable(const Token_t* token, const size_t* tp)
+static Name GetTokenName(const Token_t* token, const size_t* tp)
 {
     assert(token);
     assert(tp);
-    assert(IsTokenVariable(token, tp));
+    assert(IsTokenName(token, tp));
 
-    Variable variable = token[*tp].data.variable;
+    Name name = token[*tp].data.name;
 
-    return variable;
+    return name;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -29,7 +29,7 @@ static void HandleOperation    (const InputData* inputData, Token_t* tokenArr, P
 static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleVariable     (                      Token_t* tokenArr, Variable  variable, Pointers* pointer, size_t olp_sp);
+static void HandleName     (                      Token_t* tokenArr, Name  name, Pointers* pointer, size_t olp_sp);
 static void HandleFunction     (                      Token_t* tokenArr, Function  function, Pointers* pointer, size_t old_sp);
 
 
@@ -42,11 +42,12 @@ static void UpdatePointersAfterSpace  (Pointers* pointer);
 static void UpdatePointersAfterSlashN (Pointers* pointer);
 
 
-static bool IsEndSymbol        (const char* input, size_t pointer);
-static bool IsNumSymbol        (const char* input, size_t pointer);
-static bool IsOperationSymbol  (const char* input, size_t pointer);
-static bool IsLetterSymbol     (const char* input, size_t pointer);
-static bool IsBracketSymbol    (const char* input, size_t pointer);
+static bool IsEndSymbol             (const char* input, size_t pointer);
+static bool IsNumSymbol             (const char* input, size_t pointer);
+static bool IsOperationSymbol       (const char* input, size_t pointer);
+static bool IsLetterSymbol          (const char* input, size_t pointer);
+static bool IsLetterOrNumberSymbol  (const char* input, size_t pointer);
+static bool IsBracketSymbol         (const char* input, size_t pointer);
 
 
 static Number    UpdateNumber     (Number number, const InputData* inputData, Pointers* pointer);
@@ -54,7 +55,7 @@ static Number    UpdateNumber     (Number number, const InputData* inputData, Po
 static Number    GetNumber        (const InputData* inputData, Pointers* pointer);
 static Operation GetOperation     (const char* operation,      Pointers* pointer, size_t* operationSize);
 static Function  GetFunction      (const char* word,                              size_t  wordSize);
-static Variable  GetVariable      (const char* word,                              size_t  wordSize);
+static Name      GetName          (const char* word,                              size_t  wordSize);
 
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
@@ -150,7 +151,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
     switch (type)
     {
         case TokenType::Number_t:    token->data.number    = *(Number   *) value;   break;
-        case TokenType::Variable_t:  token->data.variable  = *(Variable *) value;   break;
+        case TokenType::Name_t:      token->data.name      = *(Name     *) value;   break;
         case TokenType::Operation_t: token->data.operation = *(Operation*) value;   break;
         case TokenType::Function_t:  token->data.function  = *(Function *) value;   break;
         case TokenType::Bracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
@@ -216,7 +217,7 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
     {
         pointer->ip++;
     }
-    while (IsLetterSymbol(input, pointer->ip));
+    while (IsLetterOrNumberSymbol(input, pointer->ip));
 
     const char* word = input + old_ip;
     const size_t wordSize = pointer->ip - old_ip;
@@ -230,15 +231,12 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
         return;
     }
 
-    Variable variable = GetVariable(word, wordSize);
+    Name name = GetName(word, wordSize);
 
-    if (variable != Variable::undefined_variable)
-    {
-        HandleVariable(tokenArr, variable, pointer, wordSize);
+        HandleName(tokenArr, name, pointer, wordSize);
         return;
-    }
 
-    SYNTAX_ERR(pointer->lp, pointer->sp, inputData, "undefined name in input.");
+    // SYNTAX_ERR(pointer->lp, pointer->sp, inputData, "undefined name in input.");
     return;
 }
 
@@ -286,12 +284,12 @@ static void HandleEndSymbol(const InputData* inputData, Token_t* tokenArr, Point
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void HandleVariable(Token_t* tokenArr, Variable variable, Pointers* pointer, size_t wordSize)
+static void HandleName(Token_t* tokenArr, Name name, Pointers* pointer, size_t wordSize)
 {
     assert(tokenArr);
     assert(pointer);
 
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Variable_t, &variable, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::Name_t, &name, pointer->lp, pointer->sp);
 
     pointer->tp++;
     pointer->sp += wordSize;
@@ -411,11 +409,22 @@ static bool IsOperationSymbol(const char* input, size_t pointer)
 static bool IsLetterSymbol(const char* input, size_t pointer)
 {
     assert(input);
-
     char c = input[pointer];
-    bool flag1 = ('a' <= c && c <= 'z');
-    bool flag2 = ('A' <= c && c <= 'Z');
-    return (flag1 || flag2);
+
+    return  ('a' <= c && c <= 'z') ||
+             ('A' <= c && c <= 'Z');
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsLetterOrNumberSymbol(const char* input, size_t pointer)
+{
+    assert(input);
+    char c = input[pointer];
+
+    return  ('a' <= c && c <= 'z') ||
+            ('A' <= c && c <= 'Z') ||
+            ('0' <= c && c <= '9');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -425,8 +434,8 @@ static bool IsBracketSymbol(const char* input, size_t pointer)
     assert(input);
 
     char c = input[pointer];
-    bool flag = (c == '(') || (c == ')');
-    return flag;
+    return (c == '(') ||
+           (c == ')');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -522,16 +531,18 @@ static Function GetFunction(const char* word, size_t wordSize)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(variable) (strncmp(word, variable, wordSize) == 0)
+#define STRNCMP(name) (strncmp(word, name, wordSize) == 0)
 
-static Variable GetVariable(const char* word, size_t wordSize)
+static Name GetName(const char* word, size_t wordSize)
 {
     assert(word);
 
-    RETURN_IF_TRUE(STRNCMP("x"), Variable::x);
-    RETURN_IF_TRUE(STRNCMP("y"), Variable::y);
+    Name name = {};
+    name.id = 1;
+    name.name = word;
+    name.nameLen = wordSize;
 
-    return Variable::undefined_variable;
+    return name;
 }
 
 #undef STRNCMP    

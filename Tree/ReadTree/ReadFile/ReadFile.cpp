@@ -27,6 +27,8 @@ InputData ReadFile(const char* inputFile, size_t* inputLen)
     size_t freadReturn = fread(inputStr, sizeof(char), fileSize, inputStream);
     assert(freadReturn == fileSize);
 
+    fclose(inputStream);
+
     inputStr[fileSize] = '\0';
 
     *inputLen = fileSize;

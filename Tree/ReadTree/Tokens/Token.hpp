@@ -35,10 +35,10 @@ enum EndSymbol
 union TokenData
 {
     Number    number;
-    Variable  variable;
     Operation operation;
     Function  function;
     Bracket   bracket;
+    Name      name;
     EndSymbol end;
 };
 
@@ -47,7 +47,7 @@ union TokenData
 enum TokenType
 {
     Number_t,
-    Variable_t,
+    Name_t,
     Operation_t,
     Function_t,
     Bracket_t,
