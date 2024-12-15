@@ -23,7 +23,7 @@ int main()
         printf("%c", *(danger + 0x504000000010 + i));
     }
 
-    // free(danger + 0x504000000010);
+    free(danger + 0x504000000010);
 
     return EXIT_SUCCESS;
 }
