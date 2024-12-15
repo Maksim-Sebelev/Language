@@ -1,6 +1,1 @@
-arccos(x) 
-// +
-// tg(x^2) - x*cos(x)
-// / 3*
-// x^x
-// $
+arcsin(x)

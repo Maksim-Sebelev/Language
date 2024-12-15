@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include "TreeDump.h"
-#include "../Tree.h"
-#include "../ReadTree.h"
-#include "../../Common/GlobalInclude.h"
+#include "TreeDump.hpp"
+#include "../Tree.hpp"
+#include "../ReadTree/Tokens/Token.hpp"
+#include "../../Common/GlobalInclude.hpp"
 
 
 static void TokenGraphicDumpHelper(const Token_t* tokenArr, size_t arrSize, const char* dotFileName, const char* file, const int line, const char* func);
@@ -58,16 +58,7 @@ void TokenTextDump(const Token_t* tokenArr, size_t tokenNum, const char* file, c
     if (tokenArr[tokenNum].type == TokenType::Number_t)
     {
         Number number = tokenArr[tokenNum].data.number;
-
-        if (IsDoubleEqual(number, floor(number), eps))
-        {
-            COLOR_PRINT(CYAN, "data: '%d'\n", (int) number);
-        }
-
-        else
-        {
-            COLOR_PRINT(CYAN, "data: '%lf'\n", tokenArr[tokenNum].data.number);
-        }
+        COLOR_PRINT(CYAN, "data: '%lf'\n", number);
     }
 
     else
@@ -304,8 +295,9 @@ static const char* GetTokenDataInStr(const Token_t* token)
             EndSymbol end = token->data.end;
             switch (end)
             {
-                case EndSymbol::end: return "$";
-                default: assert(0 && "undefined end syn=mbol.");
+                case EndSymbol::end:  return "$";
+                case EndSymbol::endd: return "\\\\0";
+                default: assert(0 && "undefined end symbol.");
             }
             break;
         }

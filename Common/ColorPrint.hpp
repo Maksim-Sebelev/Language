@@ -1,5 +1,5 @@
-#ifndef COLOR_PRINT_H
-#define COLOR_PRINT_H
+#ifndef COLOR_PRINT_HPP
+#define COLOR_PRINT_HPP
 
 #include <stdio.h>
 

@@ -1,11 +1,11 @@
-#include <malloc.h>
 #include <assert.h>
-#include <string.h>
-#include "Tree.h"
-#include "TreeDump/TreeDump.h"
-#include "ReadTree.h"
-#include "../Common/ColorPrint.h"
-#include "../Common/GlobalInclude.h"
+#include "Tree.hpp"
+#include "TreeDump/TreeDump.hpp"
+#include "ReadTree/ReadFile/ReadFile.hpp"
+#include "ReadTree/RecursiveDescent/RecursiveDescent.hpp"
+#include "ReadTree/Tokens/Token.hpp"
+#include "../Common/ColorPrint.hpp"
+#include "../Common/GlobalInclude.hpp"
 
 
 static bool         IsError                        (const TreeErr* err);
@@ -25,23 +25,29 @@ static TreeErr      AllNodeVerif               (const Node_t* node, size_t* tree
 
 //============================== Tree functions ============================================================================================================================
 
-TreeErr TreeCtor(Tree_t* tree, const char* input)
+TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
 {
     TreeErr err = {};
 
     size_t inputLen = 0;
-    char* inputStr = ReadFile(input, &inputLen);
+    InputData inputData = ReadFile(inputFile, &inputLen);
+
 
     size_t tokenQuant = 0;
-    Token_t* token = ReadInputStr(inputStr, inputLen, &tokenQuant);
+    Token_t* token = ReadInputStr(&inputData, inputLen, &tokenQuant);
 
+    if (!token)
+    {
+        COLOR_PRINT(RED, "\nEmpty input file.\n\n");
+        exit(0);
+    }
 
     TOKEN_GRAPHIC_DUMP(token, tokenQuant);
 
-    tree->root = GetTree(token, inputStr);
+    tree->root = GetTree(token, &inputData);
 
     TokenDtor(token);
-    InputStrDtor(inputStr);
+    InputDataDtor(&inputData);
 
 
     return TREE_VERIF(tree, err);
@@ -393,7 +399,8 @@ static bool IsNodeTypeOperationDataCorrect(const Node_t* node)
         case Operation::minus:
         case Operation::mul:
         case Operation::dive:
-        case Operation::power: break;
+        case Operation::power:
+        case Operation::assign: break;
         case Operation::undefined_operation:
         default: return false;
     }

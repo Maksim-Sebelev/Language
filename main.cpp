@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include "Tree/Tree.h"
-#include "Tree/TreeDump/TreeDump.h"
-#include "Tree/ReadTree.h"
-
+#include "Tree/Tree.hpp"
+#include "Tree/TreeDump/TreeDump.hpp"
 
 
 int main()

@@ -1,11 +1,11 @@
 #ifndef TREE_GRAPHIC_DUMP_H
 #define TREE_GRAPHIC_DUMP_H
 
-#include "../Tree.h"
-#include "../ReadTree.h"
+#include "../Tree.hpp"
+#include "../ReadTree/Tokens/Token.hpp"
 
-void TokenGraphicDump (const Token_t* tokenArr, size_t arrSize, const char* file, const int line, const char* func);
-void TokenTextDump    (const Token_t* token, size_t tokenNum,   const char* file, const int line, const char* func);
+void TokenGraphicDump (const Token_t* tokenArr, size_t arrSize,  const char* file, const int line, const char* func);
+void TokenTextDump    (const Token_t* token,    size_t tokenNum, const char* file, const int line, const char* func);
 
 void TreeDump         (const Node_t* node,                      const char* file, const int line, const char* func);
 void NodeTextDump     (const Node_t* node,                      const char* file, const int line, const char* func);
