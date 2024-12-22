@@ -96,7 +96,7 @@ struct NameTable_t
     ON_NAME_TABLE_CANARY(NameTableCanary_t leftNameTableCanary;)
     size_t size;
     size_t capacity;
-    Name* data;
+    Name*  data;
     ON_NAME_TABLE_HASH(uint64_t nameTableHash;)
     ON_NAME_TABLE_DATA_HASH(uint64_t dataHash;)
     ON_NAME_TABLE_CANARY(NameTableCanary_t rightNameTableCanary;)
@@ -107,7 +107,7 @@ struct NameTable_t
 struct Warnings
 {
     unsigned char PopInEmptyNameTable             : 1;
-    unsigned char TooBigCapacity              : 1;
+    unsigned char TooBigCapacity                  : 1;
     unsigned char PushInFullNameTable             : 1;
 };
 

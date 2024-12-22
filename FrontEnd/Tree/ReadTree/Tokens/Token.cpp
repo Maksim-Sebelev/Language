@@ -153,14 +153,14 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 
     switch (type)
     {
-        case TokenType::Number_t:    token->data.number    = *(Number   *) value;   break;
-        case TokenType::Name_t:      token->data.name      = *(Name     *) value;   break;
-        case TokenType::Operation_t: token->data.operation = *(Operation*) value;   break;
-        case TokenType::Separator_t: token->data.separator = *(Separator*) value;   break;
-        case TokenType::Function_t:  token->data.function  = *(Function *) value;   break;
-        case TokenType::Bracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
-        case TokenType::EndSymbol_t: token->data.end       = *(EndSymbol*) value;   break;
-        default:                     assert(0 && "undefined token type symbol.");   break;
+        case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value;   break;
+        case TokenType::TokenName_t:      token->data.name      = *(Name     *) value;   break;
+        case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value;   break;
+        case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value;   break;
+        case TokenType::TokenFunction_t:  token->data.function  = *(Function *) value;   break;
+        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
+        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value;   break;
+        default:                          assert(0 && "undefined token type symbol.");   break;
     }
 
     return;
@@ -178,7 +178,7 @@ static void HandleNumber(const InputData* inputData, Token_t* tokenArr, Pointers
 
     size_t old_sp = pointer->sp;
     Number number = GetNumber(inputData, pointer);
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Number_t, &number, pointer->lp, old_sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenNumber_t, &number, pointer->lp, old_sp);
     pointer->tp++;
     return;
 }
@@ -197,7 +197,7 @@ static void HandleOperation(const InputData* inputData, Token_t* tokenArr, Point
 
     size_t operationSize = 0;
     Operation operation = GetOperation(input, pointer, &operationSize);
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Operation_t, &operation, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenOperation_t, &operation, pointer->lp, pointer->sp);
     pointer->tp++;
     pointer->ip++;
     pointer->sp += operationSize;
@@ -218,7 +218,7 @@ static void HandleSeparator(const InputData* inputData, Token_t* tokenArr, Point
 
     Separator separator = (Separator) input[pointer->ip];
     
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Separator_t, &separator, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenSeparator_t, &separator, pointer->lp, pointer->sp);
     pointer->tp++;
     pointer->ip++;
     pointer->sp++;
@@ -257,11 +257,8 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
     }
 
     Name name = GetName(word, wordSize);
+    HandleName(tokenArr, name, pointer, wordSize);
 
-        HandleName(tokenArr, name, pointer, wordSize);
-        return;
-
-    // SYNTAX_ERR(pointer->lp, pointer->sp, inputData, "undefined name in input.");
     return;
 }
 
@@ -276,7 +273,7 @@ static void HandleBracket(const InputData* inputData, Token_t* tokenArr, Pointer
     Bracket bracket = (Bracket) inputData->inputStr[pointer->ip];
     pointer->ip++;
 
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Bracket_t, &bracket, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenBracket_t, &bracket, pointer->lp, pointer->sp);
     
     pointer->tp++;
     pointer->sp++;
@@ -300,7 +297,7 @@ static void HandleEndSymbol(const InputData* inputData, Token_t* tokenArr, Point
     EndSymbol end = (EndSymbol) input[pointer->ip];
     pointer->ip++;
 
-    TokenCtor(&tokenArr[pointer->tp], TokenType::EndSymbol_t, &end, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenEndSymbol_t, &end, pointer->lp, pointer->sp);
     pointer->tp++;
     pointer->sp++;
 
@@ -314,7 +311,7 @@ static void HandleName(Token_t* tokenArr, Name name, Pointers* pointer, size_t w
     assert(tokenArr);
     assert(pointer);
 
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Name_t, &name, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenName_t, &name, pointer->lp, pointer->sp);
 
     pointer->tp++;
     pointer->sp += wordSize;
@@ -329,7 +326,7 @@ static void HandleFunction(Token_t* tokenArr, Function function, Pointers* point
     assert(tokenArr);
     assert(pointer);
 
-    TokenCtor(&tokenArr[pointer->tp], TokenType::Function_t, &function, pointer->lp, pointer->sp);
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenFunction_t, &function, pointer->lp, pointer->sp);
 
     pointer->tp++;
     pointer->sp += wordSize;
@@ -598,7 +595,7 @@ static void CreateDefaultEndToken(Token_t* tokenArr, Pointers* pointer)
 
     size_t    tp   = pointer->tp;
 
-    TokenType type = TokenType::EndSymbol_t;
+    TokenType type = TokenType::TokenEndSymbol_t;
     EndSymbol data = EndSymbol::endd;
     size_t    lp   = pointer->lp;
     size_t    sp   = pointer->sp;
@@ -618,7 +615,7 @@ static bool IsTokenTypeEnd(const Token_t* token)
 
     TokenType type = token->type;
 
-    return (type == TokenType::EndSymbol_t);
+    return (type == TokenType::TokenEndSymbol_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

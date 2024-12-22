@@ -6,6 +6,7 @@
 #include "ReadTree/Tokens/Token.hpp"
 #include "../Common/ColorPrint.hpp"
 #include "../Common/GlobalInclude.hpp"
+#include "NameTable/NameTableDump/NameTableDump.hpp"
 #include "ReadTree/Tokens/TokensDump/TokenDump.hpp"
 
 
@@ -33,6 +34,7 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile, char** s)
     InputData inputData = ReadFile(inputFile, &inputLen);
 
 
+
     size_t tokenQuant = 0;
     Token_t* token = ReadInputStr(&inputData, inputLen, &tokenQuant);
 
@@ -45,9 +47,11 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile, char** s)
     TOKEN_GRAPHIC_DUMP(token, tokenQuant);
     tree->root = GetTree(token, &inputData);
 
+    NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
+
+
     TokenDtor(token);
     *s = inputData.inputStr;
-    // InputDataDtor(&inputData);
 
     return TREE_VERIF(tree, err);
 }
@@ -63,8 +67,8 @@ TreeErr TreeDtor(Tree_t* tree)
 
     TREE_ASSERT(NodeAndUnderTreeDtor(tree->root));
 
-    tree->size = 0;
     tree->root = nullptr;
+    NAME_TABLE_ASSERT(NameTableDtor(&tree->nameTable));
 
     return TREE_VERIF(tree, Err);
 }
@@ -196,7 +200,7 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
         {
             // Variable variable = node->data.var;
             // _SET_VAR(copy, variable);
-            Name name = node->data.name;
+            NamePointer name = node->data.name;
             _SET_NAME(copy, name);
             break;
         }

@@ -1,2 +1,2 @@
-Arman = 228;
-$
+name = arccos(x^2);
+jopa = sin(x);

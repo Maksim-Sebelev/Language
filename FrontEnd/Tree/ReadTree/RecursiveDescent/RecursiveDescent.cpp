@@ -22,10 +22,10 @@ static Node_t* GetFunction          (const Token_t* token, size_t* tp, const Inp
 static Node_t* GetMinus             (const Token_t* token, size_t* tp, const InputData* inputData);
 
 
-static Number    GetTokenNumber     (const Token_t* token, const size_t* tp);
-static Name      GetTokenName       (const Token_t* token, const size_t* tp);
-static Operation GetTokenOperation  (const Token_t* token, const size_t* tp);
-static Function  GetTokenFunction   (const Token_t* token, const size_t* tp);
+static Number       GetTokenNumber     (const Token_t* token, const size_t* tp);
+static Name         GetTokenName       (const Token_t* token, const size_t* tp);
+static Operation    GetTokenOperation  (const Token_t* token, const size_t* tp);
+static Function     GetTokenFunction   (const Token_t* token, const size_t* tp);
 
 static bool IsTokenEnd              (const Token_t* token, const size_t* tp);
 static bool IsTokenNum              (const Token_t* token, const size_t* tp);
@@ -44,7 +44,6 @@ static bool IsTokenRightBracket     (const Token_t* token, const size_t* tp);
 static bool IsOperationBeforeMinus  (const Token_t* token, const size_t* tp);
 static bool IsTokenMinus            (const Token_t* token, const size_t* tp);
 static bool IsOperationToken        (const Token_t* token,       size_t  tp);
-
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -224,7 +223,7 @@ static Node_t* GetFunction(const Token_t* token, size_t* tp, const InputData* in
     }
 
 
-    if (type != TokenType::Function_t)
+    if (type != TokenType::TokenFunction_t)
     {
         return GetBracket(token, tp, inputData);
     }
@@ -261,6 +260,8 @@ static Node_t* GetMinus(const Token_t* token, size_t* tp, const InputData* input
     assert(token);
     assert(tp);
 
+    // consume token
+    // pick token
     if (IsOperationBeforeMinus(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "Operation before '-'");
 
@@ -320,6 +321,8 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     Name name = GetTokenName(token, tp);
     (*tp)++;
 
+    // NamePointer namePointer = 
+
     Node_t* node = {};
     _NAME(&node, name);
 
@@ -356,7 +359,7 @@ static bool IsTokenEnd(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::EndSymbol_t);
+    return (type == TokenType::TokenEndSymbol_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -368,7 +371,7 @@ static bool IsTokenNum(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::Number_t);
+    return (type == TokenType::TokenNumber_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -380,7 +383,7 @@ static bool IsTokenName(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::Name_t);
+    return (type == TokenType::TokenName_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -392,7 +395,7 @@ static bool IsTokenOperation(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::Operation_t);
+    return (type == TokenType::TokenOperation_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -404,7 +407,7 @@ static bool IsTokenFunction(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    return (type == TokenType::Function_t);
+    return (type == TokenType::TokenFunction_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -417,7 +420,7 @@ static bool IsTokenAssign(const Token_t* token, const size_t* tp)
 
     TokenType type = temp.type;
 
-    return  (type == TokenType::Operation_t) &&
+    return  (type == TokenType::TokenOperation_t) &&
             (temp.data.operation == Operation::assign);   
 }
 
@@ -431,7 +434,7 @@ static bool IsTokenSemicolon(const Token_t* token, const size_t* tp)
 
     TokenType type = temp.type;
 
-    return  (type == TokenType::Separator_t) &&
+    return  (type == TokenType::TokenSeparator_t) &&
             (temp.data.separator == Separator::semicolon);   
 }
 
@@ -444,7 +447,7 @@ static bool IsAddSub(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    RETURN_IF_FALSE(type == TokenType::Operation_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenOperation_t, false);
 
     Operation operation = token[*tp].data.operation;
 
@@ -460,7 +463,7 @@ static bool IsMulDiv(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    RETURN_IF_FALSE(type == TokenType::Operation_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenOperation_t, false);
 
     Operation operation = token[*tp].data.operation;
 
@@ -479,7 +482,7 @@ static bool IsPow(const Token_t* token, const size_t* tp)
 
     TokenType type = tokenCopy.type;
 
-    RETURN_IF_FALSE(type == TokenType::Operation_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenOperation_t, false);
 
     Operation operation = tokenCopy.data.operation;
 
@@ -495,7 +498,7 @@ static bool IsTokenLeftBracket (const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    RETURN_IF_FALSE(type == TokenType::Bracket_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenBracket_t, false);
 
     Bracket bracket = token[*tp].data.bracket;
 
@@ -511,7 +514,7 @@ static bool IsTokenMinus(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    RETURN_IF_FALSE(type == TokenType::Operation_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenOperation_t, false);
 
     Operation operation = token[*tp].data.operation;
 
@@ -527,7 +530,7 @@ static bool IsTokenRightBracket(const Token_t* token, const size_t* tp)
 
     TokenType type = token[*tp].type;
 
-    RETURN_IF_FALSE(type == TokenType::Bracket_t, false);
+    RETURN_IF_FALSE(type == TokenType::TokenBracket_t, false);
 
     Bracket bracket = token[*tp].data.bracket;
 
@@ -554,7 +557,7 @@ static bool IsOperationToken(const Token_t* token, size_t tp)
 
     TokenType type = token[tp].type;
 
-    return (type == TokenType::Operation_t);   
+    return (type == TokenType::TokenOperation_t);   
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

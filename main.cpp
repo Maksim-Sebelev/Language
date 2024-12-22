@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "Tree/Tree.hpp"
-#include "Tree/TreeDump/TreeDump.hpp"
+#include "FrontEnd/Tree/Tree.hpp"
+#include "FrontEnd/Tree/TreeDump/TreeDump.hpp"
 
 #include <malloc.h>
 

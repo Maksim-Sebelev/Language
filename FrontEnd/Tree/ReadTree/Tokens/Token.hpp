@@ -57,13 +57,13 @@ union TokenData
 
 enum TokenType
 {
-    Number_t,
-    Name_t,
-    Operation_t,
-    Function_t,
-    Bracket_t,
-    Separator_t,
-    EndSymbol_t,
+    TokenNumber_t,
+    TokenName_t,
+    TokenOperation_t,
+    TokenFunction_t,
+    TokenBracket_t,
+    TokenSeparator_t,
+    TokenEndSymbol_t,
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

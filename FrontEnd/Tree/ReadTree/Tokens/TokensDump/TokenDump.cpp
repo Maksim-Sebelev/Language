@@ -33,7 +33,7 @@ void TokenTextDump(const Token_t* tokenArr, size_t tokenNum, const char* file, c
 
     COLOR_PRINT(CYAN, "type: '%s'\n", GetTokenTypeInStr(&tokenArr[tokenNum]));
 
-    if (tokenArr[tokenNum].type == TokenType::Number_t)
+    if (tokenArr[tokenNum].type == TokenType::TokenNumber_t)
     {
         Number number = tokenArr[tokenNum].data.number;
         COLOR_PRINT(CYAN, "data: '%lf'\n", number);
@@ -151,13 +151,13 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
 
     fprintf(dotFile, "label = \" { %s | ", tokenType);
 
-    if (type == TokenType::Number_t)
+    if (type == TokenType::TokenNumber_t)
     {
         Number number = token->data.number;
         fprintf(dotFile, "%lf", number);
     }
 
-    else if (type == TokenType::Name_t)
+    else if (type == TokenType::TokenName_t)
     {
         const char* name = token->data.name.name;
         size_t nameLen = token->data.name.nameLen;
@@ -194,8 +194,8 @@ static const char* GetTokenColor(const Token_t* token)
 
     switch (type)
     {
-        case TokenType::Number_t:      return "#1cb9ff";
-        case TokenType::Name_t:        
+        case TokenType::TokenNumber_t:      return "#1cb9ff";
+        case TokenType::TokenName_t:        
         {
             NameType nameType = token->data.name.type;
             switch (nameType)
@@ -205,11 +205,11 @@ static const char* GetTokenColor(const Token_t* token)
                 default: assert(0 && "undefined name type");
             }
         }
-        case TokenType::Operation_t:   return "#00ca2c";
-        case TokenType::Function_t:    return "#0cf108";
-        case TokenType::Bracket_t:     return "#e69c0c";
-        case TokenType::Separator_t:   return "#fdc500";
-        case TokenType::EndSymbol_t:   return "#ffffff";
+        case TokenType::TokenOperation_t:   return "#00ca2c";
+        case TokenType::TokenFunction_t:    return "#0cf108";
+        case TokenType::TokenBracket_t:     return "#e69c0c";
+        case TokenType::TokenSeparator_t:   return "#fdc500";
+        case TokenType::TokenEndSymbol_t:   return "#ffffff";
         default: assert(0 && "undefined token type."); break; 
     }
 
@@ -227,13 +227,13 @@ static const char* GetTokenTypeInStr(const Token_t* token)
 
     switch (type)
     {
-        case TokenType::Number_t:    return "number";
-        case TokenType::Operation_t: return "operation";
-        case TokenType::Function_t:  return "function";
-        case TokenType::Bracket_t:   return "bracket";
-        case TokenType::Separator_t: return "separator";
-        case TokenType::EndSymbol_t: return "end";
-        case TokenType::Name_t:
+        case TokenType::TokenNumber_t:    return "number";
+        case TokenType::TokenOperation_t: return "operation";
+        case TokenType::TokenFunction_t:  return "function";
+        case TokenType::TokenBracket_t:   return "bracket";
+        case TokenType::TokenSeparator_t: return "separator";
+        case TokenType::TokenEndSymbol_t: return "end";
+        case TokenType::TokenName_t:
         {
             NameType nameType = token->data.name.type;
             switch (nameType)
@@ -259,29 +259,29 @@ static const char* GetTokenDataInStr(const Token_t* token)
 
     switch (type)
     {
-        case TokenType::Number_t:
+        case TokenType::TokenNumber_t:
         {    
             assert(0 && "Number is drugaja situation.");
             return "undefined";
         }
 
-        case TokenType::Name_t:
+        case TokenType::TokenName_t:
         {
             assert(0 && "Name is drugaja situation.");
             break;
         }
     
-        case TokenType::Operation_t:
+        case TokenType::TokenOperation_t:
         {
             Operation operation = token->data.operation;
             return GetOperationInStr(operation); //
         }
-        case TokenType::Function_t:
+        case TokenType::TokenFunction_t:
         {
             Function function = token->data.function;
             return GetFuncInStr(function); //
         }
-        case TokenType::Separator_t:
+        case TokenType::TokenSeparator_t:
         {
             Separator separator = token->data.separator;
 
@@ -294,7 +294,7 @@ static const char* GetTokenDataInStr(const Token_t* token)
                 default: assert(0 && "undefined separetor type.");
             }
         }
-        case TokenType::Bracket_t:
+        case TokenType::TokenBracket_t:
         {
             Bracket bracket = token->data.bracket;
             switch (bracket)
@@ -306,7 +306,7 @@ static const char* GetTokenDataInStr(const Token_t* token)
             break;
         }
     
-        case TokenType::EndSymbol_t:
+        case TokenType::TokenEndSymbol_t:
         {
             EndSymbol end = token->data.end;
             switch (end)

@@ -1,11 +1,15 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "../Common/ColorPrint.hpp"
 #include "../Common/GlobalInclude.hpp"
 #include "NameTable/NameTable.hpp"
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class TreeErrorType
 {
@@ -34,6 +38,7 @@ enum class TreeErrorType
     NODE_NULL,
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 struct TreeErr
 {
@@ -41,6 +46,7 @@ struct TreeErr
     CodePlace place;
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class NodeArgType
 {
@@ -51,6 +57,7 @@ enum class NodeArgType
     function,
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class Operation
 {
@@ -63,6 +70,7 @@ enum class Operation
     assign,
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class Function
 {
@@ -83,19 +91,25 @@ enum class Function
     Cth,
 };
 
-
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 typedef double Number;
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+typedef size_t NamePointer;
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 union NodeData_t
 {
     Operation    oper;
     Number       num;
     Function     func;
-    Name         name;
+    NamePointer  name;
 };
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 struct Node_t
 {
@@ -105,19 +119,21 @@ struct Node_t
     Node_t*     left;
 };
 
-
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 struct Tree_t
 {
-    Node_t* root;
-    size_t  size;
+    Node_t*     root;
+    NameTable_t nameTable;
 };
-    
-TreeErr TreeCtor               (Tree_t* tree, const char* input, char** s);
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+TreeErr TreeCtor               (Tree_t*  tree, const char* input, char** s);
 TreeErr TreeDtor               (Tree_t*  root);
 TreeErr NodeCtor               (Node_t** node, NodeArgType type, NodeData_t data, Node_t* left, Node_t* right);
 TreeErr NodeDtor               (Node_t*  node);
-TreeErr NodeAndUnderTreeDtor   (Node_t* node);
+TreeErr NodeAndUnderTreeDtor   (Node_t*  node);
 
 TreeErr NodeCopy               (Node_t** copy, const Node_t* node);
 TreeErr NodeSetCopy            (Node_t*  copy, const Node_t* node);
@@ -127,6 +143,7 @@ TreeErr SwapNode               (Node_t** node1, Node_t** node2);
 TreeErr TreeVerif              (const Tree_t* tree, TreeErr* Err, const char* file, const int line, const char* func);
 TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* file, const int line, const char* func);
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define _NUM(  node, val                   ) do { NodeData_t data = {.num  = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::number,    data,  nullptr,     nullptr)); }       while(0)
 #define _FUNC( node, val, left             ) do { NodeData_t data = {.func = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::function,  data,  left,        nullptr)); }       while(0)
@@ -164,11 +181,15 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 #define _SET_POW_ONLY( node                ) do { NodeData_t data = {.oper = Operation::power};    TREE_ASSERT(SetNode (node, NodeArgType::operation,  data, (node)->left, (node)->right)); } while(0)
 #define _SET_ASG_ONLY( node                ) do { NodeData_t data = {.oper = Operation::assign};   TREE_ASSERT(SetNode (node, NodeArgType::operation,  data, (node)->left, (node)->right)); } while(0)
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define TREE_VERIF(TreePtr, Err) TreeVerif(TreePtr, &Err, __FILE__, __LINE__, __func__)
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #define NODE_VERIF(Node, Err)    NodeVerif(Node,    &Err, __FILE__, __LINE__, __func__)
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define TREE_RETURN_IF_ERR(TreePtr, Err) do                          \
 {                                                                     \
@@ -180,6 +201,7 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
     }                                                                       \
 } while (0)                                                                  \
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define NODE_RETURN_IF_ERR(Node, Err) do                             \
 {                                                                     \
@@ -192,6 +214,7 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 } while (0)                                                                  \
 
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define TREE_ASSERT(Err) do                                          \
 {                                                                     \
@@ -204,13 +227,11 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
     }                                                                        \
 } while (0)                                                                   \
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void TreeAssertPrint(TreeErr* Err, const char* File, int Line, const char* Func);
 
-
-
-
-
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 struct DefaultFunction
 {
