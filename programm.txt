@@ -1,2 +1,1 @@
-name = arccos(x^2);
-jopa = sin(x);
+2name = 3;

@@ -11,7 +11,7 @@
 
 
 static void DotNodeBegin          (FILE* dotFile);
-static void DotCreateAllNodes     (FILE* dotFile, const Node_t* node);
+static void DotCreateAllNodes     (FILE* dotFile, const Node_t* node, const NameTable_t* table);
 static void DotCreateEdges        (FILE* dotFile, const Node_t* node);
 static void DotCreateEdgesHelper  (FILE* dotFile, const Node_t* node);
 static void TreeDumpHelper        (const Node_t* node, const char* dotFileName, const char* file, const int line, const char* func);
@@ -22,9 +22,9 @@ static const char* GetNodeDataInStr   (const Node_t* node);
 
 static const double eps = 1e-50;
 
-//=============================== Tree Dump ==================================================================================================================================================
+//=============================== Node Text Dump ==================================================================================================================================================
 
-void NodeTextDump(const Node_t* node, const char* file, const int line, const char* func)
+void NodeTextDump(const Node_t* node, NameTable_t table, const char* file, const int line, const char* func)
 {
     assert(file);
     assert(func);
@@ -32,7 +32,7 @@ void NodeTextDump(const Node_t* node, const char* file, const int line, const ch
     COLOR_PRINT(GREEN, "\nNode Dump:\n\n");
 
     PRINT_PLACE(YELLOW, file, line, func);
-    
+
     COLOR_PRINT(GREEN, "\nnode:\n");
 
     if (!node)
@@ -55,13 +55,8 @@ void NodeTextDump(const Node_t* node, const char* file, const int line, const ch
 
     else if (type == NodeArgType::name)
     {
-        const char* name     = node->data.name.name;
-        size_t nameLen = node->data.name.nameLen;
-
-        for (size_t i = 0; i < nameLen; i++)
-        {
-            COLOR_PRINT(CYAN, "%c", name[i]);
-        }
+        NamePointer namePointer = node->data.name;
+        PrintName(namePointer, table);
     }
 
     else
@@ -81,9 +76,27 @@ void NodeTextDump(const Node_t* node, const char* file, const int line, const ch
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void TreeDump(const Node_t* node, const char* file, const int line, const char* func)
+static void PrintName(const NamePointer pointer, NameTable_t table)
 {
-    assert(node);
+    Name        name    = table.data[pointer];
+    const char* nameStr = name.name;
+    size_t      nameLen = name.nameLen;
+
+    for (size_t i = 0; i < nameLen; i++)
+    {
+        COLOR_PRINT(CYAN, "%c", nameStr[i]);
+    }
+
+    return;
+}
+
+//=============================== Node Text Dump End ==================================================================================================================================================
+
+//=============================== Tree Graphic Dump ==================================================================================================================================================
+
+void TreeDump(const Tree_t* tree, const char* file, const int line, const char* func)
+{
+    assert(tree);
     assert(file);
     assert(func);
 
@@ -99,7 +112,7 @@ void TreeDump(const Node_t* node, const char* file, const int line, const char* 
     static const char* dotFileName = "tree.dot";
     sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
 
-    TreeDumpHelper(node, dotFileName, file, line, func);
+    TreeDumpHelper(tree, dotFileName, file, line, func);
     system(command);
 
     return;
@@ -107,13 +120,13 @@ void TreeDump(const Node_t* node, const char* file, const int line, const char* 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void TreeDumpHelper(const Node_t* node, const char* dotFileName, const char* file, const int line, const char* func)
+static void TreeDumpHelper(const Tree_t* tree, const char* dotFileName, const char* file, const int line, const char* func)
 {
-    assert(node);
+    assert(tree);
     assert(dotFileName);
     assert(file);
     assert(func);
-    assert(true || line);
+    assert(line);
 
     FILE* dotFile = fopen(dotFileName, "w");
     assert(dotFile);
@@ -122,8 +135,8 @@ static void TreeDumpHelper(const Node_t* node, const char* dotFileName, const ch
 
     DotCreateDumpPlace(dotFile, file, line, func);
 
-    DotCreateAllNodes(dotFile, node);
-    DotCreateEdges(dotFile, node);
+    DotCreateAllNodes(dotFile, tree->root, tree->nameTable);
+    DotCreateEdges(dotFile, tree->root);
 
     DotEnd(dotFile);
 
@@ -144,7 +157,7 @@ static void DotNodeBegin(FILE* dotFile)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
+static void DotCreateAllNodes(FILE* dotFile, const Node_t* node, NameTable_t table)
 {
     assert(dotFile);
     assert(node);
@@ -159,30 +172,24 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
     fprintf(dotFile, "label = \"");
 
     if (type == NodeArgType::number)
-    {
-        
+    {        
         Number number = node->data.num;
 
         if (IsDoubleEqual(number, floor(number), eps))
         {
             fprintf(dotFile, "%d", (int) number);
         }
+
         else
         {
             fprintf(dotFile, "%lf", number);
         }
-        
     }
 
     else if (type == NodeArgType::name)
     {
-        const char* name = node->data.name.name;
-        size_t nameLen   = node->data.name.nameLen;
-
-        for (size_t i = 0; i < nameLen; i++)
-        {
-            fprintf(dotFile, "%c", name[i]);
-        }
+        NamePointer namePointer = node->data.name;
+        FprintName(dotFile, namePointer, table);
     }
 
     else
@@ -195,15 +202,8 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
 
     fprintf(dotFile, "color = \"#777777\"];\n");
 
-    if (node->left)
-    {
-        DotCreateAllNodes(dotFile, node->left);
-    }
-
-    if (node->right)
-    {
-        DotCreateAllNodes(dotFile, node->right);
-    }
+    if (node->left)  DotCreateAllNodes(dotFile, node->left, table);
+    if (node->right) DotCreateAllNodes(dotFile, node->right, table);
 
     return;
 }
@@ -231,14 +231,12 @@ static void DotCreateEdgesHelper(FILE* dotFile, const Node_t* node)
     if (node->left)
     {
         fprintf(dotFile, "node%p->node%p;\n", node, node->left);
-
         DotCreateEdgesHelper(dotFile, node->left);
     }
 
     if (node->right)
     {
         fprintf(dotFile, "node%p->node%p;\n", node, node->right);
-
         DotCreateEdgesHelper(dotFile, node->right);
     }
 
@@ -300,10 +298,26 @@ static const char* GetNodeTypeInStr(const Node_t* node)
             assert(0 && "You forgot about some node type in text dump.\n");
             return "undefined";
     }
+
     assert(0 && "We must not be here.\n");
     return "wtf?";
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void FprintName(FILE* dotFIle, const NamePointer pointer, NameTable_t table)
+{
+    Name        name    = table.data[pointer];
+    const char* nameStr = name.name;
+    size_t      nameLen = name.nameLen;
+
+    for (size_t i = 0; i < nameLen; i++)
+    {
+        COLOR_PRINT(CYAN, "%c", nameStr[i]);
+    }
+
+    return;
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -351,5 +365,5 @@ static const char* GetNodeDataInStr(const Node_t* node)
     return "undefined";
 }
 
-//=============================== Tree Dump End =============================================================================================================================================
+//=============================== Tree Graphic Dump End ==================================================================================================================================================
 

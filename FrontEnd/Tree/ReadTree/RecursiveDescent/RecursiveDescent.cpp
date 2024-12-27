@@ -262,6 +262,7 @@ static Node_t* GetMinus(const Token_t* token, size_t* tp, const InputData* input
 
     // consume token
     // pick token
+
     if (IsOperationBeforeMinus(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "Operation before '-'");
 
@@ -324,7 +325,7 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     // NamePointer namePointer = 
 
     Node_t* node = {};
-    _NAME(&node, name);
+    // _NAME(&node, name);
 
     return node;
 }

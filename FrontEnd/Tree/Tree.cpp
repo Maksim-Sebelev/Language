@@ -183,10 +183,10 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
 
     TreeErr err = {};
 
-    NodeArgType type       = node->type;
+    NodeArgType type  = node->type;
     
-    Node_t*     left       = node->left;
-    Node_t*     right      = node->right;
+    Node_t*     left  = node->left;
+    Node_t*     right = node->right;
 
     switch (type)
     {
@@ -198,8 +198,6 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
         }
         case NodeArgType::name:  
         {
-            // Variable variable = node->data.var;
-            // _SET_VAR(copy, variable);
             NamePointer name = node->data.name;
             _SET_NAME(copy, name);
             break;

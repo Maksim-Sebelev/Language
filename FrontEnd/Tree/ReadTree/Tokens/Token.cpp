@@ -34,7 +34,7 @@ static void HandleName     (                      Token_t* tokenArr, Name  name,
 static void HandleFunction     (                      Token_t* tokenArr, Function  function, Pointers* pointer, size_t old_sp);
 
 
-static bool IsPassSymbol       (char c, Pointers* pointer);
+static bool IsPassSymbol       (char c);
 static bool IsSpace            (char c);
 static bool IsSlashN           (char c);
 
@@ -81,7 +81,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
 
     while (pointer.ip < inputLen)
     {
-        while (pointer.ip < inputLen && IsPassSymbol(input[pointer.ip], &pointer))
+        while (pointer.ip < inputLen && IsPassSymbol(input[pointer.ip]))
         {
             char temp = input[pointer.ip];
 
@@ -497,10 +497,8 @@ static bool IsSlashN(char c)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsPassSymbol(char c, Pointers* pointer)
+static bool IsPassSymbol(char c)
 {
-    assert(pointer);
-
     return (IsSpace  (c) ||
             IsSlashN (c));
 }

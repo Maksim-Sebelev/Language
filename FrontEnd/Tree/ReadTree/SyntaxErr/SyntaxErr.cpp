@@ -66,10 +66,7 @@ static const char* FindNline(const char* str, size_t nLine, size_t* lineSize)
         if (str[sp] == '\n') lp++;
     }
 
-    if (str[lp] == '\0')
-    {
-        assert(0 && "str doesn't have stolko lines\n");
-    }
+    assert(str[lp] == '\0' && "str doesn't have stolko lines\n");
 
     size_t old_sp = sp;
 

@@ -6,7 +6,7 @@ MulDiv     ::= Pow { ['*' '/'] Pow } *
 Pow        ::= Func { '^' Func } *
 Func       ::= Minus | Bracket | { Ln | Sin | .. | Arccos }
 
-Minus      ::= '-' MulDiv
+Minus      ::= '-'          MulDiv
 
 Ln         :: 'ln'      '(' AddSub ')'
 Sin        :: 'sin'     '(' AddSub ')'
@@ -15,5 +15,5 @@ Cos        :: 'cos'     '(' AddSub ')'
 Arccos     ::= 'arccos' '(' AddSub ')'
 
 Bracket    ::= '(' Func ')' | Name | Number
-Name       ::= [letter] {       [letter/number] } *
+Name       ::= [letter] { [letter | number] } *
 Number     ::= ['0' - '9'] +
