@@ -11,14 +11,18 @@
 
 
 static void DotNodeBegin          (FILE* dotFile);
-static void DotCreateAllNodes     (FILE* dotFile, const Node_t* node, const NameTable_t* table);
+static void DotCreateAllNodes     (FILE* dotFile, const Node_t* node, NameTable_t table);
 static void DotCreateEdges        (FILE* dotFile, const Node_t* node);
 static void DotCreateEdgesHelper  (FILE* dotFile, const Node_t* node);
-static void TreeDumpHelper        (const Node_t* node, const char* dotFileName, const char* file, const int line, const char* func);
+static void TreeDumpHelper        (const Tree_t* tree, const char* dotFileName, const char* file, const int line, const char* func);
 
 static const char* GetNodeColor       (const Node_t* node);
 static const char* GetNodeTypeInStr   (const Node_t* node);
 static const char* GetNodeDataInStr   (const Node_t* node);
+
+
+static void PrintName(                const NamePointer pointer, NameTable_t table);
+static void FprintName(FILE* dotFile, const NamePointer pointer, NameTable_t table);
 
 static const double eps = 1e-50;
 
@@ -305,15 +309,17 @@ static const char* GetNodeTypeInStr(const Node_t* node)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void FprintName(FILE* dotFIle, const NamePointer pointer, NameTable_t table)
+static void FprintName(FILE* dotFile, const NamePointer pointer, NameTable_t table)
 {
+    assert(dotFile);
+ 
     Name        name    = table.data[pointer];
     const char* nameStr = name.name;
     size_t      nameLen = name.nameLen;
 
     for (size_t i = 0; i < nameLen; i++)
     {
-        COLOR_PRINT(CYAN, "%c", nameStr[i]);
+        fprintf(dotFile, "%c", nameStr[i]);
     }
 
     return;

@@ -406,12 +406,14 @@ static NameTabelErrorType PushRealloc(NameTable_t* nameTable)
     NAME_TABLE_ASSERT(MoveDataToLeftCanary(nameTable));
     )
     nameTable->data = (Name*) realloc(nameTable->data, nameTable->capacity * sizeof(Name) ON_NAME_TABLE_DATA_CANARY(+ 2 * sizeof(DataCanary_t)));
+
     if (nameTable->data == nullptr)
     {
         err.FatalError.ReallocPushNull = 1;
         err.IsFatalError = 1;
         return NAME_TABLE_VERIF(nameTable, err);
     }
+
     ON_NAME_TABLE_DATA_CANARY
     (
     NAME_TABLE_ASSERT(MoveDataToFirstElem(nameTable));
@@ -431,13 +433,16 @@ static NameTabelErrorType PopRealloc(NameTable_t* nameTable)
     (
     NAME_TABLE_ASSERT(MoveDataToLeftCanary(nameTable));
     )
+
     nameTable->data = (Name*) realloc(nameTable->data, nameTable->capacity * sizeof(Name) ON_NAME_TABLE_DATA_CANARY(+ 2 * sizeof(DataCanary_t)));
+
     if (nameTable->data == nullptr)
     {
         err.FatalError.ReallocPopNull = 1;
         err.IsFatalError = 1;
         return NAME_TABLE_VERIF(nameTable, err);
     }
+
     ON_NAME_TABLE_DATA_CANARY
     (
     NAME_TABLE_ASSERT(MoveDataToFirstElem(nameTable));

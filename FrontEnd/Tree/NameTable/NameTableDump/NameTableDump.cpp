@@ -87,13 +87,13 @@ static void DotCreateNode(FILE* dotFile, const NameTable_t* table, size_t pointe
     size_t      nameLen  = name.nameLen;
 
 
-    fprintf(dotFile, "node%lu ", pointer);
-    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"%s\", ", nameColor);
-    fprintf(dotFile, "label = \"{ | ");
-    fprintf(dotFile, "%s | ", nameType);
-    FprintfName(dotFile, name);
-    fprintf(dotFile, " | %lu", nameLen);
-    fprintf(dotFile, "}\"\n");
+    fprintf     (dotFile, "node%lu ", pointer);
+    fprintf     (dotFile, "[shape=Mrecord, style=filled, fillcolor=\"%s\", ", nameColor);
+    fprintf     (dotFile, "label = \"{ | ");
+    fprintf     (dotFile, "%s | ",  nameType);
+    FprintfName (dotFile,           name);
+    fprintf     (dotFile, " | %lu", nameLen);
+    fprintf     (dotFile, "}\"\n");
 
     return;
 }

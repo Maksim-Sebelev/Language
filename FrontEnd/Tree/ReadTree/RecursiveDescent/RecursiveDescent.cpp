@@ -97,6 +97,7 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
 
     TREE_ASSERT(SwapNode(&node, &assign_node));
 
+
     return node;
 }
 
@@ -325,7 +326,7 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     // NamePointer namePointer = 
 
     Node_t* node = {};
-    // _NAME(&node, name);
+    _NAME(&node, name);
 
     return node;
 }

@@ -14,7 +14,7 @@ int main()
 
     TREE_ASSERT(TreeCtor(&tree, inputFile, &s));
 
-    TREE_GRAPHIC_DUMP(tree.root);
+    TREE_GRAPHIC_DUMP(&tree);
 
 
     TREE_ASSERT(TreeDtor(&tree));

@@ -10,33 +10,33 @@
 #include "ReadTree/Tokens/TokensDump/TokenDump.hpp"
 
 
-static bool         IsError                        (const TreeErr* err);
-static bool         HasntNumChild                  (const Node_t* node);
-static bool         HasOperationChildren           (const Node_t* node);
-static bool         HasFuncLeftChildOnly           (const Node_t* node);
-
-static bool         IsNodeTypeOperationDataCorrect (const Node_t* node);
-static bool         IsNodeTypeFunctionDataCorrect  (const Node_t* node);
 
 //======================================================================================================================================================================
 
-static void         PrintError                 (const TreeErr* err);
-static TreeErr      AllNodeVerif               (const Node_t* node, size_t* treeSize);
+static bool IsError                        (const TreeErr* err);
+static bool HasntNumChild                  (const Node_t* node);
+static bool HasOperationChildren           (const Node_t* node);
+static bool HasFuncLeftChildOnly           (const Node_t* node);
+
+static bool IsNodeTypeOperationDataCorrect (const Node_t* node);
+static bool IsNodeTypeFunctionDataCorrect  (const Node_t* node);
+
+//======================================================================================================================================================================
+
+static void    PrintError                  (const TreeErr* err);
+static TreeErr AllNodeVerif                (const Node_t* node, size_t* treeSize);
 
 //============================== Tree functions ============================================================================================================================
-
 
 TreeErr TreeCtor(Tree_t* tree, const char* inputFile, char** s)
 {
     TreeErr err = {};
 
-    size_t inputLen = 0;
+    size_t    inputLen  = 0;
     InputData inputData = ReadFile(inputFile, &inputLen);
 
-
-
-    size_t tokenQuant = 0;
-    Token_t* token = ReadInputStr(&inputData, inputLen, &tokenQuant);
+    size_t   tokenQuant = 0;
+    Token_t* token      = ReadInputStr(&inputData, inputLen, &tokenQuant);
 
     if (!token)
     {
@@ -48,7 +48,6 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile, char** s)
     tree->root = GetTree(token, &inputData);
 
     NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
-
 
     TokenDtor(token);
     *s = inputData.inputStr;
@@ -79,20 +78,10 @@ TreeErr NodeAndUnderTreeDtor(Node_t* node)
 {
     TreeErr err = {};
 
-    if (node == nullptr)
-    {
-        return err;
-    }
+    if (node == nullptr) return err;
 
-    if (node->left)
-    {
-        NodeAndUnderTreeDtor(node->left);
-    }
-
-    if (node->right)
-    {
-        NodeAndUnderTreeDtor(node->right);
-    }
+    if (node->left ) NodeAndUnderTreeDtor(node->left );
+    if (node->right) NodeAndUnderTreeDtor(node->right);
 
     NodeDtor(node);
 
@@ -286,6 +275,7 @@ TreeErr TreeVerif(const Tree_t* tree, TreeErr* err, const char* file, const int 
 
 TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int line, const char* func)
 {
+    assert(node);
     assert(err);
     assert(file);
     assert(func);
@@ -348,23 +338,17 @@ static bool HasntNumChild(const Node_t* node)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// static bool HasntVarChild(const Node_t* node)
-// {
-//     assert(node);
-//     assert(node->type == NodeArgType::variable);
-
-//     return !(node->left) && !(node->right);
-// }
-
-// //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static bool HasOperationChildren(const Node_t* node)
 {
     assert(node);
     assert(node->type == NodeArgType::operation);
 
-    if (node->data.oper == Operation::minus)
+    Operation operation = node->data.oper;
+
+    if (operation == Operation::minus || operation == Operation::assign)
+    {
         return (node->left);
+    }
 
     return (node->left) && (node->right);
 }

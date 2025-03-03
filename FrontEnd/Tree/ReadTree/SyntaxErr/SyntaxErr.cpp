@@ -44,8 +44,7 @@ __attribute__((__noreturn__)) void SyntaxError(size_t errLine, size_t errLinePos
 
     COLOR_PRINT(WHITE, "%s\n", msg);
 
-
-    COLOR_PRINT(VIOLET, "\nabort() in 3, 2, 1...\n");
+    COLOR_PRINT(VIOLET, "\nexit() in 3, 2, 1...\n");
     exit(-28);
 }
 
@@ -66,7 +65,7 @@ static const char* FindNline(const char* str, size_t nLine, size_t* lineSize)
         if (str[sp] == '\n') lp++;
     }
 
-    assert(str[lp] == '\0' && "str doesn't have stolko lines\n");
+    assert(str[lp] != '\0' && "str doesn't have stolko lines\n");
 
     size_t old_sp = sp;
 
