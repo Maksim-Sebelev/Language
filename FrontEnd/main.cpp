@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "tree/tree.hpp"
 #include "log/log.hpp"
-#include "lib/globalInclude.hpp"
+#include "lib/lib.hpp"
 #include "tree/treeDump/treeDump.hpp"
 
 int main()

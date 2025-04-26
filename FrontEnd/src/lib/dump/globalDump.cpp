@@ -44,7 +44,7 @@ const char* GetOperationInStr(Operation oper)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const char* GetFuncInStr(Function func)
+const char* GetFuncInStr(DFunction func)
 {
     for (size_t i = 0; i < DefaultFunctionsQuant; i++)
     {

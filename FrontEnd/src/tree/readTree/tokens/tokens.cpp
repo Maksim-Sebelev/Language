@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include "lib/globalInclude.hpp"
+#include "lib/lib.hpp"
 #include "tree/tree.hpp"
 #include "tree/treeDump/treeDump.hpp"
 #include "tree/readTree/syntaxErr/syntaxErr.hpp"
@@ -31,7 +31,7 @@ static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, P
 static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleName     (                      Token_t* tokenArr, Name  name, Pointers* pointer, size_t olp_sp);
-static void HandleFunction     (                      Token_t* tokenArr, Function  function, Pointers* pointer, size_t old_sp);
+static void HandleFunction     (                      Token_t* tokenArr, DFunction  function, Pointers* pointer, size_t old_sp);
 
 
 static bool IsPassSymbol       (char c);
@@ -56,8 +56,7 @@ static Number    UpdateNumber     (Number number, const InputData* inputData, Po
 
 static Number    GetNumber        (const InputData* inputData, Pointers* pointer);
 static Operation GetOperation     (const char* operation,      Pointers* pointer, size_t* operationSize);
-static Function  GetFunction      (const char* word,                              size_t  wordSize);
-static Name      GetName          (const char* word,                              size_t  wordSize);
+static DFunction GetDFunction     (const char* word,                              size_t  wordSize);
 
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
@@ -68,11 +67,11 @@ static bool IsTokenTypeEnd        (const Token_t* token);
 Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* tokenArrSize)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArrSize);
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     Token_t* tokenArr = (Token_t*) calloc(inputLen + 1, sizeof(*tokenArr));
     assert(tokenArr);
@@ -83,11 +82,11 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
     {
         while (pointer.ip < inputLen && IsPassSymbol(input[pointer.ip]))
         {
-            char temp = input[pointer.ip];
+            char tmp = input[pointer.ip];
 
-            if      (IsSpace  (temp)) UpdatePointersAfterSpace  (&pointer);
-            else if (IsSlashN (temp)) UpdatePointersAfterSlashN (&pointer);
-            else                      assert(0 && "Something went wrong :(");
+            if      (IsSpace  (tmp)) UpdatePointersAfterSpace  (&pointer);
+            else if (IsSlashN (tmp)) UpdatePointersAfterSlashN (&pointer);
+            else                     assert(0 && "Something went wrong :(");
         }
 
         if      (IsNumSymbol       (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
@@ -157,7 +156,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::TokenName_t:      token->data.name      = *(Name     *) value;   break;
         case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value;   break;
         case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value;   break;
-        case TokenType::TokenFunction_t:  token->data.function  = *(Function *) value;   break;
+        case TokenType::TokenFunction_t:  token->data.function  = *(DFunction *) value;   break;
         case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value;   break;
         default:                          assert(0 && "undefined token type symbol.");   break;
@@ -171,7 +170,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 static void HandleNumber(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
@@ -188,12 +187,12 @@ static void HandleNumber(const InputData* inputData, Token_t* tokenArr, Pointers
 static void HandleOperation(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     size_t operationSize = 0;
     Operation operation = GetOperation(input, pointer, &operationSize);
@@ -209,12 +208,12 @@ static void HandleOperation(const InputData* inputData, Token_t* tokenArr, Point
 static void HandleSeparator(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     Separator separator = (Separator) input[pointer->ip];
     
@@ -230,12 +229,12 @@ static void HandleSeparator(const InputData* inputData, Token_t* tokenArr, Point
 static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     size_t old_ip = pointer->ip;
     do
@@ -244,19 +243,20 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
     }
     while (IsLetterOrNumberSymbol(input, pointer->ip));
 
-    const char* word = input + old_ip;
+    const char*  word     = input + old_ip;
     const size_t wordSize = pointer->ip - old_ip;
+
     assert(word);
 
-    Function function = GetFunction(word, wordSize);
+    DFunction function = GetDFunction(word, wordSize);
 
-    if (function != Function::undefined_function)
+    if (function != DFunction::undefined_function)
     {
         HandleFunction(tokenArr, function, pointer, wordSize);
         return;
     }
 
-    Name name = GetName(word, wordSize);
+    Name name = NameCtor(word, wordSize);
     HandleName(tokenArr, name, pointer, wordSize);
 
     return;
@@ -268,9 +268,9 @@ static void HandleBracket(const InputData* inputData, Token_t* tokenArr, Pointer
 {
     assert(tokenArr);
     assert(pointer);
-    assert(IsBracketSymbol(inputData->inputStr, pointer->ip));
+    assert(IsBracketSymbol(inputData->buffer, pointer->ip));
 
-    Bracket bracket = (Bracket) inputData->inputStr[pointer->ip];
+    Bracket bracket = (Bracket) inputData->buffer[pointer->ip];
     pointer->ip++;
 
     TokenCtor(&tokenArr[pointer->tp], TokenType::TokenBracket_t, &bracket, pointer->lp, pointer->sp);
@@ -286,13 +286,13 @@ static void HandleBracket(const InputData* inputData, Token_t* tokenArr, Pointer
 static void HandleEndSymbol(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
-    assert(IsEndSymbol(inputData->inputStr, pointer->ip));
+    assert(IsEndSymbol(inputData->buffer, pointer->ip));
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     EndSymbol end = (EndSymbol) input[pointer->ip];
     pointer->ip++;
@@ -321,7 +321,7 @@ static void HandleName(Token_t* tokenArr, Name name, Pointers* pointer, size_t w
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void HandleFunction(Token_t* tokenArr, Function function, Pointers* pointer, size_t wordSize)
+static void HandleFunction(Token_t* tokenArr, DFunction function, Pointers* pointer, size_t wordSize)
 {
     assert(tokenArr);
     assert(pointer);
@@ -339,14 +339,14 @@ static void HandleFunction(Token_t* tokenArr, Function function, Pointers* point
 static Number GetNumber(const InputData* inputData, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(pointer);
-    assert(IsNumSymbol(inputData->inputStr, pointer->ip));
+    assert(IsNumSymbol(inputData->buffer, pointer->ip));
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
-    Number number = 0;
+    Number number = {};
 
     do
     {
@@ -362,24 +362,27 @@ static Number GetNumber(const InputData* inputData, Pointers* pointer)
 static Number UpdateNumber(Number number, const InputData* inputData, Pointers* pointer)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(pointer);
 
-    const char* input = inputData->inputStr;
+    const char* input = inputData->buffer;
 
     char new_digit_char = input[pointer->ip];
 
     assert('0' <= new_digit_char);
     assert('9' >= new_digit_char);
 
-    Number new_digit = new_digit_char - '0';
 
-    assert(0 <= new_digit);
-    assert(9 >= new_digit);
+    Number new_digit = {};
+    new_digit.int_val = new_digit_char - '0';
 
 
-    if ((INT_MAX - new_digit) / 10 < number)
+    assert(0 <= new_digit.int_val);
+    assert(9 >= new_digit.int_val);
+
+
+    if ((INT_MAX - new_digit.int_val) / 10 < number.int_val)
     {
         SYNTAX_ERR(pointer->lp, pointer->sp, inputData, "Integer overflow");
     }
@@ -387,7 +390,11 @@ static Number UpdateNumber(Number number, const InputData* inputData, Pointers* 
     pointer->ip++;
     pointer->sp++;
     
-    return 10 * number + new_digit;
+
+    Number new_number = {};
+    new_number.int_val = 10 * (number.int_val) + new_digit.int_val;
+
+    return new_number;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -553,36 +560,22 @@ static Operation GetOperation(const char* operation, Pointers* pointer, size_t* 
 
 #define STRNCMP(function) (strncmp(word, function, wordSize) == 0 && wordSize == strlen(DefaultFunctions[function_i].name))
 
-static Function GetFunction(const char* word, size_t wordSize)
+static DFunction GetDFunction(const char* word, size_t wordSize)
 {
     assert(word);
 
     for (size_t function_i = 0; function_i < DefaultFunctionsQuant; function_i++)
     {
         const char* name = DefaultFunctions[function_i].name;
-        Function    func = DefaultFunctions[function_i].value;
+        DFunction    func = DefaultFunctions[function_i].value;
     
         RETURN_IF_TRUE(STRNCMP(name), func);
     }
 
-    return Function::undefined_function;
+    return DFunction::undefined_function;
 }
 
 #undef STRNCMP
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Name GetName(const char* word, size_t wordSize)
-{
-    assert(word);
-
-    Name name = {};
-    name.id = 1;
-    name.name = word;
-    name.nameLen = wordSize;
-
-    return name;
-}
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

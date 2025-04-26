@@ -219,15 +219,11 @@ static Node_t* GetFunction(const Token_t* token, size_t* tp, const InputData* in
     TokenType type = token[*tp].type;
 
     if (IsTokenMinus(token, tp))
-    {
         return GetMinus(token, tp, inputData);
-    }
 
 
     if (type != TokenType::TokenFunction_t)
-    {
         return GetBracket(token, tp, inputData);
-    }
 
     Function function = GetTokenFunction(token, tp);
 
@@ -326,7 +322,7 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     // NamePointer namePointer = 
 
     Node_t* node = {};
-    _NAME(&node, name);
+    // _NAME(&node, name);
 
     return node;
 }

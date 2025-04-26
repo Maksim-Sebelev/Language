@@ -44,13 +44,13 @@ enum Separator
 
 union TokenData
 {
-    Number    number;
+    Separator separator;
     Operation operation;
-    Function  function;
+    DFunction function;
     Bracket   bracket;
+    Number    number;
     Name      name;
     EndSymbol end;
-    Separator separator;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

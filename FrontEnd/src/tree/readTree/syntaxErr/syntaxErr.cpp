@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "lib/colorPrint.hpp"
-#include "lib/globalInclude.hpp"
+#include "lib/lib.hpp"
 #include "tree/readTree/fileread/fileread.hpp"
 #include "tree/readTree/syntaxErr/syntaxErr.hpp"
 

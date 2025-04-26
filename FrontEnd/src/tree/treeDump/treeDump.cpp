@@ -3,13 +3,11 @@
 #include <assert.h>
 #include <math.h>
 #include "tree/treeDump/treeDump.hpp"
-
 #include "tree/tree.hpp"
-
-#include "lib/globalInclude.hpp"
+#include "lib/lib.hpp"
 #include "tree/readTree/tokens/token.hpp"
 #include "tree/treeDump/globalDump.hpp"
-#include "tree/nameTable/nameTable.hpp"
+#include "tree/nameTable/nametable.hpp"
 
 
 static void DotNodeBegin          (FILE* dotFile);
@@ -85,8 +83,9 @@ void NodeTextDump(const Node_t* node, NameTable_t table, const char* file, const
 static void PrintName(const NamePointer pointer, NameTable_t table)
 {
     Name        name    = table.data[pointer];
-    const char* nameStr = name.name;
-    size_t      nameLen = name.nameLen;
+
+    const char* nameStr = name.name.name;
+    size_t      nameLen = name.name.len;
 
     for (size_t i = 0; i < nameLen; i++)
     {
@@ -181,14 +180,14 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node, NameTable_t tab
     {        
         Number number = node->data.num;
 
-        if (IsDoubleEqual(number, floor(number), eps))
+        if (IsDoubleEqual(number.double_val, floor(number.double_val), eps))
         {
-            fprintf(dotFile, "%d", (int) number);
+            fprintf(dotFile, "%d", (int) number.double_val);
         }
 
         else
         {
-            fprintf(dotFile, "%lf", number);
+            fprintf(dotFile, "%lf", number.double_val);
         }
     }
 
@@ -316,8 +315,8 @@ static void FprintName(FILE* dotFile, const NamePointer pointer, NameTable_t tab
     assert(dotFile);
  
     Name        name    = table.data[pointer];
-    const char* nameStr = name.name;
-    size_t      nameLen = name.nameLen;
+    const char* nameStr = name.name.name;
+    size_t      nameLen = name.name.len;
 
     for (size_t i = 0; i < nameLen; i++)
     {
@@ -357,7 +356,7 @@ static const char* GetNodeDataInStr(const Node_t* node)
 
         case NodeArgType::function:
         {
-            Function func = node->data.func;
+            DFunction func = node->data.func;
             return GetFuncInStr(func);
         }
 

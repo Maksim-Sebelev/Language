@@ -8,9 +8,9 @@
 
 
 #include "lib/colorPrint.hpp"
-#include "lib/globalInclude.hpp"
+#include "lib/lib.hpp"
 
-#include "tree/nameTable/nameTable.hpp"
+#include "tree/nameTable/nametable.hpp"
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -45,19 +45,19 @@ enum class TreeErrorType
 
 struct TreeErr
 {
-    TreeErrorType err;
-    CodePlace place;
+    TreeErrorType err   ;
+    CodePlace     place ;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class NodeArgType
 {
-    undefined,
-    operation,
-    name,
-    number,
-    function,
+    undefined ,
+    operation ,
+    name      ,
+    number    ,
+    function  ,
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -65,17 +65,17 @@ enum class NodeArgType
 enum class Operation
 {
     undefined_operation,
-    plus  , 
-    minus ,
-    mul   , 
-    dive  ,
-    power ,
-    assign,
+    plus               , 
+    minus              ,
+    mul                , 
+    dive               ,
+    power              ,
+    assign             ,
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-enum class Function
+enum class DFunction
 {
     undefined_function,
     Sqrt,
@@ -96,7 +96,12 @@ enum class Function
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-typedef double Number;
+union Number
+{
+    char   char_val;
+    int    int_val;
+    double double_val;
+};
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -108,7 +113,7 @@ union NodeData_t
 {
     Operation    oper;
     Number       num;
-    Function     func;
+    DFunction    func;
     NamePointer  name;
 };
 
@@ -239,27 +244,27 @@ void TreeAssertPrint(TreeErr* Err, const char* File, int Line, const char* Func)
 struct DefaultFunction
 {
     const char* name;
-    Function    value;
+    DFunction    value;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static DefaultFunction DefaultFunctions[]
 {
-    {"sqrt"  , Function::Sqrt  },
-    {"ln"    , Function::Ln    },
-    {"sin"   , Function::Sin   },
-    {"cos"   , Function::Cos   },
-    {"tg"    , Function::Tg    },
-    {"ctg"   , Function::Ctg   },
-    {"sh"    , Function::Sh    },
-    {"ch"    , Function::Ch    },
-    {"th"    , Function::Th    },
-    {"cth"   , Function::Cth   },
-    {"arcsin", Function::Arcsin},
-    {"arccos", Function::Arccos},
-    {"arctg" , Function::Arctg },
-    {"arcctg", Function::Arcctg},
+    {"sqrt"  , DFunction::Sqrt  },
+    {"ln"    , DFunction::Ln    },
+    {"sin"   , DFunction::Sin   },
+    {"cos"   , DFunction::Cos   },
+    {"tg"    , DFunction::Tg    },
+    {"ctg"   , DFunction::Ctg   },
+    {"sh"    , DFunction::Sh    },
+    {"ch"    , DFunction::Ch    },
+    {"th"    , DFunction::Th    },
+    {"cth"   , DFunction::Cth   },
+    {"arcsin", DFunction::Arcsin},
+    {"arccos", DFunction::Arccos},
+    {"arctg" , DFunction::Arctg },
+    {"arcctg", DFunction::Arcctg},
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

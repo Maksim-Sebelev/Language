@@ -159,8 +159,8 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
 
     else if (type == TokenType::TokenName_t)
     {
-        const char* name = token->data.name.name;
-        size_t nameLen = token->data.name.nameLen;
+        const char* name    = token->data.name.name.name;
+        size_t      nameLen = token->data.name.name.len;
 
         for (size_t i = 0; i < nameLen; i++)
         {
@@ -278,7 +278,7 @@ static const char* GetTokenDataInStr(const Token_t* token)
         }
         case TokenType::TokenFunction_t:
         {
-            Function function = token->data.function;
+            DFunction function = token->data.function;
             return GetFuncInStr(function); //
         }
         case TokenType::TokenSeparator_t:

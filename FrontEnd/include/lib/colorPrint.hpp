@@ -19,4 +19,4 @@
     printf(RESET);                      \
 } while (0)                              \
 
-#endif
+#endif // COLOR_PRINT_HPP

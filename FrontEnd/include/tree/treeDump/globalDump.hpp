@@ -7,7 +7,7 @@
 void         DotEnd             (FILE* dotFile);
 void         DotCreateDumpPlace (FILE* dotFile, const char* file, const int line, const char* func);
 const char*  GetOperationInStr  (Operation oper);
-const char*  GetFuncInStr       (Function func);
+const char*  GetFuncInStr       (DFunction func);
 bool         IsDoubleEqual      (double firstNum, double secondNum, double epss);
 
 #endif // GLOBAL_DUMP_HPP

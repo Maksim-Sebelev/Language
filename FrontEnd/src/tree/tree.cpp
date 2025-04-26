@@ -5,8 +5,8 @@
 #include "tree/readTree/recursiveDescent/recursiveDescent.hpp"
 #include "tree/readTree/tokens/token.hpp"
 #include "lib/colorPrint.hpp"
-#include "lib/globalInclude.hpp"
-#include "tree/nameTable/nameTable.hpp"
+#include "lib/lib.hpp"
+#include "tree/nameTable/nametable.hpp"
 #include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
 
 
@@ -18,7 +18,7 @@ static bool HasOperationChildren           (const Node_t* node);
 static bool HasFuncLeftChildOnly           (const Node_t* node);
 
 static bool IsNodeTypeOperationDataCorrect (const Node_t* node);
-static bool IsNodeTypeFunctionDataCorrect  (const Node_t* node);
+static bool IsNodeTypeDFunctionDataCorrect  (const Node_t* node);
 
 //======================================================================================================================================================================
 
@@ -197,7 +197,7 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
         }
         case NodeArgType::function:  
         {
-            Function function = node->data.func;
+            DFunction function = node->data.func;
             _SET_FUNC(copy, function, left);
             break;
         }
@@ -308,7 +308,7 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
 
         case NodeArgType::function:
         {
-            RETURN_IF_FALSE(IsNodeTypeFunctionDataCorrect (node), *err, err->err = TreeErrorType::FUNC_TYPE_NODES_ARG_IS_UNDEFINED);
+            RETURN_IF_FALSE(IsNodeTypeDFunctionDataCorrect (node), *err, err->err = TreeErrorType::FUNC_TYPE_NODES_ARG_IS_UNDEFINED);
             RETURN_IF_FALSE(HasFuncLeftChildOnly(node), *err, err->err = TreeErrorType::FUNC_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
@@ -395,30 +395,30 @@ static bool IsNodeTypeOperationDataCorrect(const Node_t* node)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsNodeTypeFunctionDataCorrect(const Node_t* node)
+static bool IsNodeTypeDFunctionDataCorrect(const Node_t* node)
 {
     assert(node);
     assert(node->type == NodeArgType::function);
 
-    Function fucntion = node->data.func;
+    DFunction fucntion = node->data.func;
 
     switch (fucntion)
     {
-        case Function::Sqrt:
-        case Function::Ln:
-        case Function::Sin:
-        case Function::Cos:
-        case Function::Tg:
-        case Function::Ctg:
-        case Function::Sh:
-        case Function::Ch:
-        case Function::Th:
-        case Function::Cth:
-        case Function::Arcsin:
-        case Function::Arccos:
-        case Function::Arctg:
-        case Function::Arcctg: break;
-        case Function::undefined_function:
+        case DFunction::Sqrt:
+        case DFunction::Ln:
+        case DFunction::Sin:
+        case DFunction::Cos:
+        case DFunction::Tg:
+        case DFunction::Ctg:
+        case DFunction::Sh:
+        case DFunction::Ch:
+        case DFunction::Th:
+        case DFunction::Cth:
+        case DFunction::Arcsin:
+        case DFunction::Arccos:
+        case DFunction::Arctg:
+        case DFunction::Arcctg: break;
+        case DFunction::undefined_function:
         default: return false;
     }
 

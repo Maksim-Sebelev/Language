@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 #include "lib/lib.hpp"
 #include "lib/colorPrint.hpp"
-#include "stack/stack.hpp"
-#include "stack/hash.hpp"
+#include "tree/nameTable/nametable.hpp"
+#include "tree/nameTable/hash.hpp"
+
 
 static const size_t MinCapacity = 1<<3;
 static const size_t MaxCapacity = 1<<30;
@@ -31,10 +33,6 @@ static const DataCanary_t RightDataCanary   = 0xDEDDEADDEDDEAD;
 ON_STACK_HASH
 (
 static const uint64_t DefaultStackHash = 538176576;
-)
-ON_STACK_DATA_POISON
-(
-static const StackElem_t Poison = 0xDEEEEAD;
 )
 
 static size_t GetNewCapacity      (size_t capacity); 
@@ -87,14 +85,57 @@ static void           PrintError  (StackErrorType Error);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType StackCtor(Stack_t* stack, size_t StackDataSize)
+Function FunctionCtor(int a)
+{
+    Function function = {};
+    function.a = a;
+    return function;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Variable VariableCtor(int a)
+{
+    Variable variable = {};
+    variable.a = a;
+    return variable;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+NameInfo NameInfoCtor(const char* name, size_t len)
+{
+    assert(name);
+    NameInfo nameInfo = {};
+    nameInfo.name = name;
+    nameInfo.len  = len; 
+    return nameInfo;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Name NameCtor(const char* nameName, size_t len)
+{
+    StackErrorType err = {};
+
+    Name name = {};
+
+    name.name.name = nameName;
+    name.name.len  = len;
+
+    return name;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+StackErrorType NameTableCtor(Stack_t* stack, size_t StackDataSize)
 {
     StackErrorType err = {};
 
     stack->size = 0;
 
     stack->capacity = GetNewCtorCapacity(StackDataSize);
-    STACK_ASSERT(CtorCalloc(stack));
+    NAME_TABLE_ASSERT(CtorCalloc(stack));
 
     ON_STACK_DATA_CANARY
     (
@@ -108,14 +149,6 @@ StackErrorType StackCtor(Stack_t* stack, size_t StackDataSize)
     SetRightDataCanary(stack);
     )
 
-    ON_STACK_DATA_POISON
-    (
-    for (size_t data_i = 0; data_i < stack->capacity; data_i++)
-    {
-        stack->data[data_i] = Poison;
-    }
-    )
-
     ON_STACK_DATA_HASH(stack->dataHash  = CalcDataHash(stack);)
     ON_STACK_HASH(stack->stackHash = CalcStackHash(stack);)
 
@@ -124,11 +157,11 @@ StackErrorType StackCtor(Stack_t* stack, size_t StackDataSize)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType StackDtor(Stack_t* stack)
+StackErrorType NameTableDtor(Stack_t* stack)
 {
     assert(stack);
     StackErrorType err   = {};
-    STACK_ASSERT(DtorFreeData(stack));
+    NAME_TABLE_ASSERT(DtorFreeData(stack));
     stack->data     = nullptr;
     stack->capacity = 0;
     stack->size     = 0;
@@ -137,7 +170,7 @@ StackErrorType StackDtor(Stack_t* stack)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType StackPush(Stack_t*  stack, StackElem_t PushElem)
+StackErrorType NameTablePush(Stack_t*  stack, StackElem_t PushElem)
 {
     StackErrorType err = {};
     RETURN_IF_ERR_OR_WARN(stack, err);
@@ -160,27 +193,19 @@ StackErrorType StackPush(Stack_t*  stack, StackElem_t PushElem)
 
         return STACK_VERIF(stack, err);
     }
-
+    
     stack->capacity = GetNewPushCapacity(stack);
-    STACK_ASSERT(PushRealloc(stack));
+    NAME_TABLE_ASSERT(PushRealloc(stack));
 
     if (err.IsFatalError == 1)
     {
         return STACK_VERIF(stack, err);
     }
-
+    
     stack->data[stack->size - 1] = PushElem;
 
     ON_STACK_DATA_CANARY(SetRightDataCanary(stack);)
-
-    ON_STACK_DATA_POISON
-    (
-    for (size_t data_i = stack->size; data_i < stack->capacity; data_i++)
-    {
-        stack->data[data_i] = Poison;
-    }
-    )
-
+    
     ON_STACK_DATA_HASH(stack->dataHash  = CalcDataHash(stack);)
     ON_STACK_HASH(stack->stackHash = CalcStackHash(stack);)
     
@@ -194,7 +219,63 @@ StackErrorType StackPush(Stack_t*  stack, StackElem_t PushElem)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType StackPop(Stack_t* stack, StackElem_t* PopElem)
+StackElem_t GetName(Stack_t* stack, size_t pointer)
+{
+    StackErrorType err = {};
+    assert(stack);
+
+    if (pointer >= stack->size)
+    {
+        err.FatalError.TryingToGetNotExistElem = 1;
+        err.IsFatalError = 1;
+        NAME_TABLE_ASSERT(err);
+    }
+    
+    return stack->data[pointer];
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool NameCmp(const Name* name1, const Name* name2)
+{
+    assert(name1);
+    assert(name2);
+
+    size_t len1 = name1->name.len;
+    size_t len2 = name2->name.len;
+
+    RETURN_IF_FALSE(len1 == len2, false);
+
+    const char* str1 = name1->name.name;
+    const char* str2 = name2->name.name;
+    size_t      n    = len1;
+
+    return (strncmp(str1, str2, n) == 0);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool IsNameAlreadyDefined(const Name* name, const NameTable_t* table, size_t* namePointer)
+{
+    assert(name);
+    assert(table);
+    assert(namePointer);
+
+    size_t tableSize = table->size;
+
+    for (size_t i = 0; i < tableSize; i++)
+    {
+        RETURN_IF_TRUE(NameCmp(name, &table->data[i]), true, *namePointer = i);        
+    }
+
+    *namePointer = tableSize;
+    return false;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+StackErrorType NameTablePop(Stack_t* stack, StackElem_t* PopElem)
 {
     StackErrorType err = {};
     RETURN_IF_ERR_OR_WARN(stack, err);
@@ -209,8 +290,8 @@ StackErrorType StackPop(Stack_t* stack, StackElem_t* PopElem)
     stack->size--;
 
     *PopElem = stack->data[stack->size];
+    stack->data[stack->size] = {};
 
-    ON_STACK_DATA_POISON(stack->data[stack->size] = Poison;)
     ON_STACK_DATA_HASH(stack->dataHash  = CalcDataHash(stack);)
     ON_STACK_HASH(stack->stackHash = CalcStackHash(stack);)
 
@@ -220,7 +301,7 @@ StackErrorType StackPop(Stack_t* stack, StackElem_t* PopElem)
     }
 
     stack->capacity = GetNewPopCapacity(stack);
-    STACK_ASSERT(PopRealloc(stack));
+    NAME_TABLE_ASSERT(PopRealloc(stack));
 
     if (err.IsFatalError == 1)
     {
@@ -236,7 +317,7 @@ StackErrorType StackPop(Stack_t* stack, StackElem_t* PopElem)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackElem_t GetLastStackElem(const Stack_t* stack)
+StackElem_t GetLastNameTableElem(const Stack_t* stack)
 {
     assert(stack);
 
@@ -246,7 +327,7 @@ StackElem_t GetLastStackElem(const Stack_t* stack)
         err.IsWarning = 1;
         err.Warning.TryToGetElemInEmptyStack = 1;
         ON_STACK_DEBUG(CodePlaceCtor(&err.place, __FILE__, __LINE__, __func__);)
-        STACK_ASSERT(err);
+        NAME_TABLE_ASSERT(err);
     }
 
     size_t pointer = stack->size - 1;
@@ -255,30 +336,22 @@ StackElem_t GetLastStackElem(const Stack_t* stack)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType PrintStack(Stack_t* stack)
+StackErrorType PrintNameTable(Stack_t* stack)
 {
     StackErrorType err = {};
     RETURN_IF_ERR_OR_WARN(stack, err);
 
-    printf("\nStack:\n");
-    for (size_t Stack_i = 0; Stack_i < stack->size; Stack_i++)
-    {
-        printf("%d ", stack->data[Stack_i]);
-    }
-    printf("\nStack end\n\n");
+    // printf("\nStack:\n");
+    // for (size_t Stack_i = 0; Stack_i < stack->size; Stack_i++)
+    // {
+        // printf("%d ", stack->data[Stack_i]);
+    // }
+    // printf("\nStack end\n\n");
 
     return STACK_VERIF(stack, err);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-StackErrorType PrintLastStackElem(Stack_t* stack)
-{
-    StackErrorType err = {};
-    RETURN_IF_ERR_OR_WARN(stack, err);
-    COLOR_PRINT(WHITE, "Last stack Elem = %d\n", stack->data[stack->size - 1]);
-    return STACK_VERIF(stack, err);
-}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -443,7 +516,7 @@ static StackErrorType PushRealloc(Stack_t* stack)
 
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToLeftCanary(stack));
+    NAME_TABLE_ASSERT(MoveDataToLeftCanary(stack));
     )
     stack->data = (StackElem_t*) realloc(stack->data, stack->capacity * sizeof(StackElem_t) ON_STACK_DATA_CANARY(+ 2 * sizeof(DataCanary_t)));
     if (stack->data == nullptr)
@@ -454,7 +527,7 @@ static StackErrorType PushRealloc(Stack_t* stack)
     }
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToFirstElem(stack));
+    NAME_TABLE_ASSERT(MoveDataToFirstElem(stack));
     )
     return err; 
 }
@@ -469,7 +542,7 @@ static StackErrorType PopRealloc(Stack_t* stack)
 
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToLeftCanary(stack));
+    NAME_TABLE_ASSERT(MoveDataToLeftCanary(stack));
     )
     stack->data = (StackElem_t*) realloc(stack->data, stack->capacity * sizeof(StackElem_t) ON_STACK_DATA_CANARY(+ 2 * sizeof(DataCanary_t)));
     if (stack->data == nullptr)
@@ -480,7 +553,7 @@ static StackErrorType PopRealloc(Stack_t* stack)
     }
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToFirstElem(stack));
+    NAME_TABLE_ASSERT(MoveDataToFirstElem(stack));
     )
     return err;
 }
@@ -502,7 +575,7 @@ static StackErrorType CtorCalloc(Stack_t* stack)
     }
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToFirstElem(stack));
+    NAME_TABLE_ASSERT(MoveDataToFirstElem(stack));
     )
     return err;
 }
@@ -516,7 +589,7 @@ static StackErrorType DtorFreeData(Stack_t* stack)
 
     ON_STACK_DATA_CANARY
     (
-    STACK_ASSERT(MoveDataToLeftCanary(stack));
+    NAME_TABLE_ASSERT(MoveDataToLeftCanary(stack));
     )
     free(stack->data);
     stack->data = nullptr;
@@ -637,26 +710,6 @@ static StackErrorType Verif(Stack_t* stack, StackErrorType* Error ON_STACK_DEBUG
     }
     )
 
-    ON_STACK_DATA_POISON
-    (
-    bool WasNotPosion = false;
-    for (size_t data_i = stack->size; data_i < stack->capacity; data_i++)
-    {
-        if (stack->data[data_i] != Poison)
-        {
-            Error->FatalError.DataElemBiggerSizeNotPoison = 1;
-            Error->IsFatalError = 1;
-            WasNotPosion = true;
-            break;
-        }
-    }
-
-    if (!WasNotPosion)
-    {
-        Error->FatalError.DataElemBiggerSizeNotPoison = 0;
-    }
-    )
-
     ON_STACK_DATA_HASH
     (
     if (CalcDataHash(stack) != stack->dataHash)
@@ -698,7 +751,7 @@ static void PrintError(StackErrorType Error)
     {
         if (Error.Warning.PopInEmptyStack == 1)
         {
-            COLOR_PRINT(YELLOW, "Warning: make pop, but stack is empty.\n");
+            COLOR_PRINT(YELLOW, "Warning: make pop, but NameTable is empty.\n");
             COLOR_PRINT(YELLOW, "StackPop will not change PopElem.\n");
         }
 
@@ -726,6 +779,11 @@ static void PrintError(StackErrorType Error)
         {
             COLOR_PRINT(RED, "Error: Right data Canary was changed.\n");
             OFF_STACK_DEBUG(COLOR_PRINT(RED, "!stack data can be incorrect!\n"));
+        }
+
+        if (Error.FatalError.TryingToGetNotExistElem == 1)
+        {
+            COLOR_PRINT(RED, "Errot: attempting to get non-existent name table element (pointer > nametable.size).\n");
         }
 
         if (Error.FatalError.DataNull == 1)
@@ -774,14 +832,6 @@ static void PrintError(StackErrorType Error)
         {
             COLOR_PRINT(RED, "Error: Right data Canary was changed.\n");
             OFF_STACK_DEBUG(COLOR_PRINT(RED, "!stack data can be incorrect!\n"));
-        }
-        )
-
-        ON_STACK_DATA_POISON
-        (
-        if (Error.FatalError.DataElemBiggerSizeNotPoison == 1)
-        {
-            COLOR_PRINT(RED, "Error: After size in data is not Poison elem.\n");
         }
         )
 
@@ -937,7 +987,7 @@ static void PrintError(StackErrorType Error)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void AssertPrint(StackErrorType err, const char* file, int line, const char* func)
+void NameTableAssertPrint(StackErrorType err, const char* file, int line, const char* func)
 {
     if (err.IsFatalError || err.IsWarning) 
     {

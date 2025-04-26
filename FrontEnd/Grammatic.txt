@@ -1,10 +1,13 @@
 Tree       ::= Condition '$'
-Condition  :: 'if' '(' AddSub ')' '{' Assign '}'
-Assign     ::= Name '=' AddSub ';'
+Assign     ::= Type Variable '=' AddSub ';'
+
 AddSub     ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv     ::= Pow { ['*' '/'] Pow } *
 Pow        ::= Func { '^' Func } *
-Func       ::= Minus | Bracket | { Ln | Sin | .. | Arccos }
+
+================= default functions ===============================
+
+DefaFunc   ::= Minus | Bracket | { Ln | Sin | .. | Arccos }
 
 Minus      ::= '-'          MulDiv
 
@@ -14,7 +17,10 @@ Cos        :: 'cos'     '(' AddSub ')'
 ...
 Arccos     ::= 'arccos' '(' AddSub ')'
 
-Bracket    ::= '(' Func ')' | Name | Number
-Name       ::= [letter] { [letter | number] } *
+====================================================================
+
+Bracket    ::= '(' Func ')' | Variable | Number
+
+Variable   ::= [letter] { [letter | number] } *
 Number     ::= ['0' - '9'] +
 

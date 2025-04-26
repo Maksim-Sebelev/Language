@@ -16,7 +16,6 @@
 #define STACK_DATA_CANARY
 #define STACK_HASH
 #define STACK_DATA_HASH
-#define STACK_DATA_POISON
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -62,21 +61,62 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#ifdef STACK_DATA_POISON
-    #define ON_STACK_DATA_POISON(...) __VA_ARGS__
-#else
-    #define ON_STACK_DATA_POISON(...)
-#endif
+enum class NameType
+{
+    Variable,
+    Function,
+};
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-typedef int StackElem_t;
+struct Function
+{
+    int a;
+};
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+struct Variable
+{
+    int a;
+};
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+union NameData
+{
+    Function function;
+    Variable variable;
+};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+struct NameInfo
+{
+    const char* name;
+    size_t      len;
+};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+struct Name
+{
+    size_t   id;
+
+    NameInfo name;        
+    NameType type;
+    NameData data;
+};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+typedef Name StackElem_t;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ON_STACK_CANARY(typedef uint64_t StackCanary_t;)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 struct Stack_t
 {
@@ -88,6 +128,8 @@ struct Stack_t
     ON_STACK_DATA_HASH(uint64_t dataHash;)
     ON_STACK_CANARY(StackCanary_t rightStackCanary;)
 };
+
+typedef Stack_t NameTable_t;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -108,6 +150,7 @@ struct FatalErrors
     unsigned char CallocCtorNull              : 1;
     unsigned char ReallocPushNull             : 1;
     unsigned char ReallocPopNull              : 1;
+    unsigned char TryingToGetNotExistElem     : 1;
     ON_STACK_CANARY
     (
     unsigned char LeftStackCanaryChanged      : 1;
@@ -117,10 +160,6 @@ struct FatalErrors
     (
     unsigned char LeftDataCanaryChanged       : 1;
     unsigned char RightDataCanaryChanged      : 1;
-    )
-    ON_STACK_DATA_POISON
-    (
-    unsigned char DataElemBiggerSizeNotPoison : 1;
     )
     ON_STACK_HASH
     (    
@@ -155,13 +194,22 @@ struct StackErrorType
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackErrorType StackCtor               (Stack_t* stack, size_t StackDataSize);
-StackErrorType StackDtor               (Stack_t* stack);
-StackErrorType PrintStack              (Stack_t* stack);
-StackErrorType PrintLastStackElem      (Stack_t* stack);
-StackErrorType StackPush               (Stack_t* stack, StackElem_t PushElem);
-StackErrorType StackPop                (Stack_t* stack, StackElem_t* PopElem);
-StackElem_t    GetLastStackElem        (const Stack_t* stack);
+StackErrorType NameTableCtor               (Stack_t* stack, size_t StackDataSize);
+StackErrorType NameTableDtor               (Stack_t* stack);
+StackErrorType PrintNameTable              (Stack_t* stack);
+StackElem_t    GetName                     (Stack_t* stack, size_t pointer);
+StackErrorType NameTablePush               (Stack_t* stack, StackElem_t PushElem);
+StackErrorType NameTablePop                (Stack_t* stack, StackElem_t* PopElem);
+StackElem_t    GetLastNameTableElem        (const Stack_t* stack);
+
+bool           IsNameAlreadyDefined        (const Name* name , const NameTable_t* table, size_t* namePointer);
+bool           NameCmp                     (const Name* name1, const Name* name2);
+
+
+Name           NameCtor                    (const char* nameName, size_t len);
+NameInfo       NameInfoCtor                (const char* name, size_t len);
+Function       FunctionCtor                (int a);
+Variable       VariableCtor                (int a);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -174,24 +222,24 @@ StackElem_t    GetLastStackElem        (const Stack_t* stack);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void AssertPrint (StackErrorType Err, const char* file, int line, const char* func);
+void NameTableAssertPrint (StackErrorType Err, const char* file, int line, const char* func);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #ifdef STACK_DEBUG
-    #define STACK_ASSERT(Err) do                             \
+    #define NAME_TABLE_ASSERT(Err) do                         \
     {                                                         \
-        StackErrorType ErrCopy = Err;                               \
+        StackErrorType ErrCopy = Err;                          \
         if (ErrCopy.IsFatalError || ErrCopy.IsWarning)          \
         {                                                        \
-            AssertPrint(ErrCopy, __FILE__, __LINE__, __func__);   \
+            NameTableAssertPrint(ErrCopy, __FILE__, __LINE__, __func__);   \
             COLOR_PRINT(CYAN, "abort() in 3, 2, 1...\n");          \
             abort();                                                \
         }                                                            \
     } while (0)                                                       \
 
 #else
-    #define STACK_ASSERT(Err) AssertPrint(Err, __FILE__, __LINE__, __func__)
+    #define NAME_TABLE_ASSERT(Err) NameTableAssertPrint(Err, __FILE__, __LINE__, __func__)
 #endif
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
