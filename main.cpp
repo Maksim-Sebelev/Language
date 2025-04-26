@@ -1,32 +1,32 @@
-#include <stdio.h>
-#include "FrontEnd/Tree/Tree.hpp"
-#include "FrontEnd/Tree/TreeDump/TreeDump.hpp"
+// #include <stdio.h>
+// #include "FrontEnd/Tree/Tree.hpp"
+// #include "FrontEnd/Tree/TreeDump/TreeDump.hpp"
 
-#include <malloc.h>
+// #include <malloc.h>
 
-int main()
-{
-    const char* inputFile = "programm.txt";
+// int main()
+// {
+//     const char* inputFile = "programm.txt";
 
-    Tree_t tree = {};
+//     Tree_t tree = {};
 
-    char* s = nullptr;
+//     char* s = nullptr;
 
-    TREE_ASSERT(TreeCtor(&tree, inputFile, &s));
+//     TREE_ASSERT(TreeCtor(&tree, inputFile, &s));
 
-    TREE_GRAPHIC_DUMP(&tree);
-
-
-    TREE_ASSERT(TreeDtor(&tree));
+//     TREE_GRAPHIC_DUMP(&tree);
 
 
-    // printf("\n\n");
-    // for (size_t i = 0; i < 10; i++)
-    // {
-    //     printf("%c", *(s + i));
-    // }
-    // printf("\n\n");
+//     TREE_ASSERT(TreeDtor(&tree));
 
-    free(s);
-    return EXIT_SUCCESS;
-}
+
+//     // printf("\n\n");
+//     // for (size_t i = 0; i < 10; i++)
+//     // {
+//     //     printf("%c", *(s + i));
+//     // }
+//     // printf("\n\n");
+
+//     free(s);
+//     return EXIT_SUCCESS;
+// }
