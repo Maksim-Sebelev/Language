@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "tree/tree.hpp"
 #include "log/log.hpp"
@@ -12,7 +13,6 @@ int main()
     OPEN_LOG();
     )
 
-
     const char* input = "programm/programm.smm";
 
     Tree_t tree = {};
@@ -21,11 +21,14 @@ int main()
 
     TREE_GRAPHIC_DUMP(&tree);
 
-    printf("\n\nEnd\n");
+    
+    TREE_ASSERT(TreeDtor(&tree));
 
     ON_DEBUG(
     CLOSE_LOG();
     )
+
+    printf("\nEnd\n");
 
     return EXIT_SUCCESS;
 }

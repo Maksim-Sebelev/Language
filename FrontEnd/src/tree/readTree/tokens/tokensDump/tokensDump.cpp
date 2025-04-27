@@ -36,7 +36,7 @@ void TokenTextDump(const Token_t* tokenArr, size_t tokenNum, const char* file, c
     if (tokenArr[tokenNum].type == TokenType::TokenNumber_t)
     {
         Number number = tokenArr[tokenNum].data.number;
-        COLOR_PRINT(CYAN, "data: '%lf'\n", number);
+        COLOR_PRINT(CYAN, "data: '%d'\n", number.int_val);
     }
 
     else
@@ -57,21 +57,32 @@ void TokenGraphicDump(const Token_t* tokenArr, size_t arrSize, const char* file,
     assert(file);
     assert(func);
 
+    system("rm -rf dot/tokens/img/*");
+    system("rm -rf dot/tokens/img/*");
+
+
+    system("mkdir -p dot/");
+    system("mkdir -p dot/tokens/");
+    system("mkdir -p dot/tokens/img/");
+    system("mkdir -p dot/tokens/dot/");
+
     static size_t ImgQuant = 1;
 
     static const size_t MaxfileNameLen = 128;
     char outfile[MaxfileNameLen] = {};
-    sprintf(outfile, "token%lu.png", ImgQuant);
-    ImgQuant++;
-
+    sprintf(outfile, "dot/tokens/img/tokens%lu.png", ImgQuant);
+    
     static const size_t MaxCommandLen = 256;
     char command[MaxCommandLen] = {};
-    static const char* dotFileName = "token.dot";
+    
+    char dotFileName[MaxfileNameLen] = {};
+    sprintf(dotFileName, "dot/tokens/dot/tokens%lu.dot", ImgQuant);
     sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
     
     TokenGraphicDumpHelper(tokenArr, arrSize, dotFileName, file, line, func);
     system(command);
-
+    
+    ImgQuant++;
     return;
 }
 
@@ -154,7 +165,7 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
     if (type == TokenType::TokenNumber_t)
     {
         Number number = token->data.number;
-        fprintf(dotFile, "%lf", number);
+        fprintf(dotFile, "%d", number.int_val);
     }
 
     else if (type == TokenType::TokenName_t)
@@ -210,6 +221,7 @@ static const char* GetTokenColor(const Token_t* token)
         case TokenType::TokenBracket_t:     return "#e69c0c";
         case TokenType::TokenSeparator_t:   return "#fdc500";
         case TokenType::TokenEndSymbol_t:   return "#ffffff";
+        case TokenType::TokenType_t:        return "#CD5C5C";
         default: assert(0 && "undefined token type."); break; 
     }
 
@@ -228,6 +240,7 @@ static const char* GetTokenTypeInStr(const Token_t* token)
     switch (type)
     {
         case TokenType::TokenNumber_t:    return "number";
+        case TokenType::TokenType_t:      return "type";
         case TokenType::TokenOperation_t: return "operation";
         case TokenType::TokenFunction_t:  return "function";
         case TokenType::TokenBracket_t:   return "bracket";
@@ -270,7 +283,13 @@ static const char* GetTokenDataInStr(const Token_t* token)
             assert(0 && "Name is drugaja situation.");
             break;
         }
-    
+        
+        case TokenType::TokenType_t:
+        {
+            Type type = token->data.type;
+            return GetTypeInStr(type);
+        }
+
         case TokenType::TokenOperation_t:
         {
             Operation operation = token->data.operation;

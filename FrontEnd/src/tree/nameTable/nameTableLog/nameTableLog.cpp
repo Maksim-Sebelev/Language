@@ -6,6 +6,7 @@
 
 static void LogNameName(Name name);
 static const char* GetNameTypeInStr(Name name);
+static void LogNameWithPointer(Name name, size_t pointer);
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -58,8 +59,8 @@ static void LogNameWithPointer(Name name, size_t pointer)
 
 static void LogNameName(Name name)
 {
-    const char* nameName = name.name;
-    size_t      nameLen  = name.nameLen;
+    const char* nameName = name.name.name;
+    size_t      nameLen  = name.name.len;
 
     LogPrint(Red, "'");
     LogTextColor(Green);

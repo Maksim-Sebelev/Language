@@ -57,7 +57,7 @@ CSRC =  main.cpp 					  			   			     \
 		src/tree/readTree/recursiveDescent/recursiveDescent.cpp  \
 		src/tree/readTree/syntaxErr/syntaxErr.cpp                \
 		src/tree/nameTable/nametable.cpp    				     \
-		src/tree/nameTable/nametable.cpp				  	     \
+		src/tree/nameTable/hash.cpp      				  	     \
 		# src/tree/nameTable/nameTableDump/nameTableDump.cpp       \
 
 
@@ -109,7 +109,7 @@ rerun:
 
 #======= clean ========================================
 
-.PHONY: clean cleanDirs cleanLog
+.PHONY: clean cleanDirs cleanLog cleanDot
 clean:
 	rm -rf $(COBJ) $(DEPS) $(EXECUTABLE_DIR)/$(EXECUTABLE) $(OUT_O_DIR)/$(SRC)
 
@@ -118,6 +118,9 @@ cleanDirs:
 
 cleanLog:
 	rm -rf Log/
+
+cleanDot:
+	rm -rf dot/
 
 #========= iwyu ======================================
 

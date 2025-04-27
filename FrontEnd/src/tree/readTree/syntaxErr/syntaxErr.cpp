@@ -17,7 +17,7 @@ static void        PrintNSpaces     (                 size_t nSpace);
 __attribute__((__noreturn__)) void SyntaxError(size_t errLine, size_t errLinePos, const InputData* inputData, const char* msg, const char* file, const int line, const char* func)
 {
     assert(inputData);
-    assert(inputData->inputStr);
+    assert(inputData->buffer);
     assert(inputData->inputStream);
     assert(msg);
     assert(file);
@@ -32,10 +32,10 @@ __attribute__((__noreturn__)) void SyntaxError(size_t errLine, size_t errLinePos
 
 
     size_t lineSize = 0;
-    const char* LineWithErr = FindNline(inputData->inputStr, errLine, &lineSize);
+    const char* LineWithErr = FindNline(inputData->buffer, errLine, &lineSize);
 
 
-    COLOR_PRINT(WHITE, "\nIn\n%s::%lu::%lu:", inputData->inputStream, errLine, errLinePos);
+    COLOR_PRINT(WHITE, "\nIn\n%s:%lu:%lu:", inputData->inputStream, errLine, errLinePos);
     printf("\n\"");
     PrintNStrSymbols(LineWithErr, lineSize);
     printf("\"\n");
@@ -45,7 +45,8 @@ __attribute__((__noreturn__)) void SyntaxError(size_t errLine, size_t errLinePos
     COLOR_PRINT(WHITE, "%s\n", msg);
 
     COLOR_PRINT(VIOLET, "\nexit() in 3, 2, 1...\n");
-    exit(-28);
+    // exit(-28);
+    abort();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

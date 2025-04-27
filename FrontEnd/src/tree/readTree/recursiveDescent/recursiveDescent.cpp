@@ -13,6 +13,8 @@
 static Node_t* GetAssign            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetNumber            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetName              (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetType              (const Token_t* token, size_t* tp, const InputData* inputData);
+
 static Node_t* GetAddSub            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetMulDiv            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetBracket           (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -24,12 +26,14 @@ static Node_t* GetMinus             (const Token_t* token, size_t* tp, const Inp
 
 static Number       GetTokenNumber     (const Token_t* token, const size_t* tp);
 static Name         GetTokenName       (const Token_t* token, const size_t* tp);
+static Type         GetTokenType       (const Token_t* token, const size_t* tp);
 static Operation    GetTokenOperation  (const Token_t* token, const size_t* tp);
-static Function     GetTokenFunction   (const Token_t* token, const size_t* tp);
+static DFunction    GetTokenFunction   (const Token_t* token, const size_t* tp);
 
 static bool IsTokenEnd              (const Token_t* token, const size_t* tp);
 static bool IsTokenNum              (const Token_t* token, const size_t* tp);
 static bool IsTokenName             (const Token_t* token, const size_t* tp);
+static bool IsTokenType             (const Token_t* token, const size_t* tp);
 static bool IsTokenOperation        (const Token_t* token, const size_t* tp);
 static bool IsTokenFunction         (const Token_t* token, const size_t* tp);
 
@@ -73,14 +77,27 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
     assert(tp);
     assert(token);
 
+    if (IsTokenEnd(token, tp))
+    {
+        return nullptr;
+    }
+
     size_t old_tp = *tp;
 
-    Node_t* node = GetName(token, tp, inputData);
+    Node_t* type_node = GetType(token, tp, inputData);
+
+    if (old_tp == *tp)
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected type.");
+
+    old_tp = *tp;
+ 
+    Node_t* name_node = GetName(token, tp, inputData);
+    type_node->left = name_node;
 
     if (old_tp == *tp)
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected math variable.");
 
-    if(!IsTokenAssign(token, tp))
+    if (!IsTokenAssign(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '='");
 
     (*tp)++;
@@ -89,16 +106,21 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
 
     if (!IsTokenSemicolon(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
-    
+
     (*tp)++;
 
+
     Node_t* assign_node = {};
-    _ASG(&assign_node, node, node2);
+    _ASG(&assign_node, type_node, node2);
 
-    TREE_ASSERT(SwapNode(&node, &assign_node));
+    TREE_ASSERT(SwapNode(&type_node, &assign_node));
 
+    Node_t* next_assign_node = GetAssign(token, tp, inputData);
 
-    return node;
+    Node_t* connect_node = {};
+    _CONNECT(&connect_node, ';', type_node, next_assign_node);
+
+    return connect_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -225,7 +247,7 @@ static Node_t* GetFunction(const Token_t* token, size_t* tp, const InputData* in
     if (type != TokenType::TokenFunction_t)
         return GetBracket(token, tp, inputData);
 
-    Function function = GetTokenFunction(token, tp);
+    DFunction function = GetTokenFunction(token, tp);
 
     (*tp)++;  
 
@@ -312,17 +334,13 @@ static Node_t* GetName(const Token_t* token, size_t* tp, const InputData* inputD
     assert(token);
     
     if (!IsTokenName(token, tp))
-    {
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expetcted variable name");
-    }
 
     Name name = GetTokenName(token, tp);
     (*tp)++;
 
-    // NamePointer namePointer = 
-
     Node_t* node = {};
-    // _NAME(&node, name);
+    _NAME(&node, name);
 
     return node;
 }
@@ -342,6 +360,25 @@ static Node_t* GetNumber(const Token_t* token, size_t* tp, const InputData* inpu
 
     Node_t* node = {};
     _NUM(&node, val);
+
+    return node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetType(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenType(token, tp))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected type.");
+
+    Type type = GetTokenType(token, tp);
+    (*tp)++;
+
+    Node_t* node = {};
+    _TYPE(&node, type, nullptr);
 
     return node;
 }
@@ -382,6 +419,18 @@ static bool IsTokenName(const Token_t* token, const size_t* tp)
     TokenType type = token[*tp].type;
 
     return (type == TokenType::TokenName_t);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenType(const Token_t* token, const size_t* tp)
+{
+    assert(token);
+    assert(tp);
+
+    TokenType type = token[*tp].type;
+
+    return (type == TokenType::TokenType_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -585,6 +634,19 @@ static Name GetTokenName(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Type GetTokenType(const Token_t* token, const size_t* tp)
+{
+    assert(token);
+    assert(tp);
+    assert(IsTokenType(token, tp));
+
+    Type type = token[*tp].data.type;
+
+    return type;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static Operation GetTokenOperation(const Token_t* token, const size_t* tp)
 {
     assert(token);
@@ -597,13 +659,13 @@ static Operation GetTokenOperation(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Function GetTokenFunction(const Token_t* token, const size_t* tp)
+static DFunction GetTokenFunction(const Token_t* token, const size_t* tp)
 {
     assert(token);
     assert(tp);
     assert(IsTokenFunction(token, tp));
 
-    Function function = token[*tp].data.function;
+    DFunction function = token[*tp].data.function;
     return function;
 }
 

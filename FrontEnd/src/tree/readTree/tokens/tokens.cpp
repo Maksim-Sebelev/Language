@@ -30,8 +30,10 @@ static void HandleSeparator    (const InputData* inputData, Token_t* tokenArr, P
 static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleName     (                      Token_t* tokenArr, Name  name, Pointers* pointer, size_t olp_sp);
-static void HandleFunction     (                      Token_t* tokenArr, DFunction  function, Pointers* pointer, size_t old_sp);
+
+static void HandleName         (Token_t* tokenArr, Name       name    , Pointers* pointer, size_t wordSize);
+static void HandleFunction     (Token_t* tokenArr, DFunction  function, Pointers* pointer, size_t wordSize);
+static void HandleType         (Token_t* tokenArr, Type       type    , Pointers* pointer, size_t wordSize);
 
 
 static bool IsPassSymbol       (char c);
@@ -43,20 +45,23 @@ static void UpdatePointersAfterSpace  (Pointers* pointer);
 static void UpdatePointersAfterSlashN (Pointers* pointer);
 
 
-static bool IsEndSymbol             (const char* input, size_t pointer);
-static bool IsNumSymbol             (const char* input, size_t pointer);
-static bool IsOperationSymbol       (const char* input, size_t pointer);
-static bool IsSeparatorSymbol       (const char* input, size_t pointer);
-static bool IsLetterSymbol          (const char* input, size_t pointer);
-static bool IsLetterOrNumberSymbol  (const char* input, size_t pointer);
-static bool IsBracketSymbol         (const char* input, size_t pointer);
-
+static bool IsEndSymbol                        (const char* input, size_t pointer);
+static bool IsNumSymbol                        (const char* input, size_t pointer);
+static bool IsOperationSymbol                  (const char* input, size_t pointer);
+static bool IsSeparatorSymbol                  (const char* input, size_t pointer);
+static bool IsLetterSymbol                     (const char* input, size_t pointer);
+static bool IsLetterOrNumberOrUnderLineSymbol  (const char* input, size_t pointer);
+static bool IsBracketSymbol                    (const char* input, size_t pointer);
+static bool IsUnderLineSymbol                  (const char* input, size_t pointer);
+static bool IsLetterOrUnderLineSymbol          (const char* input, size_t pointer);
+static bool IsLetterOrNumberOrUnderLineSymbol  (const char* input, size_t pointer);
 
 static Number    UpdateNumber     (Number number, const InputData* inputData, Pointers* pointer);
 
 static Number    GetNumber        (const InputData* inputData, Pointers* pointer);
 static Operation GetOperation     (const char* operation,      Pointers* pointer, size_t* operationSize);
 static DFunction GetDFunction     (const char* word,                              size_t  wordSize);
+static Type      GetType          (const char* word, size_t wordSize);
 
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
@@ -89,12 +94,12 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             else                     assert(0 && "Something went wrong :(");
         }
 
-        if      (IsNumSymbol       (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
-        else if (IsOperationSymbol (input, pointer.ip))    HandleOperation (inputData, tokenArr, &pointer);
-        else if (IsSeparatorSymbol (input, pointer.ip))    HandleSeparator (inputData, tokenArr, &pointer);
-        else if (IsLetterSymbol    (input, pointer.ip))    HandleLetter    (inputData, tokenArr, &pointer);
-        else if (IsBracketSymbol   (input, pointer.ip))    HandleBracket   (inputData, tokenArr, &pointer);
-        else if (IsEndSymbol       (input, pointer.ip))    HandleEndSymbol (inputData, tokenArr, &pointer);
+        if      (IsNumSymbol                  (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
+        else if (IsOperationSymbol            (input, pointer.ip))    HandleOperation (inputData, tokenArr, &pointer);
+        else if (IsSeparatorSymbol            (input, pointer.ip))    HandleSeparator (inputData, tokenArr, &pointer);
+        else if (IsLetterOrUnderLineSymbol    (input, pointer.ip))    HandleLetter    (inputData, tokenArr, &pointer);
+        else if (IsBracketSymbol              (input, pointer.ip))    HandleBracket   (inputData, tokenArr, &pointer);
+        else if (IsEndSymbol                  (input, pointer.ip))    HandleEndSymbol (inputData, tokenArr, &pointer);
         else    SYNTAX_ERR(pointer.lp, pointer.sp, inputData, "undefined word in input.");
 
         if (pointer.ip == inputLen && (pointer.tp == 0 || !IsTokenTypeEnd(&tokenArr[pointer.tp - 1])))
@@ -152,14 +157,16 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 
     switch (type)
     {
-        case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value;   break;
-        case TokenType::TokenName_t:      token->data.name      = *(Name     *) value;   break;
-        case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value;   break;
-        case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value;   break;
-        case TokenType::TokenFunction_t:  token->data.function  = *(DFunction *) value;   break;
-        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value;   break;
-        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value;   break;
-        default:                          assert(0 && "undefined token type symbol.");   break;
+        case TokenType::TokenType_t:      token->data.type     =  *(Type     *) value; break;
+        case TokenType::TokenName_t:      token->data.name      = *(Name     *) value; break;
+        case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value; break;
+        case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value; break;
+        case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value; break;
+        case TokenType::TokenFunction_t:  token->data.function  = *(DFunction*) value; break;
+        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
+        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
+
+        default:                          assert(0 && "undefined token type symbol."); break;
     }
 
     return;
@@ -241,7 +248,7 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
     {
         pointer->ip++;
     }
-    while (IsLetterOrNumberSymbol(input, pointer->ip));
+    while (IsLetterOrNumberOrUnderLineSymbol(input, pointer->ip));
 
     const char*  word     = input + old_ip;
     const size_t wordSize = pointer->ip - old_ip;
@@ -249,13 +256,19 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
     assert(word);
 
     DFunction function = GetDFunction(word, wordSize);
-
     if (function != DFunction::undefined_function)
     {
         HandleFunction(tokenArr, function, pointer, wordSize);
         return;
     }
 
+    Type type = GetType(word, wordSize);
+    if (type != Type::undefined_type)
+    {
+        HandleType(tokenArr, type, pointer, wordSize);
+        return;
+    }
+    
     Name name = NameCtor(word, wordSize);
     HandleName(tokenArr, name, pointer, wordSize);
 
@@ -327,6 +340,21 @@ static void HandleFunction(Token_t* tokenArr, DFunction function, Pointers* poin
     assert(pointer);
 
     TokenCtor(&tokenArr[pointer->tp], TokenType::TokenFunction_t, &function, pointer->lp, pointer->sp);
+
+    pointer->tp++;
+    pointer->sp += wordSize;
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void HandleType(Token_t* tokenArr, Type type, Pointers* pointer, size_t wordSize)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenType_t, &type, pointer->lp, pointer->sp);
 
     pointer->tp++;
     pointer->sp += wordSize;
@@ -467,14 +495,30 @@ static bool IsLetterSymbol(const char* input, size_t pointer)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsLetterOrNumberSymbol(const char* input, size_t pointer)
+static bool IsUnderLineSymbol(const char* input, size_t pointer)
+{
+    char c = input[pointer];
+    return (c == '_');
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsLetterOrUnderLineSymbol(const char* input, size_t pointer)
+{
+    return IsLetterSymbol    (input, pointer) ||
+           IsUnderLineSymbol (input, pointer);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsLetterOrNumberOrUnderLineSymbol(const char* input, size_t pointer)
 {
     assert(input);
     char c = input[pointer];
 
-    return  ('a' <= c && c <= 'z') ||
-            ('A' <= c && c <= 'Z') ||
-            ('0' <= c && c <= '9');
+    return  IsLetterSymbol    (input, pointer) ||
+            IsUnderLineSymbol (input, pointer) ||
+            IsNumSymbol       (input, pointer);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -558,7 +602,7 @@ static Operation GetOperation(const char* operation, Pointers* pointer, size_t* 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(function) (strncmp(word, function, wordSize) == 0 && wordSize == strlen(DefaultFunctions[function_i].name))
+#define STRNCMP(function) ((wordSize == strlen(DefaultFunctions[function_i].name)) && (strncmp(word, function, wordSize) == 0))
 
 static DFunction GetDFunction(const char* word, size_t wordSize)
 {
@@ -567,12 +611,33 @@ static DFunction GetDFunction(const char* word, size_t wordSize)
     for (size_t function_i = 0; function_i < DefaultFunctionsQuant; function_i++)
     {
         const char* name = DefaultFunctions[function_i].name;
-        DFunction    func = DefaultFunctions[function_i].value;
+        DFunction   func = DefaultFunctions[function_i].value;
     
         RETURN_IF_TRUE(STRNCMP(name), func);
     }
 
     return DFunction::undefined_function;
+}
+
+#undef STRNCMP
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define STRNCMP(type) ((wordSize == strlen(DefaultTypes[type_i].name)) && (strncmp(word, type, wordSize) == 0))
+
+static Type GetType(const char* word, size_t wordSize)
+{
+    assert(word);
+
+    for (size_t type_i = 0; type_i < DefaultTypesQuant; type_i++)
+    {
+        const char* name = DefaultTypes[type_i].name;
+        Type        type = DefaultTypes[type_i].value;
+    
+        RETURN_IF_TRUE(STRNCMP(name), type);
+    }
+
+    return Type::undefined_type;
 }
 
 #undef STRNCMP

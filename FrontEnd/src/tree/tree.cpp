@@ -34,6 +34,8 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
     size_t    inputLen  = 0;
     InputData inputData = ReadFile(inputFile, &inputLen);
 
+    tree->inputData = inputData;
+
     size_t   tokenQuant = 0;
     Token_t* token      = ReadInputStr(&inputData, inputLen, &tokenQuant);
 
@@ -43,10 +45,12 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
         exit(0); 
     }
 
-    TOKEN_GRAPHIC_DUMP(token, tokenQuant);
+    TOKEN_GRAPHIC_DUMP  (token, tokenQuant);
     tree->root = GetTree(token, &inputData);
 
     // NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
+
+    NODE_GRAPHIC_DUMP(tree->root);
 
     TokenDtor(token);
 
@@ -63,9 +67,9 @@ TreeErr TreeDtor(Tree_t* tree)
     TreeErr Err = {};
 
     TREE_ASSERT(NodeAndUnderTreeDtor(tree->root));
-
     tree->root = nullptr;
-    // NAME_TABLE_ASSERT(NameTableDtor(&tree->nameTable));
+
+    InputDataDtor(&tree->inputData);
 
     return TREE_VERIF(tree, Err);
 }
@@ -104,8 +108,8 @@ TreeErr NodeCtor(Node_t** node, NodeArgType type, NodeData_t data, Node_t* left,
 
     (*node)->data = data;
 
-    (*node)->left      = left;
-    (*node)->right     = right;
+    (*node)->left  = left;
+    (*node)->right = right;
 
     return NODE_VERIF(*node, err);
 }
@@ -185,7 +189,7 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
         }
         case NodeArgType::name:  
         {
-            NamePointer name = node->data.name;
+            Name name = node->data.name;
             _SET_NAME(copy, name);
             break;
         }
@@ -311,6 +315,16 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
             RETURN_IF_FALSE(IsNodeTypeDFunctionDataCorrect (node), *err, err->err = TreeErrorType::FUNC_TYPE_NODES_ARG_IS_UNDEFINED);
             RETURN_IF_FALSE(HasFuncLeftChildOnly(node), *err, err->err = TreeErrorType::FUNC_HAS_INCORRECT_CHILD_QUANT);
             break;
+        }
+
+        case NodeArgType::type:
+        {
+            return *err;
+        }
+
+        case NodeArgType::connect:
+        {
+            return *err;
         }
 
         case NodeArgType::undefined:

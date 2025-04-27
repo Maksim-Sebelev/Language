@@ -9,8 +9,9 @@
 
 #include "lib/colorPrint.hpp"
 #include "lib/lib.hpp"
-
+#include "tree/readTree/fileread/fileread.hpp"
 #include "tree/nameTable/nametable.hpp"
+#include "tree/nodeTypes.hpp"
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -58,54 +59,11 @@ enum class NodeArgType
     name      ,
     number    ,
     function  ,
+    connect   ,
+    type      ,
+    condition ,
+    cycle     ,
 };
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-enum class Operation
-{
-    undefined_operation,
-    plus               , 
-    minus              ,
-    mul                , 
-    dive               ,
-    power              ,
-    assign             ,
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-enum class DFunction
-{
-    undefined_function,
-    Sqrt,
-    Ln,
-    Sin,
-    Cos,
-    Tg,
-    Ctg,
-    Arcsin,
-    Arccos,
-    Arctg,
-    Arcctg,
-    Sh,
-    Ch,
-    Th,
-    Cth,
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-union Number
-{
-    char   char_val;
-    int    int_val;
-    double double_val;
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-typedef size_t NamePointer;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -114,7 +72,9 @@ union NodeData_t
     Operation    oper;
     Number       num;
     DFunction    func;
-    NamePointer  name;
+    Type         type;
+    Name         name;
+    Connect      connect;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -133,6 +93,7 @@ struct Tree_t
 {
     Node_t*     root;
     NameTable_t nameTable;
+    InputData   inputData;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -153,10 +114,17 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _NUM(  node, val                   ) do { NodeData_t data = {.num  = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::number,    data,  nullptr,      nullptr)); }       while(0)
-#define _FUNC( node, val, left             ) do { NodeData_t data = {.func = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::function,  data,  left,         nullptr)); }       while(0)
-#define _NAME( node, val                   ) do { NodeData_t data = {.name = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::name,      data,  nullptr,      nullptr)); }       while(0)
-#define _OPER( node, val, left, right      ) do { NodeData_t data = {.oper = val};                 TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data,  left,         right));   }       while(0)
+#define _NUM(    node, val                 ) do { NodeData_t data = {.num      = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::number   , data,  nullptr,      nullptr)); }       while(0)
+#define _FUNC(   node, val, left           ) do { NodeData_t data = {.func     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::function , data,  left,         nullptr)); }       while(0)
+#define _NAME(   node, val                 ) do { NodeData_t data = {.name     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::name     , data,  nullptr,      nullptr)); }       while(0)
+#define _OPER(   node, val, left, right    ) do { NodeData_t data = {.oper     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data,  left,         right));   }       while(0)
+#define _TYPE(   node, val, left           ) do { NodeData_t data = {.type     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::type     , data,  left,         nullptr)); }       while(0)
+#define _COND(   node, val, left, right    ) do { NodeData_t data = {.conditon = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::condition, data,  left,         right));   }       while(0)
+#define _CONNECT(node, val, left, right    ) do { NodeData_t data = {.connect = val};             TREE_ASSERT(NodeCtor(node, NodeArgType::connect  , data,  left,         right));   }       while(0)
+
+#define _WHILE(    node, val, left, right  ) do { NodeData_t data = {.cycle = Cycle::while_t};    TREE_ASSERT(NodeCtor(node, NodeArgType::cycle    , data,  left,         right));   }       while(0)
+#define _FOR(      node, val, left, right  ) do { NodeData_t data = {.cycle = Cycle::for_t};      TREE_ASSERT(NodeCtor(node, NodeArgType::cycle    , data,  left,         right));   }       while(0)
+
 
 #define _SET_NUM(  node, val               ) do { NodeData_t data = {.num  = val};                 TREE_ASSERT(SetNode (node, NodeArgType::number,    data, nullptr,       nullptr)); }       while(0)
 #define _SET_FUNC( node, val, left         ) do { NodeData_t data = {.func = val};                 TREE_ASSERT(SetNode (node, NodeArgType::function,  data, left,          nullptr)); }       while(0)
@@ -238,63 +206,6 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void TreeAssertPrint(TreeErr* Err, const char* File, int Line, const char* Func);
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-struct DefaultFunction
-{
-    const char* name;
-    DFunction    value;
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static DefaultFunction DefaultFunctions[]
-{
-    {"sqrt"  , DFunction::Sqrt  },
-    {"ln"    , DFunction::Ln    },
-    {"sin"   , DFunction::Sin   },
-    {"cos"   , DFunction::Cos   },
-    {"tg"    , DFunction::Tg    },
-    {"ctg"   , DFunction::Ctg   },
-    {"sh"    , DFunction::Sh    },
-    {"ch"    , DFunction::Ch    },
-    {"th"    , DFunction::Th    },
-    {"cth"   , DFunction::Cth   },
-    {"arcsin", DFunction::Arcsin},
-    {"arccos", DFunction::Arccos},
-    {"arctg" , DFunction::Arctg },
-    {"arcctg", DFunction::Arcctg},
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-const size_t DefaultFunctionsQuant = sizeof(DefaultFunctions) / sizeof(DefaultFunctions[0]);
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-struct DefaultOperation
-{
-    const char* name;
-    Operation   value;
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static DefaultOperation DefaultOperations[]
-{
-    {"+", Operation::plus  },
-    {"-", Operation::minus },
-    {"*", Operation::mul   },
-    {"/", Operation::dive  },
-    {"^", Operation::power },
-    {"=", Operation::assign},
-};
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-const size_t DefaultOperationsQuant = sizeof(DefaultOperations) / sizeof(DefaultOperations[0]);
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
