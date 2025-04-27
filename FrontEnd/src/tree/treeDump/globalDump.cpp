@@ -44,22 +44,30 @@ const char* GetTypeInStr(Type type)
 const char* GetOperationInStr(Operation oper)
 {
     for (size_t i = 0; i < DefaultOperationsQuant; i++)
-        RETURN_IF_TRUE(oper == DefaultOperations[i].value, DefaultOperations[i].name);
+    {
+        COLOR_PRINT(VIOLET, "%s\n", DefaultOperations[i].name);
+        char operation[128] = {};
+        sprintf(operation, "'%s'", DefaultOperations[i].name);
+        
+        // const char* const_oper = operation; 
+        // assert(const_oper);
 
+        RETURN_IF_TRUE(oper == DefaultOperations[i].value, DefaultOperations[i].name);
+    }
     assert(0 && "you forgot about some operation.");
     return "wtf?";
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const char* GetFuncInStr(DFunction func)
-{
-    for (size_t i = 0; i < DefaultFunctionsQuant; i++)
-        RETURN_IF_TRUE(func == DefaultFunctions[i].value, DefaultFunctions[i].name);
-
-    assert(0 && "You forgot abourt some function in graphic dump."); 
-    return "undefined";
-}
+// const char* GetFuncInStr(DFunction func)
+// {
+    // for (size_t i = 0; i < DefaultFunctionsQuant; i++)
+        // RETURN_IF_TRUE(func == DefaultFunctions[i].value, DefaultFunctions[i].name);
+// 
+    // assert(0 && "You forgot abourt some function in graphic dump."); 
+    // return "undefined";
+// }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

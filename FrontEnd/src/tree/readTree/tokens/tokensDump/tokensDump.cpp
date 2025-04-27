@@ -182,14 +182,14 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
 
     else
     {
-        const char* tokenData  = GetTokenDataInStr(token);
+        const char* tokenData = GetTokenDataInStr(token);
         assert(tokenData);
-        fprintf(dotFile, "%s", tokenData);
+        fprintf(dotFile, "\\%s", tokenData);
     }
 
     fprintf(dotFile, " | ");
-    fprintf(dotFile, " token[%lu] | ", pointer + 1);
-    fprintf(dotFile, " input::%lu::%lu } \", ", token->place.line, token->place.placeInLine);
+    fprintf(dotFile, " token[%lu] | ", pointer);
+    fprintf(dotFile, " input:%lu:%lu } \", ", token->place.line, token->place.placeInLine);
     fprintf(dotFile, "color = \"#777777\"];\n");
 
     return;
@@ -295,11 +295,11 @@ static const char* GetTokenDataInStr(const Token_t* token)
             Operation operation = token->data.operation;
             return GetOperationInStr(operation); //
         }
-        case TokenType::TokenFunction_t:
-        {
-            DFunction function = token->data.function;
-            return GetFuncInStr(function); //
-        }
+        // case TokenType::TokenFunction_t:
+        // {
+            // DFunction function = token->data.function;
+            // return GetFuncInStr(function); //
+        // }
         case TokenType::TokenSeparator_t:
         {
             Separator separator = token->data.separator;
@@ -318,8 +318,8 @@ static const char* GetTokenDataInStr(const Token_t* token)
             Bracket bracket = token->data.bracket;
             switch (bracket)
             {
-                case Bracket::left: return "(";
-                case Bracket::right: return ")";
+                case Bracket::left_round: return "(";
+                case Bracket::right_round: return ")";
                 default: assert(0 && "undefined bracket type."); break;
             }
             break;

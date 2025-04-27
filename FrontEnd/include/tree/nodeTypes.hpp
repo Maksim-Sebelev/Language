@@ -1,6 +1,9 @@
 #ifndef NODE_TYPES_HPP
 #define NODE_TYPES_HPP
 
+
+#define STRLEN(str) sizeof(str) - 1 // '-1' to avoid counting \0
+
 //================== Default math (or already another?) operations ===================================================================================================================
 
 enum class Operation
@@ -12,6 +15,12 @@ enum class Operation
     dive               ,
     power              ,
     assign             ,
+    greater            ,
+    greater_or_equal   ,
+    less               ,
+    less_or_equal      ,
+    equal              ,
+    not_equal          ,
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -19,19 +28,41 @@ enum class Operation
 struct DefaultOperation
 {
     const char* name;
+    size_t      len;
     Operation   value;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const static DefaultOperation const DefaultOperations[] =
+#define PLUS             "*"
+#define MINUS            "-"
+#define MUL              "*"
+#define DIV              "/"
+#define POWER            "^"
+#define ASSIGN           "="
+#define GREATER          ">"
+#define GREATER_OR_EQUAL ">="
+#define LESS             "<"
+#define LESS_OR_EQUAL    "<="
+#define EQUAL            "=="
+#define NOT_EQUAL        "!="
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const static DefaultOperation DefaultOperations[] =
 {
-    {"+", Operation::plus  },
-    {"-", Operation::minus },
-    {"*", Operation::mul   },
-    {"/", Operation::dive  },
-    {"^", Operation::power },
-    {"=", Operation::assign},
+    {PLUS            , STRLEN(PLUS)            , Operation::plus             },
+    {MINUS           , STRLEN(MINUS)           , Operation::minus            },
+    {MUL             , STRLEN(MUL)             , Operation::mul              },
+    {DIV             , STRLEN(DIV)             , Operation::dive             },
+    {POWER           , STRLEN(POWER)           , Operation::power            },
+    {ASSIGN          , STRLEN(ASSIGN)          , Operation::assign           },
+    {GREATER         , STRLEN(GREATER)         , Operation::greater          },
+    {GREATER_OR_EQUAL, STRLEN(GREATER_OR_EQUAL), Operation::greater_or_equal },
+    {LESS            , STRLEN(LESS)            , Operation::less             },
+    {LESS_OR_EQUAL   , STRLEN(LESS_OR_EQUAL)   , Operation::less_or_equal    },
+    {EQUAL           , STRLEN(EQUAL)           , Operation::equal            },
+    {NOT_EQUAL       , STRLEN(NOT_EQUAL)       , Operation::not_equal        },
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -40,61 +71,75 @@ const size_t DefaultOperationsQuant = sizeof(DefaultOperations) / sizeof(Default
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#undef PLUS
+#undef MINUS
+#undef MUL
+#undef DIV
+#undef POWER
+#undef ASSIGN
+#undef GREATER
+#undef GREATER_OR_EQUAL
+#undef LESS
+#undef LESS_OR_EQUAL
+#undef EQUAL
+#undef NOT_EQUAL
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //==================== Default functions ==================================================================================================================================
 
-enum class DFunction
-{
-    undefined_function,
-    Sqrt              ,
-    Ln                ,
-    Sin               ,
-    Cos               ,
-    Tg                ,
-    Ctg               ,
-    Arcsin            ,
-    Arccos            ,
-    Arctg             ,
-    Arcctg            ,
-    Sh                ,
-    Ch                ,
-    Th                ,
-    Cth               ,
-};
+// enum class DFunction
+// {
+//     undefined_function,
+//     Sqrt              ,
+//     Ln                ,
+//     Sin               ,
+//     Cos               ,
+//     Tg                ,
+//     Ctg               ,
+//     Arcsin            ,
+//     Arccos            ,
+//     Arctg             ,
+//     Arcctg            ,
+//     Sh                ,
+//     Ch                ,
+//     Th                ,
+//     Cth               ,
+// };
 
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-struct DefaultFunction
-{
-    const char* name;
-    DFunction    value;
-};
+// struct DefaultFunction
+// {
+//     const char* name;
+//     DFunction    value;
+// };
 
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const static DefaultFunction const DefaultFunctions[] =
-{
-    {"sqrt"  , DFunction::Sqrt  },
-    {"ln"    , DFunction::Ln    },
-    {"sin"   , DFunction::Sin   },
-    {"cos"   , DFunction::Cos   },
-    {"tg"    , DFunction::Tg    },
-    {"ctg"   , DFunction::Ctg   },
-    {"sh"    , DFunction::Sh    },
-    {"ch"    , DFunction::Ch    },
-    {"th"    , DFunction::Th    },
-    {"cth"   , DFunction::Cth   },
-    {"arcsin", DFunction::Arcsin},
-    {"arccos", DFunction::Arccos},
-    {"arctg" , DFunction::Arctg },
-    {"arcctg", DFunction::Arcctg},
-};
+// const static DefaultFunction DefaultFunctions[] =
+// {
+//     {"sqrt"  , DFunction::Sqrt  },
+//     {"ln"    , DFunction::Ln    },
+//     {"sin"   , DFunction::Sin   },
+//     {"cos"   , DFunction::Cos   },
+//     {"tg"    , DFunction::Tg    },
+//     {"ctg"   , DFunction::Ctg   },
+//     {"sh"    , DFunction::Sh    },
+//     {"ch"    , DFunction::Ch    },
+//     {"th"    , DFunction::Th    },
+//     {"cth"   , DFunction::Cth   },
+//     {"arcsin", DFunction::Arcsin},
+//     {"arccos", DFunction::Arccos},
+//     {"arctg" , DFunction::Arctg },
+//     {"arcctg", DFunction::Arcctg},
+// };
 
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const size_t DefaultFunctionsQuant = sizeof(DefaultFunctions) / sizeof(DefaultFunctions[0]);
+// const size_t DefaultFunctionsQuant = sizeof(DefaultFunctions) / sizeof(DefaultFunctions[0]);
 
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -114,15 +159,25 @@ enum class Type
 struct DefaultType
 {
     const char* name;
+    size_t      len;
     Type        value;
 };
 
-const static DefaultType const DefaultTypes[] =
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define INT     "int"
+#define CHAR    "char"
+#define DOUBLE  "double"
+#define VOID    "void"
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const static DefaultType DefaultTypes[] =
 {
-    {"int"    , Type::int_t   },
-    {"char"   , Type::char_t  },
-    {"double" , Type::double_t},
-    {"void"   , Type::void_t  },
+    {INT    , STRLEN(INT)   , Type::int_t   },
+    {CHAR   , STRLEN(CHAR)  , Type::char_t  },
+    {DOUBLE , STRLEN(DOUBLE), Type::double_t},
+    {VOID   , STRLEN(VOID)  , Type::void_t  },
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -140,6 +195,12 @@ union Number
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#undef INT
+#undef CHAR
+#undef DOUBLE
+#undef VOID
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //=============== If-elif-else ============================================================================================================================
 
@@ -156,21 +217,34 @@ enum class Condition
 struct DefaultCondition
 {
     const char* name;
+    size_t      len;
     Condition   value;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const static DefaultCondition const DefauConditions[] =
+#define IF      "if"
+#define ELSE_IF "else if"
+#define ELSE    "else"
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const static DefaultCondition DefauConditions[] =
 {
-    {"if"     , Condition::if_t     },
-    {"else if", Condition::else_if_t},
-    {"else"   , Condition::else_t   },
+    {IF     , STRLEN(IF)     , Condition::if_t     },
+    {ELSE_IF, STRLEN(ELSE_IF), Condition::else_if_t},
+    {ELSE   , STRLEN(ELSE)   , Condition::else_t   },
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const size_t DefauConditionsQuant = sizeof(DefauConditions) / sizeof(DefauConditions[0]);
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#undef IF
+#undef ELSE_IF
+#undef ELSE
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -188,15 +262,21 @@ enum class Cycle
 struct DefaultCycle
 {
     const char* name;
+    size_t      len;
     Cycle       value;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const static DefaultCycle const DefaultCycles[]
+#define FOR   "for"
+#define WHILE "while"
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const static DefaultCycle DefaultCycles[]
 {
-    {"for"   , Cycle::for_t  },
-    {"while" , Cycle::while_t},
+    {FOR   , STRLEN(FOR)  , Cycle::for_t  },
+    {WHILE , STRLEN(WHILE), Cycle::while_t},
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -205,11 +285,17 @@ const size_t DefaultCyclesQuant = sizeof(DefaultCycles) / sizeof(DefaultCycles[0
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-//================ Empty node to connect all anothet =================================================================================================================================
+#undef FOR
+#undef WHILE
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//================ Empty node to connect all another nodes =================================================================================================================================
 
 typedef uint8_t Connect;
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#undef STRLEN
 
 #endif // NODE_TYPES_HPP

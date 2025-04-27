@@ -24,21 +24,24 @@ struct Pointers
 
 static void TokenCtor        (Token_t* token, TokenType type, void* value, size_t fileLine, size_t linePos);
 
-static void HandleNumber       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleOperation    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleSeparator    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
-static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleNumber       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleOperation    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleSeparator    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleLetter       (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleBracket      (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
+// static void HandleEndSymbol    (const InputData* inputData, Token_t* tokenArr, Pointers* pointer);
 
-static void HandleName         (Token_t* tokenArr, Name       name    , Pointers* pointer, size_t wordSize);
-static void HandleFunction     (Token_t* tokenArr, DFunction  function, Pointers* pointer, size_t wordSize);
-static void HandleType         (Token_t* tokenArr, Type       type    , Pointers* pointer, size_t wordSize);
+// static void HandleName         (Token_t* tokenArr, Name       name    , Pointers* pointer, size_t wordSize);
+// static void HandleFunction     (Token_t* tokenArr, DFunction  function, Pointers* pointer, size_t wordSize);
+// static void HandleType         (Token_t* tokenArr, Type       type    , Pointers* pointer, size_t wordSize);
 
 
 static bool IsPassSymbol       (char c);
 static bool IsSpace            (char c);
 static bool IsSlashN           (char c);
+static bool IsSpaceOrSlashN    (char c);
+
+static bool GetFlagPattern(const char* word, const char* defaultName, size_t defaultNameSize);
 
 
 static void UpdatePointersAfterSpace  (Pointers* pointer);
@@ -59,9 +62,12 @@ static bool IsLetterOrNumberOrUnderLineSymbol  (const char* input, size_t pointe
 static Number    UpdateNumber     (Number number, const InputData* inputData, Pointers* pointer);
 
 static Number    GetNumber        (const InputData* inputData, Pointers* pointer);
-static Operation GetOperation     (const char* operation,      Pointers* pointer, size_t* operationSize);
-static DFunction GetDFunction     (const char* word,                              size_t  wordSize);
-static Type      GetType          (const char* word, size_t wordSize);
+
+static Operation GetOperation     (const char* word, size_t* wordSize);
+static Separator GetSeparator     (const char* word, size_t* wordSize);
+static Type      GetType          (const char* word, size_t* wordSize);
+static Cycle     GetCycle         (const char* word, size_t* wordSize);
+static Bracket   GetBracket       (const char* word, size_t* wordSize);
 
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
@@ -94,13 +100,51 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             else                     assert(0 && "Something went wrong :(");
         }
 
-        if      (IsNumSymbol                  (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
-        else if (IsOperationSymbol            (input, pointer.ip))    HandleOperation (inputData, tokenArr, &pointer);
-        else if (IsSeparatorSymbol            (input, pointer.ip))    HandleSeparator (inputData, tokenArr, &pointer);
-        else if (IsLetterOrUnderLineSymbol    (input, pointer.ip))    HandleLetter    (inputData, tokenArr, &pointer);
-        else if (IsBracketSymbol              (input, pointer.ip))    HandleBracket   (inputData, tokenArr, &pointer);
-        else if (IsEndSymbol                  (input, pointer.ip))    HandleEndSymbol (inputData, tokenArr, &pointer);
-        else    SYNTAX_ERR(pointer.lp, pointer.sp, inputData, "undefined word in input.");
+        // if      (IsNumSymbol                  (input, pointer.ip))    HandleNumber    (inputData, tokenArr, &pointer);
+        // else if (IsOperationSymbol            (input, pointer.ip))    HandleOperation (inputData, tokenArr, &pointer);
+        // else if (IsSeparatorSymbol            (input, pointer.ip))    HandleSeparator (inputData, tokenArr, &pointer);
+        // else if (IsLetterOrUnderLineSymbol    (input, pointer.ip))    HandleLetter    (inputData, tokenArr, &pointer);
+        // else if (IsBracketSymbol              (input, pointer.ip))    HandleBracket   (inputData, tokenArr, &pointer);
+        // else if (IsEndSymbol                  (input, pointer.ip))    HandleEndSymbol (inputData, tokenArr, &pointer);
+        // else    SYNTAX_ERR(pointer.lp, pointer.sp, inputData, "undefined word in input.");
+
+        const char* word     = inputData->buffer + pointer.ip;
+        size_t      wordSize = 0;
+    
+
+        Operation operation = GetOperation(word, &wordSize);
+        if (operation != Operation::undefined_operation)
+        {
+            // handle operation;
+        }
+
+        Separator separator = GetSeparator(word, &wordSize);
+        if (separator != Separator::undefined_separator)
+        {
+            // handle separator
+        }
+
+        Type type = GetType(word, &wordSize);
+        if (type != Type::undefined_type)
+        {
+            // handle type
+        }
+
+        Cycle cycle = GetCycle(word, &wordSize);
+        if (cycle != Cycle::undefined_cycle)
+        {
+            // handle cycle
+        }
+
+        Bracket bracket = GetBracket(word, &wordSize);
+        if (bracket != Bracket::undefined_bracket)
+        {
+            // handle bracket
+        }
+
+
+        Number num = GetNumber(inputData, &pointer);
+
 
         if (pointer.ip == inputLen && (pointer.tp == 0 || !IsTokenTypeEnd(&tokenArr[pointer.tp - 1])))
         {
@@ -162,7 +206,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value; break;
         case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value; break;
         case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value; break;
-        case TokenType::TokenFunction_t:  token->data.function  = *(DFunction*) value; break;
+        // case TokenType::TokenFunction_t:  token->data.function  = *(DFunction*) value; break;
         case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
 
@@ -193,20 +237,53 @@ static void HandleNumber(const InputData* inputData, Token_t* tokenArr, Pointers
 
 static void HandleOperation(const InputData* inputData, Token_t* tokenArr, Pointers* pointer)
 {
+    // assert(inputData);
+    // assert(inputData->buffer);
+    // assert(inputData->inputStream);
+    // assert(tokenArr);
+    // assert(pointer);
+
+    // const char* input = inputData->buffer;
+
+    // size_t operationSize = 0;
+    // Operation operation = GetOperation(input, pointer, &operationSize);
+    // TokenCtor(&tokenArr[pointer->tp], TokenType::TokenOperation_t, &operation, pointer->lp, pointer->sp);
+    // pointer->tp++;
+    // pointer->ip++;
+    // pointer->sp += operationSize;
+
     assert(inputData);
     assert(inputData->buffer);
-    assert(inputData->inputStream);
     assert(tokenArr);
     assert(pointer);
 
-    const char* input = inputData->buffer;
+    // const char* input = inputData->buffer;
 
-    size_t operationSize = 0;
-    Operation operation = GetOperation(input, pointer, &operationSize);
+    // size_t old_ip = pointer->ip;
+    // do
+    // {
+    //     pointer->ip++;
+    // }
+    // while (IsOperationSymbol(input, pointer->ip));
+
+    const char* word = inputData->buffer + pointer->ip;
+    // const size_t wordSize = pointer->ip - old_ip;
+
+    size_t wordSize = 0;
+
+    Operation operation = GetOperation(word, &wordSize);
+
+    if (operation == Operation::undefined_operation)
+        SYNTAX_ERR(pointer->lp, pointer->sp, inputData, "undefined operator.");
+
+    // COLOR_PRINT(RED, "token pointer = %lu\n", pointer->tp);
     TokenCtor(&tokenArr[pointer->tp], TokenType::TokenOperation_t, &operation, pointer->lp, pointer->sp);
+
     pointer->tp++;
-    pointer->ip++;
-    pointer->sp += operationSize;
+
+    pointer->sp += wordSize;
+    pointer->ip += wordSize;
+
     return;
 }
 
@@ -255,12 +332,12 @@ static void HandleLetter(const InputData* inputData, Token_t* tokenArr, Pointers
 
     assert(word);
 
-    DFunction function = GetDFunction(word, wordSize);
-    if (function != DFunction::undefined_function)
-    {
-        HandleFunction(tokenArr, function, pointer, wordSize);
-        return;
-    }
+    // DFunction function = GetDFunction(word, wordSize);
+    // if (function != DFunction::undefined_function)
+    // {
+        // HandleFunction(tokenArr, function, pointer, wordSize);
+        // return;
+    // }
 
     Type type = GetType(word, wordSize);
     if (type != Type::undefined_type)
@@ -334,18 +411,18 @@ static void HandleName(Token_t* tokenArr, Name name, Pointers* pointer, size_t w
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void HandleFunction(Token_t* tokenArr, DFunction function, Pointers* pointer, size_t wordSize)
-{
-    assert(tokenArr);
-    assert(pointer);
-
-    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenFunction_t, &function, pointer->lp, pointer->sp);
-
-    pointer->tp++;
-    pointer->sp += wordSize;
-
-    return;
-}
+// static void HandleFunction(Token_t* tokenArr, DFunction function, Pointers* pointer, size_t wordSize)
+// {
+    // assert(tokenArr);
+    // assert(pointer);
+// 
+    // TokenCtor(&tokenArr[pointer->tp], TokenType::TokenFunction_t, &function, pointer->lp, pointer->sp);
+// 
+    // pointer->tp++;
+    // pointer->sp += wordSize;
+// 
+    // return;
+// }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -364,15 +441,11 @@ static void HandleType(Token_t* tokenArr, Type type, Pointers* pointer, size_t w
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Number GetNumber(const InputData* inputData, Pointers* pointer)
+static Number GetNumber(const char* word, size_t* wordSize)
 {
-    assert(inputData);
-    assert(inputData->buffer);
-    assert(inputData->inputStream);
-    assert(pointer);
-    assert(IsNumSymbol(inputData->buffer, pointer->ip));
+    assert(word);
+    assert(wordSize);
 
-    const char* input = inputData->buffer;
 
     Number number = {};
 
@@ -440,11 +513,18 @@ static bool IsEndSymbol(const char* input, size_t pointer)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsNumSymbol(const char* input, size_t pointer)
+static bool IsNumSymbol(char c)
 {
-    assert(input);
+    return ('0' <= c) && 
+            (c <= '9');
+}
 
-    return ('0' <= input[pointer]) && (input[pointer] <= '9');
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsSpaceOrSlashN(char c)
+{
+    return  (c == ' ') ||
+            (c == '\n');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -459,27 +539,10 @@ static bool IsOperationSymbol(const char* input, size_t pointer)
             (c == '*') ||
             (c == '/') ||
             (c == '^') ||
-            (c == '=');
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsSeparatorSymbol(const char* input, size_t pointer)
-{
-    assert(input);
-
-    char c = input[pointer];
-
-    switch (c)
-    {
-        case Separator::comma:
-        case Separator::point:
-        case Separator::colon:
-        case Separator::semicolon: break;
-        default: return false;
-    }
-
-    return true;
+            (c == '=') ||
+            (c == '>') ||
+            (c == '<') ||
+            (c == '!');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -514,7 +577,6 @@ static bool IsLetterOrUnderLineSymbol(const char* input, size_t pointer)
 static bool IsLetterOrNumberOrUnderLineSymbol(const char* input, size_t pointer)
 {
     assert(input);
-    char c = input[pointer];
 
     return  IsLetterSymbol    (input, pointer) ||
             IsUnderLineSymbol (input, pointer) ||
@@ -581,66 +643,121 @@ static void UpdatePointersAfterSlashN(Pointers* pointer)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(oper) (strncmp(operation + pointer->ip, oper, strlen(oper)) == 0)
-
-static Operation GetOperation(const char* operation, Pointers* pointer, size_t* operationSize)
+static bool GetFlagPattern(const char* word, const char* defaultName, size_t defaultNameSize)
 {
-    assert(operation);
+    return (strncmp(word, defaultName, defaultNameSize) == 0) &&
+           (IsSpaceOrSlashN(word[defaultNameSize]));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Operation GetOperation(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
 
     for (size_t operation_i = 0; operation_i < DefaultOperationsQuant; operation_i++)
     {
-        const char* name = DefaultOperations[operation_i].name;
-        Operation   oper = DefaultOperations[operation_i].value;
-
-        RETURN_IF_TRUE(STRNCMP(name), oper, *operationSize = 1);
+        DefaultOperation operation   = DefaultOperations[operation_i];
+    
+        bool flag = GetFlagPattern(word, operation.name, operation.len);
+        RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.len);
     }
 
     return Operation::undefined_operation;
 } 
 
-#undef STRNCMP
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// #define STRNCMP(function) ((wordSize == strlen(name)) && (strncmp(word, function, wordSize) == 0))
+// 
+// static DFunction GetDFunction(const char* word, size_t wordSize)
+// {
+    // assert(word);
+// 
+    // for (size_t function_i = 0; function_i < DefaultFunctionsQuant; function_i++)
+    // {
+        // const char* name = DefaultFunctions[function_i].name;
+        // DFunction   func = DefaultFunctions[function_i].value;
+    // 
+        // RETURN_IF_TRUE(STRNCMP(name), func);
+    // }
+// 
+    // return DFunction::undefined_function;
+// }
+
+// #undef STRNCMP
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define STRNCMP(function) ((wordSize == strlen(DefaultFunctions[function_i].name)) && (strncmp(word, function, wordSize) == 0))
 
-static DFunction GetDFunction(const char* word, size_t wordSize)
+static Type GetType(const char* word, size_t* wordSize)
 {
     assert(word);
-
-    for (size_t function_i = 0; function_i < DefaultFunctionsQuant; function_i++)
-    {
-        const char* name = DefaultFunctions[function_i].name;
-        DFunction   func = DefaultFunctions[function_i].value;
-    
-        RETURN_IF_TRUE(STRNCMP(name), func);
-    }
-
-    return DFunction::undefined_function;
-}
-
-#undef STRNCMP
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#define STRNCMP(type) ((wordSize == strlen(DefaultTypes[type_i].name)) && (strncmp(word, type, wordSize) == 0))
-
-static Type GetType(const char* word, size_t wordSize)
-{
-    assert(word);
+    assert(wordSize);
 
     for (size_t type_i = 0; type_i < DefaultTypesQuant; type_i++)
     {
-        const char* name = DefaultTypes[type_i].name;
-        Type        type = DefaultTypes[type_i].value;
+        DefaultType type = DefaultTypes[type_i];
     
-        RETURN_IF_TRUE(STRNCMP(name), type);
+        bool flag = GetFlagPattern(word, type.name, type.len);
+        RETURN_IF_TRUE(flag, type.value, *wordSize = type.len);
     }
 
     return Type::undefined_type;
 }
 
-#undef STRNCMP
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Separator GetSeparator(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t separator_i = 0; separator_i < DefaultSeparatorsQuant; separator_i++)
+    {
+        DefaultSeparator separator = DefaultSeparators[separator_i];
+    
+        bool flag = GetFlagPattern(word, separator.name, separator.len);
+        RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.len);
+    }
+    return Separator::undefined_separator;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Bracket GetBracket(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t bracket_i = 0; bracket_i < DefaultSeparatorsQuant; bracket_i++)
+    {
+        DefaultBracket bracket = DefaultBrackets[bracket_i];
+    
+        bool flag = GetFlagPattern(word, bracket.name, bracket.len);
+        RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.len);
+    }
+    return Bracket::undefined_bracket;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Cycle GetCycle(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t cycle_i = 0; cycle_i < DefaultCyclesQuant; cycle_i++)
+    {
+        DefaultCycle cycle = DefaultCycles[cycle_i];
+    
+        bool flag = GetFlagPattern(word, cycle.name, cycle.len);
+        RETURN_IF_TRUE(flag, cycle.value, *wordSize = cycle.len);
+    }
+    return Cycle::undefined_cycle;
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

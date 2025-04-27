@@ -1,6 +1,7 @@
 Tree       ::= Condition '$'
 Condition  ::= if ()
-DefVariable::= Type Variable '=' AddSub ';' Condition 
+DefVariable::= Type Variable '=' BoolOperation ';' Condition 
+BoolOperation ::= AddSub { ['>' '>=' ... '==' '!='] AddSub } *
 AddSub     ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv     ::= Pow { ['*' '/'] Pow } *
 Pow        ::= Func { '^' Func } *
@@ -23,3 +24,4 @@ Bracket    ::= '(' Func ')' | Variable | Number
 Variable   ::= [letter] { [letter | number] } *
 Number     ::= ['0' - '9'] +
 Type       ::= {'int' | 'double' | 'char' | 'void'}
+

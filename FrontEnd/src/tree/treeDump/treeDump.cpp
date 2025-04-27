@@ -111,7 +111,6 @@ void NodeDump(const Node_t* node, const char* file, const int line, const char* 
 
     static size_t ImgQuant = 1;
 
-
     system("rm -rf dot/node/img/*");
     system("rm -rf dot/node/dot/*");
 
@@ -120,21 +119,20 @@ void NodeDump(const Node_t* node, const char* file, const int line, const char* 
     system("mkdir -p dot/node/img/");
     system("mkdir -p dot/node/dot/");
 
-
     static const size_t MaxfileNameLen = 128;
     char outfile[MaxfileNameLen] = {};
     sprintf(outfile, "dot/node/img/node%lu.png", ImgQuant);
     
     static const size_t MaxCommandLen = 256;
-    char command[MaxCommandLen] = {};
     char dotFileName[MaxfileNameLen] = {};
     sprintf(dotFileName, "dot/node/dot/node%lu.dot", ImgQuant);
-    
+
     NodeDumpHelper(node, dotFileName, file, line, func);
     
+    char command[MaxCommandLen] = {};
     sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
     system(command);
-    
+
     ImgQuant++;
     return;
 }
@@ -192,7 +190,7 @@ void TreeDump(const Tree_t* tree, const char* file, const int line, const char* 
     static const size_t MaxCommandLen = 256;
     char command[MaxCommandLen] = {};
     char dotFileName[MaxfileNameLen] = {};
-    sprintf(dotFileName, "dot/tree/dot/tree%lu.png", ImgQuant);
+    sprintf(dotFileName, "dot/tree/dot/tree%lu.dot", ImgQuant);
     sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
     
     TreeDumpHelper(tree, dotFileName, file, line, func);
@@ -280,7 +278,7 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
     else
     {
         const char* arg = GetNodeDataInStr(node);
-        fprintf(dotFile, "%s", arg);
+        fprintf(dotFile, "\\%s", arg);
     }
 
     fprintf(dotFile, "\", ");
@@ -436,11 +434,11 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return GetOperationInStr(oper);
         }
 
-        case NodeArgType::function:
-        {
-            DFunction func = node->data.func;
-            return GetFuncInStr(func);
-        }
+        // case NodeArgType::function:
+        // {
+            // DFunction func = node->data.func;
+            // return GetFuncInStr(func);
+        // }
 
         case NodeArgType::type:
         {

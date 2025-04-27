@@ -71,7 +71,7 @@ union NodeData_t
 {
     Operation    oper;
     Number       num;
-    DFunction    func;
+    // DFunction    func;
     Type         type;
     Name         name;
     Connect      connect;
@@ -134,12 +134,20 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 #define _SET_FUNC_ONLY( node, val          ) do { NodeData_t data = {.func = val};                 TREE_ASSERT(SetNode (node, NodeArgType::function,  data, (node)->left,  (node)->right)); } while(0)
 #define _SET_OPER_ONLY( node, val          ) do { NodeData_t data = {.oper = val};                 TREE_ASSERT(SetNode (node, NodeArgType::operation, data, (node)->left,  (node)->right)); } while(0)
 
-#define _MUL( node, left, right            ) do { NodeData_t data = {.oper = Operation::mul};      TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
-#define _DIV( node, left, right            ) do { NodeData_t data = {.oper = Operation::dive};     TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
-#define _ADD( node, left, right            ) do { NodeData_t data = {.oper = Operation::plus};     TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
-#define _SUB( node, left, right            ) do { NodeData_t data = {.oper = Operation::minus};    TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
-#define _POW( node, left, right            ) do { NodeData_t data = {.oper = Operation::power};    TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
-#define _ASG( node, left, right            ) do { NodeData_t data = {.oper = Operation::assign};   TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _MUL( node, left, right            ) do { NodeData_t data = {.oper = Operation::mul};               TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _DIV( node, left, right            ) do { NodeData_t data = {.oper = Operation::dive};              TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _ADD( node, left, right            ) do { NodeData_t data = {.oper = Operation::plus};              TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _SUB( node, left, right            ) do { NodeData_t data = {.oper = Operation::minus};             TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _POW( node, left, right            ) do { NodeData_t data = {.oper = Operation::power};             TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _ASG( node, left, right            ) do { NodeData_t data = {.oper = Operation::assign};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _GR(  node, left,  right           ) do { NodeData_t data = {.oper = Operation::greater};           TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _GROE(node, left, right            ) do { NodeData_t data = {.oper = Operation::greater_or_equal};  TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _LS(  node, left, right            ) do { NodeData_t data = {.oper = Operation::less};              TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _LSOE(node, left, right            ) do { NodeData_t data = {.oper = Operation::less_or_equal};     TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _EQ(  node, left, right            ) do { NodeData_t data = {.oper = Operation::equal};             TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _NEQ( node, left, right            ) do { NodeData_t data = {.oper = Operation::not_equal};         TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _ASG( node, left, right            ) do { NodeData_t data = {.oper = Operation::assign};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
+#define _ASG( node, left, right            ) do { NodeData_t data = {.oper = Operation::assign};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          right)); }         while(0)
 
 
 #define _SET_MUL( node, left, right        ) do { NodeData_t data = {.oper = Operation::mul};      TREE_ASSERT(SetNode (node, NodeArgType::operation,  data, left,         right)); }         while(0)

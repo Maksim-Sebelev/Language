@@ -50,8 +50,6 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
 
     // NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
 
-    NODE_GRAPHIC_DUMP(tree->root);
-
     TokenDtor(token);
 
     return TREE_VERIF(tree, err);
@@ -306,7 +304,7 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
         case NodeArgType::operation:
         {
             RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
-            RETURN_IF_FALSE(HasOperationChildren(node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
+            RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
 
@@ -399,7 +397,13 @@ static bool IsNodeTypeOperationDataCorrect(const Node_t* node)
         case Operation::mul:
         case Operation::dive:
         case Operation::power:
-        case Operation::assign: break;
+        case Operation::assign: 
+        case Operation::greater:
+        case Operation::greater_or_equal:
+        case Operation::less:
+        case Operation::less_or_equal:
+        case Operation::equal:
+        case Operation::not_equal: break;
         case Operation::undefined_operation:
         default: return false;
     }
