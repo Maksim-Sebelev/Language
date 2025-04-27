@@ -63,8 +63,9 @@
 
 enum class NameType
 {
-    Variable,
-    Function,
+    undefined_name_type,
+    variable,
+    function,
 };
 
 
@@ -102,7 +103,7 @@ struct Name
 {
     size_t   id;
 
-    NameInfo name;        
+    NameInfo name;
     NameType type;
     NameData data;
 };
@@ -197,7 +198,7 @@ struct StackErrorType
 StackErrorType NameTableCtor               (Stack_t* stack, size_t StackDataSize);
 StackErrorType NameTableDtor               (Stack_t* stack);
 StackErrorType PrintNameTable              (Stack_t* stack);
-StackElem_t    GetName                     (Stack_t* stack, size_t pointer);
+StackElem_t    GetNameFromNameTable        (Stack_t* stack, size_t pointer);
 StackErrorType NameTablePush               (Stack_t* stack, StackElem_t PushElem);
 StackErrorType NameTablePop                (Stack_t* stack, StackElem_t* PopElem);
 StackElem_t    GetLastNameTableElem        (const Stack_t* stack);

@@ -219,7 +219,7 @@ StackErrorType NameTablePush(Stack_t*  stack, StackElem_t PushElem)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-StackElem_t GetName(Stack_t* stack, size_t pointer)
+StackElem_t GetNameFromNameTable(Stack_t* stack, size_t pointer)
 {
     StackErrorType err = {};
     assert(stack);

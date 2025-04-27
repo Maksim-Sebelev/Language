@@ -29,7 +29,7 @@ static Number       GetTokenNumber     (const Token_t* token, const size_t* tp);
 static Name         GetTokenName       (const Token_t* token, const size_t* tp);
 static Type         GetTokenType       (const Token_t* token, const size_t* tp);
 static Operation    GetTokenOperation  (const Token_t* token, const size_t* tp);
-static DFunction    GetTokenFunction   (const Token_t* token, const size_t* tp);
+// static DFunction    GetTokenFunction   (const Token_t* token, const size_t* tp);
 
 static bool IsTokenEnd              (const Token_t* token, const size_t* tp);
 static bool IsTokenNum              (const Token_t* token, const size_t* tp);
@@ -267,7 +267,7 @@ static Node_t* GetPow(const Token_t* token, size_t* tp, const InputData* inputDa
     assert(tp);
     assert(token);
 
-    Node_t* node = GetFunction(token, tp, inputData);
+    Node_t* node = GetMinus(token, tp, inputData);
 
     while(IsPow(token, tp))
     {
@@ -284,46 +284,46 @@ static Node_t* GetPow(const Token_t* token, size_t* tp, const InputData* inputDa
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetFunction(const Token_t* token, size_t* tp, const InputData* inputData)
-{
-    assert(tp);
-    assert(token);
+// static Node_t* GetFunction(const Token_t* token, size_t* tp, const InputData* inputData)
+// {
+//     assert(tp);
+//     assert(token);
 
-    TokenType type = token[*tp].type;
+//     TokenType type = token[*tp].type;
 
-    if (IsTokenMinus(token, tp))
-        return GetMinus(token, tp, inputData);
+//     if (IsTokenMinus(token, tp))
+//         return GetMinus(token, tp, inputData);
 
 
-    if (type != TokenType::TokenFunction_t)
-        return GetBracket(token, tp, inputData);
+//     if (type != TokenType::TokenFunction_t)
+//         return GetBracket(token, tp, inputData);
 
-    DFunction function = GetTokenFunction(token, tp);
+//     DFunction function = GetTokenFunction(token, tp);
 
-    (*tp)++;  
+//     (*tp)++;  
 
-    if (!IsTokenLeftBracket(token, tp))
-        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+//     if (!IsTokenLeftBracket(token, tp))
+//         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
 
-    (*tp)++;  
+//     (*tp)++;  
 
-    Node_t* node = GetAddSub(token, tp, inputData);
+//     Node_t* node = GetAddSub(token, tp, inputData);
 
-    if (!IsTokenRightBracket(token, tp))
-        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+//     if (!IsTokenRightBracket(token, tp))
+//         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
 
-    (*tp)++;  
+//     (*tp)++;  
 
-    Node_t* funcNode = {};
+//     Node_t* funcNode = {};
 
-    _FUNC(&funcNode, function, node);
+//     _FUNC(&funcNode, function, node);
 
-    TREE_ASSERT(SwapNode(&node, &funcNode));
+//     TREE_ASSERT(SwapNode(&node, &funcNode));
 
-    return node;
-}
+//     return node;
+// }
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static Node_t* GetMinus(const Token_t* token, size_t* tp, const InputData* inputData)
 {
@@ -621,7 +621,7 @@ static bool IsTokenLeftBracket (const Token_t* token, const size_t* tp)
 
     Bracket bracket = token[*tp].data.bracket;
 
-    return (bracket == Bracket::left);
+    return (bracket == Bracket::left_round);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -653,7 +653,7 @@ static bool IsTokenRightBracket(const Token_t* token, const size_t* tp)
 
     Bracket bracket = token[*tp].data.bracket;
 
-    return (bracket == Bracket::right);
+    return (bracket == Bracket::right_round);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -731,14 +731,14 @@ static Operation GetTokenOperation(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static DFunction GetTokenFunction(const Token_t* token, const size_t* tp)
-{
-    assert(token);
-    assert(tp);
-    assert(IsTokenFunction(token, tp));
-
-    DFunction function = token[*tp].data.function;
-    return function;
-}
+// static DFunction GetTokenFunction(const Token_t* token, const size_t* tp)
+// {
+    // assert(token);
+    // assert(tp);
+    // assert(IsTokenFunction(token, tp));
+// 
+    // DFunction function = token[*tp].data.function;
+    // return function;
+// }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

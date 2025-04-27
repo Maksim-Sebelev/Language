@@ -197,12 +197,12 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
             _SET_OPER(copy, operation, left, right);
             break;
         }
-        case NodeArgType::function:  
-        {
-            DFunction function = node->data.func;
-            _SET_FUNC(copy, function, left);
-            break;
-        }
+        // case NodeArgType::function:
+        // {
+            // DFunction function = node->data.func;
+            // _SET_FUNC(copy, function, left);
+            // break;
+        // }
         case NodeArgType::undefined:
         default:  err.err = TreeErrorType::NODE_NULL; return NODE_VERIF(node, err);
     }
@@ -413,35 +413,35 @@ static bool IsNodeTypeOperationDataCorrect(const Node_t* node)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsNodeTypeDFunctionDataCorrect(const Node_t* node)
-{
-    assert(node);
-    assert(node->type == NodeArgType::function);
+// static bool IsNodeTypeDFunctionDataCorrect(const Node_t* node)
+// {
+//     assert(node);
+//     assert(node->type == NodeArgType::function);
 
-    DFunction fucntion = node->data.func;
+//     DFunction fucntion = node->data.func;
 
-    switch (fucntion)
-    {
-        case DFunction::Sqrt:
-        case DFunction::Ln:
-        case DFunction::Sin:
-        case DFunction::Cos:
-        case DFunction::Tg:
-        case DFunction::Ctg:
-        case DFunction::Sh:
-        case DFunction::Ch:
-        case DFunction::Th:
-        case DFunction::Cth:
-        case DFunction::Arcsin:
-        case DFunction::Arccos:
-        case DFunction::Arctg:
-        case DFunction::Arcctg: break;
-        case DFunction::undefined_function:
-        default: return false;
-    }
+//     switch (fucntion)
+//     {
+//         case DFunction::Sqrt:
+//         case DFunction::Ln:
+//         case DFunction::Sin:
+//         case DFunction::Cos:
+//         case DFunction::Tg:
+//         case DFunction::Ctg:
+//         case DFunction::Sh:
+//         case DFunction::Ch:
+//         case DFunction::Th:
+//         case DFunction::Cth:
+//         case DFunction::Arcsin:
+//         case DFunction::Arccos:
+//         case DFunction::Arctg:
+//         case DFunction::Arcctg: break;
+//         case DFunction::undefined_function:
+//         default: return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
