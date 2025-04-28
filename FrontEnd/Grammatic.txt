@@ -1,6 +1,8 @@
-Tree          ::= Condition '$'
-Condition     ::= {if ( BoolOperation ) '{' Assign '}' else if  '(' BoolOperation ')' '{' Assign '}' else '{' Assign '}' | Assign } *
-Assign        ::= ? Type Variable '=' BoolOperation ';' Condition 
+Tree          ::= ConditionIf '$'
+ConditionIf   ::= { if '(' BoolOperation | Assign ')' '{' ConditionIf '}' ConditionElif ConditionElse | Assign } *
+ConditionElif ::= { else if '(' BoolOperation | Assign ')' '{' Condition '}' }*
+ConditionElse ::= else '{' ConditionIf '}'
+Assign        ::= ? Type Variable '=' BoolOperation ';'
 BoolOperation ::= AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
 AddSub        ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv        ::= Pow { ['*' '/'] Pow } *

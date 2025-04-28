@@ -315,6 +315,16 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
             return *err;
         }
 
+        case NodeArgType::condition:
+        {
+            return *err;
+        }
+
+        case NodeArgType::cycle:
+        {
+            return *err;
+        }
+
         case NodeArgType::undefined:
         default:
         {

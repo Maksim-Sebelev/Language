@@ -31,6 +31,7 @@ static void HandleNumber        (Token_t* tokenArr, Pointers* pointer, Number   
 static void HandleBracket       (Token_t* tokenArr, Pointers* pointer, Bracket   bracket  , size_t wordSize);
 static void HandleSeparator     (Token_t* tokenArr, Pointers* pointer, Separator separator, size_t wordSize);
 static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation operation, size_t wordSize);
+static void HandleCondition     (Token_t* tokenArr, Pointers* pointer, Condition condition, size_t wordSize);
 
 
 
@@ -61,6 +62,7 @@ static Operation GetOperation     (const char* word, size_t* wordSize);
 static Separator GetSeparator     (const char* word, size_t* wordSize);
 static Type      GetType          (const char* word, size_t* wordSize);
 static Cycle     GetCycle         (const char* word, size_t* wordSize);
+static Condition GetCondition     (const char* word, size_t* wordSize);
 static Bracket   GetBracket       (const char* word, size_t* wordSize);
 static Number    GetNumber        (const char* word, size_t* wordSize);
 static Number    GetInt           (const char* word, size_t* wordSize);
@@ -125,7 +127,13 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
-
+        Condition condition = GetCondition(word, &wordSize);
+        if (condition != Condition::undefined_condition)
+        {
+            HandleCondition(tokenArr, &pointer, condition, wordSize);
+            continue;
+        }
+    
         Type type = GetType(word, &wordSize);
         if (type != Type::undefined_type)
         {
@@ -211,15 +219,15 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 
     switch (type)
     {
-        case TokenType::TokenType_t:      token->data.type     =  *(Type     *) value; break;
+        case TokenType::TokenType_t:      token->data.type      = *(Type     *) value; break;
         case TokenType::TokenName_t:      token->data.name      = *(Name     *) value; break;
         case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value; break;
         case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value; break;
         case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value; break;
-        // case TokenType::TokenFunction_t:  token->data.function  = *(DFunction*) value; break;
         case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
-
+        case TokenType::TokenCondition_t: token->data.condition = *(Condition*) value; break;
+        case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle    *) value; break;
         default:                          assert(0 && "undefined token type symbol."); break;
     }
 
@@ -260,6 +268,20 @@ static void HandleSeparator(Token_t* tokenArr, Pointers* pointer, Separator sepa
     assert(pointer);
 
     TokenCtor(&tokenArr[pointer->tp], TokenType::TokenSeparator_t, &separator, pointer->lp, pointer->sp);
+
+    UpdatePointer(pointer, wordSize);
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void HandleCondition(Token_t* tokenArr, Pointers* pointer, Condition condition, size_t wordSize)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenCondition_t, &condition, pointer->lp, pointer->sp);
 
     UpdatePointer(pointer, wordSize);
 
@@ -553,7 +575,7 @@ static Operation GetOperation(const char* word, size_t* wordSize)
 
     for (size_t operation_i = 0; operation_i < DefaultOperationsQuant; operation_i++)
     {
-        DefaultOperation operation   = DefaultOperations[operation_i];
+        DefaultOperation operation = DefaultOperations[operation_i];
     
         bool flag = GetFlagPattern(word, operation.name, operation.len);
         RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.len);
@@ -605,7 +627,7 @@ static Bracket GetBracket(const char* word, size_t* wordSize)
     assert(word);
     assert(wordSize);
 
-    for (size_t bracket_i = 0; bracket_i < DefaultSeparatorsQuant; bracket_i++)
+    for (size_t bracket_i = 0; bracket_i < DefaultBracketsQuant; bracket_i++)
     {
         DefaultBracket bracket = DefaultBrackets[bracket_i];
 
@@ -632,6 +654,26 @@ static Cycle GetCycle(const char* word, size_t* wordSize)
     return Cycle::undefined_cycle;
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Condition GetCondition(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+    for (size_t condition_i = 0; condition_i < DefaultConditionsQuant; condition_i++)
+    {
+        DefaultCondition condition = DefaultConditions[condition_i];
+    
+        bool flag = GetFlagPattern(word, condition.name, condition.len);
+        RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.len);
+    }
+    return Condition::undefined_condition;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void CreateDefaultEndToken(Token_t* tokenArr, Pointers* pointer)

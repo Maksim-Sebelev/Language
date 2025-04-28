@@ -98,6 +98,7 @@ makeCodeDir:
 endif
 
 run:
+	@make cleanDot
 	@make makeCodeDir
 	@./$(EXECUTABLE_DIR)/$(EXECUTABLE) -run $(CODE_DIR)/$(BIN_FILE)
 

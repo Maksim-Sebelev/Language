@@ -107,8 +107,8 @@ void NodeDump(const Node_t* node, const char* file, const int line, const char* 
 
     static size_t ImgQuant = 1;
 
-    system("rm -rf dot/node/img/*");
-    system("rm -rf dot/node/dot/*");
+    // system("rm -rf dot/node/img/*");
+    // system("rm -rf dot/node/dot/*");
 
     system("mkdir -p dot/");
     system("mkdir -p dot/node/");
@@ -168,9 +168,6 @@ void TreeDump(const Tree_t* tree, const char* file, const int line, const char* 
     assert(tree);
     assert(file);
     assert(func);
-
-    system("rm -rf dot/tree/img/*");
-    system("rm -rf dot/tree/dot/*");
 
     system("mkdir -p dot/");
     system("mkdir -p dot/tree/");
@@ -427,7 +424,16 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return "connect";
 
         case NodeArgType::condition:
-            return "condition";
+        {
+            Condition condition = node->data.condition;
+            return GetConditionInStr(condition);   
+        }
+
+        case NodeArgType::cycle:
+        {
+            Cycle cycle = node->data.cycle;
+            return GetCycleInStr(cycle);
+        }
 
         default:
             assert(0 && "you forgot about some node type.");

@@ -87,8 +87,8 @@ const char* GetCycleInStr(Cycle cycle)
 
 const char* GetConditionInStr(Condition condition)
 {
-    for (size_t i = 0; i < DefauConditionsQuant; i++)
-        RETURN_IF_TRUE(condition == DefauConditions[i].value, DefauConditions[i].name);
+    for (size_t i = 0; i < DefaultConditionsQuant; i++)
+        RETURN_IF_TRUE(condition == DefaultConditions[i].value, DefaultConditions[i].name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";

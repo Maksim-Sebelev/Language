@@ -25,6 +25,7 @@ union TokenData
     Operation operation;
     Bracket   bracket;
     Number    number;
+    Cycle     cycle;
     Type      type;
     Name      name;
     EndSymbol end;

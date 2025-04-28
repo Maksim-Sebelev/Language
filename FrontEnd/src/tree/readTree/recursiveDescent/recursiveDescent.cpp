@@ -7,9 +7,13 @@
 #include "tree/readTree/readTreeGlobalnclude.hpp"
 #include "tree/treeDump/treeDump.hpp"
 #include "tree/readTree/recursiveDescent/recursiveDescent.hpp"
+#include "log/log.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetIfCondition       (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetElseIfCondition   (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetElseCondition     (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetAssign            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetNumber            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetName              (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -42,14 +46,16 @@ static bool IsBoolOperation                  (const Token_t* token);
 static bool IsAddSub                         (const Token_t* token);
 static bool IsMulDiv                         (const Token_t* token);
 static bool IsPow                            (const Token_t* token);
-static bool IsTokenLeftBracket               (const Token_t* token);
-static bool IsTokenRightBracket              (const Token_t* token);
+static bool IsTokenLeftRoundBracket          (const Token_t* token);
+static bool IsTokenRightRoundBracket         (const Token_t* token);
 static bool IsTokenMinus                     (const Token_t* token);
 static bool IsOperationToken                 (const Token_t* token);
 static bool IsTokenConditionIf               (const Token_t* token);
 static bool IsTokenConditionElseIf           (const Token_t* token);
 static bool IsTokenConditionElse             (const Token_t* token);
 static bool IsTokenOperationNot              (const Token_t* token);
+static bool IsTokenLeftCurlyBracket          (const Token_t* token);
+static bool IsTokenRightCurlyBracket         (const Token_t* token);
 static bool IsNotAssignOperationBeforeMinus  (const Token_t* token, size_t tp);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -61,12 +67,13 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     assert(tokens);
 
     size_t tp = 0;
-    Node_t* node = GetAssign(tokens, &tp, inputData);
+    Node_t* node = GetIfCondition(tokens, &tp, inputData);
 
     if (!IsTokenEnd(&tokens[tp]))
         SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '$'");
 
     tp++;
+
 
     TreeErr err = {};
 
@@ -77,24 +84,179 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetCondition(const Token_t* token, size_t* tp, const InputData* inputData)
+static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(token);
     assert(tp);
 
+    if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]))
+        return nullptr;
 
+    if (!IsTokenConditionIf(&token[*tp]))
+    {
+        Node_t* assign_node = GetAssign(token, tp, inputData);
+        Node_t* next_if_condition_node = GetIfCondition(token, tp, inputData);
+        Node_t* main_connect_node = {};
+        _CONNECT(&main_connect_node, assign_node, next_if_condition_node);
+        return main_connect_node;
+    }
+
+    (*tp)++;
+ 
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected' '(");
+
+    (*tp)++;
+
+    Node_t* if_node = {};
+
+    size_t old_tp = *tp;
+
+    Node_t* bool_node = GetBoolOperation(token, tp, inputData);
+
+    if (old_tp == *tp)
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected bool");
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+    
+    (*tp)++;
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    old_tp = *tp;
+
+    Node_t* body_node = GetIfCondition(token, tp, inputData);
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+    
+    (*tp)++;
+
+    _IF(&if_node, bool_node, body_node);
+
+    Node_t* else_if_node = GetElseIfCondition(token, tp, inputData);
+    Node_t* else_node    = GetElseCondition   (token, tp, inputData);
+    
+
+    Node_t* connect_node = {};
+
+    if (!else_node && else_if_node)
+        _CONNECT(&connect_node, if_node, else_if_node);
+
+    else if (else_node && !else_if_node)
+        _CONNECT(&connect_node, if_node, else_node);
+
+    else if (else_node && else_if_node)
+    {
+        Node_t* connect_node_2 = {};
+        _CONNECT(&connect_node_2, else_if_node, else_node     );
+        _CONNECT(&connect_node  , if_node     , connect_node_2);
+    }
+
+    else
+    {
+        Node_t* next_if_condition = GetIfCondition(token, tp, inputData);
+        _CONNECT(&connect_node, if_node, next_if_condition);
+        return connect_node;
+    }
+    
+    Node_t* main_connect_node = {};
+    Node_t* next_if_condition = GetIfCondition(token, tp, inputData);
+    _CONNECT(&main_connect_node, connect_node, next_if_condition);
+    
+    return main_connect_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetElseIfCondition(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenConditionElseIf(&token[*tp]))
+        return nullptr;
+    
+    (*tp)++;
+
+    Node_t* else_if = {};
+
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+
+    (*tp)++;
+
+    Node_t* bool_node = GetBoolOperation(token, tp, inputData);
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+
+    (*tp)++;
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    Node_t* body_node = GetIfCondition(token, tp, inputData);
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+    
+    (*tp)++;
+
+    Node_t* else_if_node = {};
+    _ELIF(&else_if_node, bool_node, body_node);
+
+    Node_t* next_else_if_node = GetElseIfCondition(token, tp, inputData);
+    
+    Node_t* connect_node = {};
+    _CONNECT(&connect_node, else_if_node, next_else_if_node);
+
+    return connect_node;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetElseCondition(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenConditionElse(&token[*tp]))
+        return nullptr;
+
+    (*tp)++;
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    Node_t* body_node = GetIfCondition(token, tp, inputData);
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+
+    (*tp)++;
+
+    Node_t* else_node = {};
+    _ELSE(&else_node, body_node);
+
+    return else_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(tp);
     assert(token);
 
-    if (IsTokenEnd(&token[*tp]))
-        return nullptr;
-    
     Node_t* type_node = {};
     
     bool wasType = false;
@@ -132,11 +294,7 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
     else
         _ASG(&assign_node, name_node, node2);
 
-        Node_t* next_assign_node = GetAssign(token, tp, inputData);
-    
-    _CONNECT(&connect_node, assign_node, next_assign_node);
-
-    return connect_node;
+    return assign_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -317,10 +475,6 @@ static Node_t* GetNot(const Token_t* token, size_t* tp, const InputData* inputDa
     Node_t* not_node = {};
     _NOT(&not_node, node);
 
-    // TREE_ASSERT(SwapNode(&node, &not_node));
-
-    // NODE_GRAPHIC_DUMP(node);
-
     return not_node;
 }
 
@@ -364,12 +518,12 @@ static Node_t* GetBracket(const Token_t* token, size_t* tp, const InputData* inp
     assert(tp);
     assert(token);
 
-    if (IsTokenLeftBracket(&token[*tp]))
+    if (IsTokenLeftRoundBracket(&token[*tp]))
     {
         (*tp)++;  
         Node_t* node = GetBoolOperation(token, tp, inputData);
     
-        if (!IsTokenRightBracket(&token[*tp])) 
+        if (!IsTokenRightRoundBracket(&token[*tp])) 
             SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
 
         (*tp)++;  
@@ -600,19 +754,6 @@ static bool IsPow(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenLeftBracket (const Token_t* token)
-{
-    assert(token);
-
-    RETURN_IF_FALSE(token->type == TokenType::TokenBracket_t, false);
-
-    Bracket bracket = token->data.bracket;
-
-    return (bracket == Bracket::left_round);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static bool IsTokenMinus(const Token_t* token)
 {
     assert(token);
@@ -626,7 +767,20 @@ static bool IsTokenMinus(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenRightBracket(const Token_t* token)
+static bool IsTokenLeftRoundBracket(const Token_t* token)
+{
+    assert(token);
+
+    RETURN_IF_FALSE(token->type == TokenType::TokenBracket_t, false);
+
+    Bracket bracket = token->data.bracket;
+
+    return (bracket == Bracket::left_round);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenRightRoundBracket(const Token_t* token)
 {
     assert(token);
 
@@ -635,6 +789,32 @@ static bool IsTokenRightBracket(const Token_t* token)
     Bracket bracket = token->data.bracket;
 
     return (bracket == Bracket::right_round);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenLeftCurlyBracket(const Token_t* token)
+{
+    assert(token);
+
+    RETURN_IF_FALSE(token->type == TokenType::TokenBracket_t, false);
+
+    Bracket bracket = token->data.bracket;
+
+    return (bracket == Bracket::left_curly);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenRightCurlyBracket(const Token_t* token)
+{
+    assert(token);
+
+    RETURN_IF_FALSE(token->type == TokenType::TokenBracket_t, false);
+
+    Bracket bracket = token->data.bracket;
+
+    return (bracket == Bracket::right_curly);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

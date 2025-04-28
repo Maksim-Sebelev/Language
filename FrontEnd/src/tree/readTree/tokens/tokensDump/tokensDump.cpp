@@ -213,6 +213,8 @@ static const char* GetTokenColor(const Token_t* token)
         case TokenType::TokenSeparator_t:   return "#fdc500";
         case TokenType::TokenEndSymbol_t:   return "#ffffff";
         case TokenType::TokenType_t:        return "#CD5C5C";
+        case TokenType::TokenCondition_t:   return "#CDFC5C";
+        case TokenType::TokenCycle_t:       return "#CFFC5C";
         default: assert(0 && "undefined token type."); break; 
     }
 
@@ -238,6 +240,8 @@ static const char* GetTokenTypeInStr(const Token_t* token)
         case TokenType::TokenSeparator_t: return "separator";
         case TokenType::TokenEndSymbol_t: return "end";
         case TokenType::TokenName_t:      return "name";
+        case TokenType::TokenCondition_t: return "condition";
+        case TokenType::TokenCycle_t:     return "cycle";
         default: assert(0 && "nudefindef type."); return "undefined";
     }
 
@@ -295,6 +299,19 @@ static const char* GetTokenDataInStr(const Token_t* token)
             EndSymbol end = token->data.end;
             return "\\0";
         }
+
+        case TokenType::TokenCondition_t:
+        {
+            Condition condition = token->data.condition;
+            return GetConditionInStr(condition);
+        }
+
+        case TokenType::TokenCycle_t:
+        {
+            Cycle cycle = token->data.cycle;
+            return GetCycleInStr(cycle);
+        }
+
         default: assert(0 && "undefined type."); return "undefined";
     }
 

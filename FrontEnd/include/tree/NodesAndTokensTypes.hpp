@@ -250,7 +250,7 @@ struct DefaultCondition
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const static DefaultCondition DefauConditions[] =
+const static DefaultCondition DefaultConditions[] =
 {
     {IF     , STRLEN(IF)     , Condition::if_t     },
     {ELSE_IF, STRLEN(ELSE_IF), Condition::else_if_t},
@@ -259,7 +259,7 @@ const static DefaultCondition DefauConditions[] =
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const size_t DefauConditionsQuant = sizeof(DefauConditions) / sizeof(DefauConditions[0]);
+const size_t DefaultConditionsQuant = sizeof(DefaultConditions) / sizeof(DefaultConditions[0]);
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
