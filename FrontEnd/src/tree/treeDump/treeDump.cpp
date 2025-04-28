@@ -22,12 +22,7 @@ static const char* GetNodeColor       (const Node_t* node);
 static const char* GetNodeTypeInStr   (const Node_t* node);
 static const char* GetNodeDataInStr   (const Node_t* node);
 
-
-// static void PrintName(                const NamePointer pointer, NameTable_t table);
-// static void FprintName(FILE* dotFile, const NamePointer pointer, NameTable_t table);
-
 static void PrintName(Name name);
-static void FprintName(FILE* dotFile, Name name);
 
 static const double eps = 1e-50;
 
@@ -59,7 +54,7 @@ void NodeTextDump(const Node_t* node, const char* file, const int line, const ch
 
     if (type == NodeArgType::number)
     {
-        COLOR_PRINT(CYAN, "%d", node->data.num.int_val);
+        COLOR_PRINT(CYAN, "%d", node->data.num.value.int_val);
     }
 
     else if (type == NodeArgType::name)
@@ -256,23 +251,13 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
     if (type == NodeArgType::number)
     {        
         Number number = node->data.num;
-
-        // if (IsDoubleEqual(number.double_val, floor(number.double_val), eps))
-        // {
-        //     fprintf(dotFile, "%d", (int) number.int_val);
-        // }
-
-        // else
-        // {
-            fprintf(dotFile, "%d", number.int_val);
-        // }
+        FprintNumber(dotFile, number);
     }
 
     else if (type == NodeArgType::name)
     {
-        // NamePointer namePointer = node->data.name;
-        // FprintName(dotFile, namePointer, table);
-        FprintName(dotFile, node->data.name);
+        Name name = node->data.name;
+        FprintName(dotFile, name);
     }
 
     else
@@ -340,9 +325,10 @@ static const char* GetNodeColor(const Node_t* node)
         case NodeArgType::number:    return "#1662b7";
         case NodeArgType::operation: return "#177d20";
         case NodeArgType::name:      return "#832316";
-        case NodeArgType::function:  return "#218617";
         case NodeArgType::connect:   return "#FFFACD";
         case NodeArgType::type:      return "#CD5C5C";
+        case NodeArgType::condition:
+        case NodeArgType::cycle:
         case NodeArgType::undefined: return "red";
         default:
             assert(0 && "undefined situation in GetColorType.\n");
@@ -370,14 +356,23 @@ static const char* GetNodeTypeInStr(const Node_t* node)
         case NodeArgType::operation:
             return "operation";
 
-        case NodeArgType::function:
-            return "function";
-
         case NodeArgType::name:
             return "name";
 
         case NodeArgType::undefined:
             return "undefined";
+
+        case NodeArgType::condition:
+            return "condition";
+
+        case NodeArgType::cycle:
+            return "cycle";
+
+        case NodeArgType::connect:
+            return "connect";
+        
+        case NodeArgType::type:
+            return "type";
 
         default:
             assert(0 && "You forgot about some node type in text dump.\n");
@@ -386,24 +381,6 @@ static const char* GetNodeTypeInStr(const Node_t* node)
 
     assert(0 && "We must not be here.\n");
     return "wtf?";
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static void FprintName(FILE* dotFile, Name name)
-{
-    assert(dotFile);
- 
-    // Name        name    = table.data[pointer];
-    const char* nameStr = name.name.name;
-    size_t      nameLen = name.name.len;
-
-    for (size_t i = 0; i < nameLen; i++)
-    {
-        fprintf(dotFile, "%c", nameStr[i]);
-    }
-
-    return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -434,16 +411,10 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return GetOperationInStr(oper);
         }
 
-        // case NodeArgType::function:
-        // {
-            // DFunction func = node->data.func;
-            // return GetFuncInStr(func);
-        // }
-
         case NodeArgType::type:
         {
-            Type type = node->data.type;
-            return GetTypeInStr(type);
+            Type typee = node->data.type;
+            return GetTypeInStr(typee);
         }
 
         case NodeArgType::undefined:
@@ -452,6 +423,8 @@ static const char* GetNodeDataInStr(const Node_t* node)
         case NodeArgType::connect:
             return "connect";
 
+        case NodeArgType::condition:
+            return "condition";
 
         default:
             assert(0 && "you forgot about some node type.");

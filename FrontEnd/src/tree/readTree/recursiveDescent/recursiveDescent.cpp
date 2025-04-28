@@ -21,7 +21,6 @@ static Node_t* GetMulDiv            (const Token_t* token, size_t* tp, const Inp
 static Node_t* GetBracket           (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetPow               (const Token_t* token, size_t* tp, const InputData* inputData);
 
-static Node_t* GetFunction          (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetMinus             (const Token_t* token, size_t* tp, const InputData* inputData);
 
 
@@ -47,7 +46,7 @@ static bool IsMulDiv                (const Token_t* token, const size_t* tp);
 static bool IsPow                   (const Token_t* token, const size_t* tp);
 static bool IsTokenLeftBracket      (const Token_t* token, const size_t* tp);
 static bool IsTokenRightBracket     (const Token_t* token, const size_t* tp);
-static bool IsOperationBeforeMinus  (const Token_t* token, const size_t* tp);
+static bool IsNotAssignOperationBeforeMinus  (const Token_t* token, const size_t* tp);
 static bool IsTokenMinus            (const Token_t* token, const size_t* tp);
 static bool IsOperationToken        (const Token_t* token,       size_t  tp);
 
@@ -272,7 +271,7 @@ static Node_t* GetPow(const Token_t* token, size_t* tp, const InputData* inputDa
     while(IsPow(token, tp))
     {
         (*tp)++;  
-        Node_t* node2 = GetFunction(token, tp, inputData);
+        Node_t* node2 = GetMinus(token, tp, inputData);
 
         Node_t* new_node = {};
         _POW(&new_node, node, node2);
@@ -333,7 +332,10 @@ static Node_t* GetMinus(const Token_t* token, size_t* tp, const InputData* input
     // consume token
     // pick token
 
-    if (IsOperationBeforeMinus(token, tp))
+    if (!IsTokenMinus(token, tp))
+        return GetBracket(token, tp, inputData);
+
+    if (IsNotAssignOperationBeforeMinus(token, tp))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "Operation before '-'");
 
     (*tp)++;  
@@ -658,14 +660,16 @@ static bool IsTokenRightBracket(const Token_t* token, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsOperationBeforeMinus(const Token_t* token, const size_t* tp)
+static bool IsNotAssignOperationBeforeMinus(const Token_t* token, const size_t* tp)
 {
     assert(token);
     assert(tp);
     assert(IsOperationToken(token, *tp));
     assert(token[*tp].data.operation == Operation::minus);
 
-    return (*tp >= 1 && IsOperationToken(token, *tp - 1));   
+    size_t tokenPointer = *tp - 1;
+
+    return (*tp >= 1 && !IsTokenAssign(token, &tokenPointer));   
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

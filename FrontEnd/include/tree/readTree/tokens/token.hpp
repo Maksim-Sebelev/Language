@@ -1,3 +1,4 @@
+
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
@@ -5,7 +6,7 @@
 
 #include "tree/tree.hpp"
 #include "tree/readTree/readTreeGlobalnclude.hpp"
-#include "tree/readTree/tokens/tokenTypes.hpp"
+#include "tree/NodesAndTokensTypes.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

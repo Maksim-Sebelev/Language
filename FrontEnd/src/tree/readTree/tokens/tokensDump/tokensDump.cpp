@@ -21,30 +21,33 @@ static const char* GetTokenDataInStr (const Token_t* token);
 
 void TokenTextDump(const Token_t* tokenArr, size_t tokenNum, const char* file, const int line, const char* func)
 {
-    assert(tokenArr);
-    assert(file);
-    assert(file);
+    // assert(tokenArr);
+    // assert(file);
+    // assert(file);
 
-    COLOR_PRINT(GREEN, "\nToken Dump:\n\n");
+    // COLOR_PRINT(GREEN, "\nToken Dump:\n\n");
 
-    PRINT_PLACE(BLUE, file, line, func);
+    // PRINT_PLACE(BLUE, file, line, func);
 
-    COLOR_PRINT(GREEN, "\n\ntoken[%lu]:\n", tokenNum);
+    // COLOR_PRINT(GREEN, "\n\ntoken[%lu]:\n", tokenNum);
 
-    COLOR_PRINT(CYAN, "type: '%s'\n", GetTokenTypeInStr(&tokenArr[tokenNum]));
+    // COLOR_PRINT(CYAN, "type: '%s'\n", GetTokenTypeInStr(&tokenArr[tokenNum]));
 
-    if (tokenArr[tokenNum].type == TokenType::TokenNumber_t)
-    {
-        Number number = tokenArr[tokenNum].data.number;
-        COLOR_PRINT(CYAN, "data: '%d'\n", number.int_val);
-    }
+    // if (tokenArr[tokenNum].type == TokenType::TokenNumber_t)
+    // {
+    //     Number number = tokenArr[tokenNum].data.number;
+    //     switch (number.type)
+    //     {
+    //         case Type::int_t: COLOR_PRINT(RED, "vae")
+    //     }
+    // }
 
-    else
-    {
-        COLOR_PRINT(CYAN, "data: '%s'\n", GetTokenDataInStr(&tokenArr[tokenNum]));
-    }
+    // else
+    // {
+    //     COLOR_PRINT(CYAN, "data: '%s'\n", GetTokenDataInStr(&tokenArr[tokenNum]));
+    // }
 
-    COLOR_PRINT(GREEN, "\nToken Dump End.\n\n\n");
+    // COLOR_PRINT(GREEN, "\nToken Dump End.\n\n\n");
 
     return;
 }
@@ -165,20 +168,14 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
     if (type == TokenType::TokenNumber_t)
     {
         Number number = token->data.number;
-        fprintf(dotFile, "%d", number.int_val);
+        FprintNumber(dotFile, number);
     }
 
     else if (type == TokenType::TokenName_t)
     {
-        const char* name    = token->data.name.name.name;
-        size_t      nameLen = token->data.name.name.len;
-
-        for (size_t i = 0; i < nameLen; i++)
-        {
-            fprintf(dotFile, "%c", name[i]);
-        }
+        Name name = token->data.name;
+        FprintName(dotFile, name);
     }
-
 
     else
     {
@@ -206,16 +203,7 @@ static const char* GetTokenColor(const Token_t* token)
     switch (type)
     {
         case TokenType::TokenNumber_t:      return "#1cb9ff";
-        case TokenType::TokenName_t:        
-        {
-            NameType nameType = token->data.name.type;
-            switch (nameType)
-            {
-                case NameType::Function: return "#f1481a";
-                case NameType::Variable: return "#f31807";
-                default: assert(0 && "undefined name type");
-            }
-        }
+        case TokenType::TokenName_t:        return "#f31807";
         case TokenType::TokenOperation_t:   return "#00ca2c";
         case TokenType::TokenFunction_t:    return "#0cf108";
         case TokenType::TokenBracket_t:     return "#e69c0c";
@@ -246,16 +234,7 @@ static const char* GetTokenTypeInStr(const Token_t* token)
         case TokenType::TokenBracket_t:   return "bracket";
         case TokenType::TokenSeparator_t: return "separator";
         case TokenType::TokenEndSymbol_t: return "end";
-        case TokenType::TokenName_t:
-        {
-            NameType nameType = token->data.name.type;
-            switch (nameType)
-            {
-                case NameType::Variable: return "name/variable";
-                case NameType::Function: return "name/function";
-                default: assert(0 && "undef name type");
-            }
-        }
+        case TokenType::TokenName_t:      return "name";
         default: assert(0 && "nudefindef type."); return "undefined";
     }
 

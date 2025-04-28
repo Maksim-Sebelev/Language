@@ -11,7 +11,7 @@
 #include "lib/lib.hpp"
 #include "tree/readTree/fileread/fileread.hpp"
 #include "tree/nameTable/nametable.hpp"
-#include "tree/nodeTypes.hpp"
+#include "tree/NodesAndTokensTypes.hpp"
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -58,7 +58,6 @@ enum class NodeArgType
     operation ,
     name      ,
     number    ,
-    function  ,
     connect   ,
     type      ,
     condition ,
@@ -71,7 +70,6 @@ union NodeData_t
 {
     Operation    oper;
     Number       num;
-    // DFunction    func;
     Type         type;
     Name         name;
     Connect      connect;

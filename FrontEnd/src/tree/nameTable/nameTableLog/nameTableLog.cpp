@@ -83,8 +83,8 @@ static const char* GetNameTypeInStr(Name name)
 
     switch (type)
     {
-        case NameType::Variable: return "variable";
-        case NameType::Function: return "function";
+        case NameType::variable: return "variable";
+        case NameType::function: return "function";
         default: assert(0 && "you forgot about some name type");
     }
 

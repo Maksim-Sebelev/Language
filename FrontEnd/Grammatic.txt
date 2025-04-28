@@ -1,27 +1,12 @@
-Tree       ::= Condition '$'
-Condition  ::= if ()
-DefVariable::= Type Variable '=' BoolOperation ';' Condition 
+Tree          ::= Condition '$'
+Condition     ::= {if ( BoolOperation ) '{' DefVariable '}' else if  '(' BoolOperation ')' '{' DefVariable '}' else '{' DefVariable '}' | DefVariable } *
+DefVariable   ::= Type Variable '=' BoolOperation ';' Condition 
 BoolOperation ::= AddSub { ['>' '>=' ... '==' '!='] AddSub } *
-AddSub     ::= MulDiv { ['+' '-'] MulDiv } *
-MulDiv     ::= Pow { ['*' '/'] Pow } *
-Pow        ::= Func { '^' Func } *
-
-================= default functions ===============================
-
-DefFunc   ::= Minus | Bracket | { Ln | Sin | .. | Arccos }
-
-Minus      ::= '-'          MulDiv
-
-Ln         :: 'ln'      '(' AddSub ')'
-Sin        :: 'sin'     '(' AddSub ')'
-Cos        :: 'cos'     '(' AddSub ')'
-...
-Arccos     ::= 'arccos' '(' AddSub ')'
-
-====================================================================
-
-Bracket    ::= '(' Func ')' | Variable | Number
-Variable   ::= [letter] { [letter | number] } *
-Number     ::= ['0' - '9'] +
-Type       ::= {'int' | 'double' | 'char' | 'void'}
-
+AddSub        ::= MulDiv { ['+' '-'] MulDiv } *
+MulDiv        ::= Pow { ['*' '/'] Pow } *
+Pow           ::= Minus { '^' Minus } *
+Minus         ::= '-' MulDiv | Bracket 
+Bracket       ::= '(' BoolOperation ')' | Variable | Number
+Variable      ::= [letter] { [letter | number] } *
+Number        ::= ['0' - '9'] +
+Type          ::= {'int' 'double' 'char' 'void'}

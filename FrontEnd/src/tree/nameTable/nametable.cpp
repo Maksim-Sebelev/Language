@@ -85,19 +85,28 @@ static void           PrintError  (StackErrorType Error);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Function FunctionCtor(int a)
+Function FunctionCtor(Type type)
 {
     Function function = {};
-    function.a = a;
+    function.type = type;
     return function;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Variable VariableCtor(int a)
+Variable VariableCtor(Type type, void* value)
 {
     Variable variable = {};
-    variable.a = a;
+    variable.type = type;
+    switch (type)
+    {
+        case Type::int_type:    variable.value.int_val    = *(int*   ) value; break;
+        case Type::char_type:   variable.value.char_val   = *(char*  ) value; break;
+        case Type::double_type: variable.value.double_val = *(double*) value; break;
+        case Type::undefined_type:
+        default: assert(0 && "something went wrong");
+    }
+
     return variable;
 }
 

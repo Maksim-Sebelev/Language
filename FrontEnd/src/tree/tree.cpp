@@ -15,10 +15,7 @@
 static bool IsError                        (const TreeErr* err);
 static bool HasntNumChild                  (const Node_t* node);
 static bool HasOperationChildren           (const Node_t* node);
-static bool HasFuncLeftChildOnly           (const Node_t* node);
-
 static bool IsNodeTypeOperationDataCorrect (const Node_t* node);
-static bool IsNodeTypeDFunctionDataCorrect  (const Node_t* node);
 
 //======================================================================================================================================================================
 
@@ -308,13 +305,6 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
             break;
         }
 
-        case NodeArgType::function:
-        {
-            RETURN_IF_FALSE(IsNodeTypeDFunctionDataCorrect (node), *err, err->err = TreeErrorType::FUNC_TYPE_NODES_ARG_IS_UNDEFINED);
-            RETURN_IF_FALSE(HasFuncLeftChildOnly(node), *err, err->err = TreeErrorType::FUNC_HAS_INCORRECT_CHILD_QUANT);
-            break;
-        }
-
         case NodeArgType::type:
         {
             return *err;
@@ -361,16 +351,6 @@ static bool HasOperationChildren(const Node_t* node)
     }
 
     return (node->left) && (node->right);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool HasFuncLeftChildOnly(const Node_t* node)
-{
-    assert(node);
-    assert(node->type == NodeArgType::function);
-
-    return (node->left) && !(node->right);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

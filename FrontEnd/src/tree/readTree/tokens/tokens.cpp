@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <sys/stat.h>
 #include "lib/lib.hpp"
-#include "tree/tree.hpp"
-#include "tree/treeDump/treeDump.hpp"
 #include "tree/readTree/syntaxErr/syntaxErr.hpp"
 #include "tree/readTree/readTreeGlobalnclude.hpp"
 #include "tree/readTree/tokens/token.hpp"
+#include "tree/NodesAndTokensTypes.hpp"
+#include "log/log.hpp"
 
 //=============================== Tokens (Read Tree)  =======================================================================================================================================================================================
 
@@ -38,7 +37,7 @@ static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation
 static bool IsPassSymbol       (char c);
 static bool IsSpace            (char c);
 static bool IsSlashN           (char c);
-static bool IsSpaceOrSlashN    (char c);
+static bool IsSlash0           (char c);
 
 static bool GetFlagPattern(const char* word, const char* defaultName, size_t defaultNameSize);
 
@@ -54,8 +53,6 @@ static bool IsBracketSymbol                    (char c);
 static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
 static bool IsLetterOrNumberOrUnderLineSymbol  (char c);
-
-static Number    UpdateNumber     (Number number, const InputData* inputData, Pointers* pointer);
 
 static Number    GetInt           (const char* word, size_t* wordSize);
 
@@ -100,20 +97,24 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             else                     assert(0 && "Something went wrong :(");
         }
 
-        if (pointer.ip == inputLen && (pointer.tp == 0 || !IsTokenTypeEnd(&tokenArr[pointer.tp - 1])))
-        {
-            CreateDefaultEndToken(tokenArr, &pointer);
-            break;
-        }
-
         const char* word     = inputData->buffer + pointer.ip;
         size_t      wordSize = 0;
-    
 
+        if (IsSlash0(word[0])) break;
+
+        
+        
         Operation operation = GetOperation(word, &wordSize);
         if (operation != Operation::undefined_operation)
         {
             HandleOperation(tokenArr, &pointer, operation, wordSize);
+            continue;
+        }
+        
+        Number number = GetNumber(word, &wordSize);
+        if (number.type != Type::undefined_type)
+        {
+            HandleNumber(tokenArr, &pointer, number, wordSize);
             continue;
         }
 
@@ -124,12 +125,14 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
+
         Type type = GetType(word, &wordSize);
         if (type != Type::undefined_type)
         {
             HandleType(tokenArr, &pointer, type, wordSize);
             continue;
         }
+
 
         Cycle cycle = GetCycle(word, &wordSize);
         if (cycle != Cycle::undefined_cycle)
@@ -138,6 +141,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
+
         Bracket bracket = GetBracket(word, &wordSize);
         if (bracket != Bracket::undefined_bracket)
         {
@@ -145,22 +149,19 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
-        Number number = GetNumber(word, &wordSize);
-        if (number.type != Type::undefined_type)
-        {
-            HandleNumber(tokenArr, &pointer, number, wordSize);
-            continue;
-        }
 
         Name name = GetName(word);
-        if (name.type != NameType::undefined_name_type)
+        if (name.name.len > 0)
         {
             HandleName(tokenArr, &pointer, name);
             continue;
         }
 
+
         SYNTAX_ERR(pointer.lp, pointer.sp, inputData, "undefined word.");
     }
+
+    CreateDefaultEndToken(tokenArr, &pointer);
 
 
     size_t tp = pointer.tp;
@@ -345,13 +346,13 @@ static Number GetNumber(const char* word, size_t* wordSize)
     Number number = {};
 
     number = GetInt(word, wordSize);
-    RETURN_IF_TRUE(number.type == Type::int_t, number);
+    RETURN_IF_TRUE(number.type == Type::int_type, number);
 
     number = GetDouble(word, wordSize);
-    RETURN_IF_TRUE(number.type == Type::double_t, number);
+    RETURN_IF_TRUE(number.type == Type::double_type, number);
 
     number = GetChar(word, wordSize);
-    RETURN_IF_TRUE(number.type == Type::char_t, number);
+    RETURN_IF_TRUE(number.type == Type::char_type, number);
 
     number = {.type = Type::undefined_type};
     return number;
@@ -369,11 +370,16 @@ static Number GetInt(const char* word, size_t* wordSize)
     Number number = {};
 
     char* numEnd = nullptr;
-    number.value.int_val = strtol(word, &numEnd, 10);
+    number.value.int_val = (int) strtol(word, &numEnd, 10);
+    LOG_PRINT(Red, "num int value = %d\n", number.value.int_val);
+
+    
     *wordSize = (numEnd - word);
-
-    if (*wordSize > 0) number.type = Type::int_t;
-
+    
+    if (*wordSize > 0)
+    {number.type = Type::int_type;
+    LOG_PRINT(Red, "num int value = %d\n", number.value.int_val);
+    }
     return number;    
 }
 
@@ -391,7 +397,7 @@ static Number GetDouble(const char* word, size_t* wordSize)
     number.value.double_val = strtod(word, &numEnd);
     *wordSize = (numEnd - word);
 
-    if (*wordSize > 0) number.type = Type::char_t;
+    if (*wordSize > 0) number.type = Type::char_type;
 
     return number;    
 }
@@ -413,14 +419,6 @@ static bool IsNumSymbol(char c)
 {
     return ('0' <= c) && 
             (c <= '9');
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsSpaceOrSlashN(char c)
-{
-    return  (c == ' ') ||
-            (c == '\n');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -479,6 +477,13 @@ static bool IsSlashN(char c)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsSlash0(char c)
+{
+    return (c == '\0');
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static bool IsPassSymbol(char c)
 {
     return (IsSpace  (c) ||
@@ -514,8 +519,7 @@ static void UpdatePointersAfterSlashN(Pointers* pointer)
 
 static bool GetFlagPattern(const char* word, const char* defaultName, size_t defaultNameSize)
 {
-    return (strncmp(word, defaultName, defaultNameSize) == 0) &&
-           (IsSpaceOrSlashN(word[defaultNameSize]));
+    return (strncmp(word, defaultName, defaultNameSize) == 0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -560,28 +564,6 @@ static Operation GetOperation(const char* word, size_t* wordSize)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// #define STRNCMP(function) ((wordSize == strlen(name)) && (strncmp(word, function, wordSize) == 0))
-// 
-// static DFunction GetDFunction(const char* word, size_t wordSize)
-// {
-    // assert(word);
-// 
-    // for (size_t function_i = 0; function_i < DefaultFunctionsQuant; function_i++)
-    // {
-        // const char* name = DefaultFunctions[function_i].name;
-        // DFunction   func = DefaultFunctions[function_i].value;
-    // 
-        // RETURN_IF_TRUE(STRNCMP(name), func);
-    // }
-// 
-    // return DFunction::undefined_function;
-// }
-
-// #undef STRNCMP
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 static Type GetType(const char* word, size_t* wordSize)
 {
     assert(word);
@@ -609,7 +591,7 @@ static Separator GetSeparator(const char* word, size_t* wordSize)
     for (size_t separator_i = 0; separator_i < DefaultSeparatorsQuant; separator_i++)
     {
         DefaultSeparator separator = DefaultSeparators[separator_i];
-    
+
         bool flag = GetFlagPattern(word, separator.name, separator.len);
         RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.len);
     }
@@ -626,7 +608,7 @@ static Bracket GetBracket(const char* word, size_t* wordSize)
     for (size_t bracket_i = 0; bracket_i < DefaultSeparatorsQuant; bracket_i++)
     {
         DefaultBracket bracket = DefaultBrackets[bracket_i];
-    
+
         bool flag = GetFlagPattern(word, bracket.name, bracket.len);
         RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.len);
     }

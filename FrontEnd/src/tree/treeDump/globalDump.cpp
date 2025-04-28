@@ -44,16 +44,41 @@ const char* GetTypeInStr(Type type)
 const char* GetOperationInStr(Operation oper)
 {
     for (size_t i = 0; i < DefaultOperationsQuant; i++)
-    {
-        COLOR_PRINT(VIOLET, "%s\n", DefaultOperations[i].name);
-        char operation[128] = {};
-        sprintf(operation, "'%s'", DefaultOperations[i].name);
-        
-        // const char* const_oper = operation; 
-        // assert(const_oper);
-
         RETURN_IF_TRUE(oper == DefaultOperations[i].value, DefaultOperations[i].name);
-    }
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const char* GetSeparatorInStr(Separator separator)
+{
+    for (size_t i = 0; i < DefaultSeparatorsQuant; i++)
+        RETURN_IF_TRUE(separator == DefaultSeparators[i].value, DefaultSeparators[i].name);
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const char* GetCycleInStr(Cycle cycle)
+{
+    for (size_t i = 0; i < DefaultCyclesQuant; i++)
+        RETURN_IF_TRUE(cycle == DefaultCycles[i].value, DefaultCycles[i].name);
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const char* GetConditionInStr(Condition condition)
+{
+    for (size_t i = 0; i < DefauConditionsQuant; i++)
+        RETURN_IF_TRUE(condition == DefauConditions[i].value, DefauConditions[i].name);
+
     assert(0 && "you forgot about some operation.");
     return "wtf?";
 }
@@ -77,6 +102,44 @@ bool IsDoubleEqual(double firstNum, double secondNum, double epss)
 
     return  (difference <=  epss) &&
             (difference >= -epss);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void FprintNumber(FILE* dotFile, Number number)
+{
+    assert(dotFile);
+
+    Type type = number.type;
+
+    switch (type)
+    {
+        case Type::int_type:    fprintf(dotFile, "%d", number.value.int_val);    break;
+        case Type::double_type: fprintf(dotFile, "%f", number.value.double_val); break;
+        case Type::char_type:   fprintf(dotFile, "%c", number.value.char_val);   break;
+        case Type::void_type:
+        case Type::undefined_type:
+        default: assert(0 && "something went wrong");
+    }
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void FprintName(FILE* dotFile, Name name)
+{
+    assert(dotFile);
+ 
+    // Name        name    = table.data[pointer];
+    const char* nameStr = name.name.name;
+    size_t      nameLen = name.name.len;
+
+    for (size_t i = 0; i < nameLen; i++)
+    {
+        fprintf(dotFile, "%c", nameStr[i]);
+    }
+
+    return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
