@@ -1,1 +1,2 @@
-int a = -( 2 + 5 >=abc );
+int a = -not(3 and not 2 or 3 + 2);
+b = 3 +5;

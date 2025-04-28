@@ -27,6 +27,9 @@ enum class Operation
     less_or_equal      ,
     equal              ,
     not_equal          ,
+    bool_and           ,
+    bool_or            ,
+    bool_not           ,
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -40,6 +43,8 @@ struct DefaultOperation
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#define AND              "and"
+#define OR               "or"
 #define GREATER_OR_EQUAL ">="
 #define LESS_OR_EQUAL    "<="
 #define EQUAL            "=="
@@ -52,11 +57,14 @@ struct DefaultOperation
 #define ASSIGN           "="
 #define GREATER          ">"
 #define LESS             "<"
+#define NOT              "not"
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const static DefaultOperation DefaultOperations[] =
 {
+    {AND             , STRLEN(AND)             , Operation::bool_and         },
+    {OR              , STRLEN(OR)              , Operation::bool_or          },
     {GREATER_OR_EQUAL, STRLEN(GREATER_OR_EQUAL), Operation::greater_or_equal },
     {LESS_OR_EQUAL   , STRLEN(LESS_OR_EQUAL)   , Operation::less_or_equal    },
     {EQUAL           , STRLEN(EQUAL)           , Operation::equal            },
@@ -69,6 +77,7 @@ const static DefaultOperation DefaultOperations[] =
     {ASSIGN          , STRLEN(ASSIGN)          , Operation::assign           },
     {GREATER         , STRLEN(GREATER)         , Operation::greater          },
     {LESS            , STRLEN(LESS)            , Operation::less             },
+    {NOT             , STRLEN(NOT)             , Operation::bool_not         },
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------

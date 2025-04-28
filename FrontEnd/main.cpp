@@ -7,7 +7,7 @@
 
 int main()
 {
-    printf("Start\n\n");
+    COLOR_PRINT(GREEN, "START\n\n");
 
     ON_DEBUG(
     OPEN_LOG();
@@ -29,7 +29,7 @@ int main()
     )
 
 
-    printf("\nEnd\n");
+    COLOR_PRINT(GREEN, "\nEND\n");
 
     return EXIT_SUCCESS;
 }

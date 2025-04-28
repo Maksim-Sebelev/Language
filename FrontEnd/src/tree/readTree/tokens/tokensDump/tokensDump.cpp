@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
 #include "tree/treeDump/globalDump.hpp"
 #include "tree/readTree/tokens/token.hpp"
 #include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
@@ -180,8 +181,10 @@ static void CreateToken(const Token_t* token, size_t pointer, FILE* dotFile)
     else
     {
         const char* tokenData = GetTokenDataInStr(token);
-        assert(tokenData);
-        fprintf(dotFile, "\\%s", tokenData);
+        if (!isalpha(tokenData[0])) fprintf(dotFile, "\\");
+
+        fprintf(dotFile, "%s", tokenData);
+
     }
 
     fprintf(dotFile, " | ");
@@ -274,46 +277,23 @@ static const char* GetTokenDataInStr(const Token_t* token)
             Operation operation = token->data.operation;
             return GetOperationInStr(operation); //
         }
-        // case TokenType::TokenFunction_t:
-        // {
-            // DFunction function = token->data.function;
-            // return GetFuncInStr(function); //
-        // }
+
         case TokenType::TokenSeparator_t:
         {
             Separator separator = token->data.separator;
-
-            switch (separator)
-            {
-                case Separator::comma:     return ",";
-                case Separator::point:     return ".";
-                case Separator::semicolon: return ";";
-                case Separator::colon:     return ":";
-                default: assert(0 && "undefined separetor type.");
-            }
+            return GetSeparatorInStr(separator);
         }
+
         case TokenType::TokenBracket_t:
         {
             Bracket bracket = token->data.bracket;
-            switch (bracket)
-            {
-                case Bracket::left_round: return "(";
-                case Bracket::right_round: return ")";
-                default: assert(0 && "undefined bracket type."); break;
-            }
-            break;
+            return GetBracketInStr(bracket);
         }
     
         case TokenType::TokenEndSymbol_t:
         {
             EndSymbol end = token->data.end;
-            switch (end)
-            {
-                case EndSymbol::end:  return "$";
-                case EndSymbol::endd: return "\\\\0";
-                default: assert(0 && "undefined end symbol.");
-            }
-            break;
+            return "\\0";
         }
         default: assert(0 && "undefined type."); return "undefined";
     }

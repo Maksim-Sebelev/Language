@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <ctype.h>
 #include <math.h>
 #include "tree/treeDump/treeDump.hpp"
 #include "tree/tree.hpp"
@@ -263,7 +264,9 @@ static void DotCreateAllNodes(FILE* dotFile, const Node_t* node)
     else
     {
         const char* arg = GetNodeDataInStr(node);
-        fprintf(dotFile, "\\%s", arg);
+        if (!isalpha(arg[0])) fprintf(dotFile, "\\");
+        
+        fprintf(dotFile, "%s", arg);
     }
 
     fprintf(dotFile, "\", ");

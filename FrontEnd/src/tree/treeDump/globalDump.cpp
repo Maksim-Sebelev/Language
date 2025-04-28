@@ -63,6 +63,17 @@ const char* GetSeparatorInStr(Separator separator)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+const char* GetBracketInStr(Bracket bracket)
+{
+    for (size_t i = 0; i < DefaultBracketsQuant; i++)
+        RETURN_IF_TRUE(bracket == DefaultBrackets[i].value, DefaultBrackets[i].name);
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 const char* GetCycleInStr(Cycle cycle)
 {
     for (size_t i = 0; i < DefaultCyclesQuant; i++)
@@ -82,17 +93,6 @@ const char* GetConditionInStr(Condition condition)
     assert(0 && "you forgot about some operation.");
     return "wtf?";
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-// const char* GetFuncInStr(DFunction func)
-// {
-    // for (size_t i = 0; i < DefaultFunctionsQuant; i++)
-        // RETURN_IF_TRUE(func == DefaultFunctions[i].value, DefaultFunctions[i].name);
-// 
-    // assert(0 && "You forgot abourt some function in graphic dump."); 
-    // return "undefined";
-// }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

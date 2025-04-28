@@ -1,20 +1,19 @@
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+
+typedef int _;
 
 int main()
 {
+    _ __ = 1;
+    _ ___ = 2;
+    _ ____ = 3;
+    _ _____ = 4;
+    _ ______ = 5;
 
-    const char* str = "+12";
-    char* end = nullptr;
-    int a = strtol(str, &end, 10);
+    !__--;!___--;!____--;!_____--;______--;
 
-    printf("a = '%d'\n", a);
-    printf("dif ptr = %ld\n", end - str);
-
-
-    printf("a = %d\n", a);
-
+    printf("%d\n", -!__---!__---!___---!____---!_____---!______--);
 
     return 0;
 }
+

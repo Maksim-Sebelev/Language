@@ -1,12 +1,13 @@
 Tree          ::= Condition '$'
-Condition     ::= {if ( BoolOperation ) '{' DefVariable '}' else if  '(' BoolOperation ')' '{' DefVariable '}' else '{' DefVariable '}' | DefVariable } *
-DefVariable   ::= Type Variable '=' BoolOperation ';' Condition 
-BoolOperation ::= AddSub { ['>' '>=' ... '==' '!='] AddSub } *
+Condition     ::= {if ( BoolOperation ) '{' Assign '}' else if  '(' BoolOperation ')' '{' Assign '}' else '{' Assign '}' | Assign } *
+Assign        ::= ? Type Variable '=' BoolOperation ';' Condition 
+BoolOperation ::= AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
 AddSub        ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv        ::= Pow { ['*' '/'] Pow } *
-Pow           ::= Minus { '^' Minus } *
+Pow           ::= Not { '^' Not } *
+Not           ::= {'!' Minus}  | Minus
 Minus         ::= '-' MulDiv | Bracket 
 Bracket       ::= '(' BoolOperation ')' | Variable | Number
 Variable      ::= [letter] { [letter | number] } *
 Number        ::= ['0' - '9'] +
-Type          ::= {'int' 'double' 'char' 'void'}
+Type          ::= {'int' 'double' 'char ' 'void'}

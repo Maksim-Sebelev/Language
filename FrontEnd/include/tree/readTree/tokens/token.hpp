@@ -20,9 +20,9 @@ struct FilePlace
 
 union TokenData
 {
+    Condition condition;
     Separator separator;
     Operation operation;
-    // DFunction function;
     Bracket   bracket;
     Number    number;
     Type      type;

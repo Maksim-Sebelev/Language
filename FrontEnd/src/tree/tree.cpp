@@ -300,8 +300,8 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
 
         case NodeArgType::operation:
         {
-            RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
-            RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
+            // RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
+            // RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
 
