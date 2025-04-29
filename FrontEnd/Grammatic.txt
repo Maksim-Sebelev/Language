@@ -1,4 +1,8 @@
-Tree          ::= Condition '\0'
+Tree          ::= DefFunc '\0'
+DefFunc       ::= {Type Name '(' DefFuncArgs ')' '{' CallFunc '}' } * | main
+DefFuncArgs   ::= Type Name {',' Type Nama } *
+main          ::= 'start' CallFunc 'end'
+CallFunc      ::= Name '('  ')'
 Condition     ::= { ConditionIf ConditionElif ConditionElse | Assign ';' | Cycle }*
 ConditionIf   ::= 'if' '(' BoolOperation ')' '{' Condition '}'
 ConditionElif ::= { 'else if' '(' BoolOperation ')' '{' Condition '}' }*
@@ -6,14 +10,14 @@ ConditionElse ::= else '{' Condition '}'
 Cycle         ::= While | For
 While         ::= 'while' '(' BoolOperation ')' '{' ConditionIf '}'
 For           ::= 'for' '(' Assign ';' BoolOperation ';' Assign ')' '{' ConditionIf '}'
-Assign        ::= Type ? Variable '=' BoolOperation
+Assign        ::= Type ? Name '=' BoolOperation
 BoolOperation ::= AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
 AddSub        ::= MulDiv { ['+' '-'] MulDiv } *
 MulDiv        ::= Pow { ['*' '/'] Pow } *
 Pow           ::= Not { '^' Not } *
 Not           ::= {'!' Minus}  | Minus
-Minus         ::= '-' MulDiv | Bracket 
-Bracket       ::= '(' BoolOperation ')' | Variable | Number
-Variable      ::= [letter] { [letter | number] } *
+Minus         ::= '-' MulDiv | Bracket
+Bracket       ::= '(' BoolOperation ')' | Name | Number
+Name          ::= [letter] { [letter | number] } *
 Number        ::= ['0' - '9'] +
 Type          ::= {'int' 'double' 'char ' 'void'}

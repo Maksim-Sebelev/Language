@@ -2,35 +2,7 @@
 while (name < 5)
 {
     govno = naaame + 1;
-}
+} # traxat armana v rot
 
-if (a == 3)
-{
-    int b = 1;
-    c = c + 3;
-    a = a^2 + c + b;
+int a = 5; // here menya ebali
 
-    if (a != 57)
-    {
-        a = 14;
-        for (a = 3; a < 5; a = a + 1)
-        {
-            b = b + a;
-        }
-    }
-}
-
-else if (a == 2)
-{
-    int c = 1;
-    int b = 3;
-    int b= 3;
-
-    if (a == 3) { a = not 13 and motherfucker; }
-    else {
-        int idi_naxui = 1;
-    }
-}
-
-
-int c = 2;

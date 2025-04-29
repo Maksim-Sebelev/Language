@@ -378,6 +378,8 @@ static void makeBackGround(size_t nTabBefore)
 
     fprintfNTab(nTabBefore);
     fprintfBodyWithBracketEnd(); fprintfNNS(2);
+
+    return;
 }
 )
 

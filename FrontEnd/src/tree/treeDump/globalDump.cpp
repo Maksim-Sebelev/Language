@@ -33,7 +33,7 @@ void DotCreateDumpPlace(FILE* dotFile, const char* file, const int line, const c
 const char* GetTypeInStr(Type type)
 {
     for (size_t i = 0; i < DefaultTypesQuant; i++)
-        RETURN_IF_TRUE(type == DefaultTypes[i].value, DefaultTypes[i].name);
+        RETURN_IF_TRUE(type == DefaultTypes[i].value, DefaultTypes[i].nameInfo.name);
     
     assert(0 && "undef type");
     return "undefined";
@@ -44,7 +44,7 @@ const char* GetTypeInStr(Type type)
 const char* GetOperationInStr(Operation oper)
 {
     for (size_t i = 0; i < DefaultOperationsQuant; i++)
-        RETURN_IF_TRUE(oper == DefaultOperations[i].value, DefaultOperations[i].name);
+        RETURN_IF_TRUE(oper == DefaultOperations[i].value, DefaultOperations[i].nameInfo.name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";
@@ -55,7 +55,7 @@ const char* GetOperationInStr(Operation oper)
 const char* GetSeparatorInStr(Separator separator)
 {
     for (size_t i = 0; i < DefaultSeparatorsQuant; i++)
-        RETURN_IF_TRUE(separator == DefaultSeparators[i].value, DefaultSeparators[i].name);
+        RETURN_IF_TRUE(separator == DefaultSeparators[i].value, DefaultSeparators[i].nameInfo.name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";
@@ -66,7 +66,7 @@ const char* GetSeparatorInStr(Separator separator)
 const char* GetBracketInStr(Bracket bracket)
 {
     for (size_t i = 0; i < DefaultBracketsQuant; i++)
-        RETURN_IF_TRUE(bracket == DefaultBrackets[i].value, DefaultBrackets[i].name);
+        RETURN_IF_TRUE(bracket == DefaultBrackets[i].value, DefaultBrackets[i].nameInfo.name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";
@@ -77,7 +77,7 @@ const char* GetBracketInStr(Bracket bracket)
 const char* GetCycleInStr(Cycle cycle)
 {
     for (size_t i = 0; i < DefaultCyclesQuant; i++)
-        RETURN_IF_TRUE(cycle == DefaultCycles[i].value, DefaultCycles[i].name);
+        RETURN_IF_TRUE(cycle == DefaultCycles[i].value, DefaultCycles[i].nameInfo.name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";
@@ -88,7 +88,7 @@ const char* GetCycleInStr(Cycle cycle)
 const char* GetConditionInStr(Condition condition)
 {
     for (size_t i = 0; i < DefaultConditionsQuant; i++)
-        RETURN_IF_TRUE(condition == DefaultConditions[i].value, DefaultConditions[i].name);
+        RETURN_IF_TRUE(condition == DefaultConditions[i].value, DefaultConditions[i].nameInfo.name);
 
     assert(0 && "you forgot about some operation.");
     return "wtf?";

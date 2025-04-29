@@ -417,9 +417,9 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
 
     Node_t* type_node = {};
     
-    bool wasType = false;
+    bool wasType = IsTokenType(&token[*tp]);
 
-    if (wasType = IsTokenType(&token[*tp]))
+    if (wasType)
         type_node = GetType(token, tp, inputData);
 
     size_t old_tp = *tp;

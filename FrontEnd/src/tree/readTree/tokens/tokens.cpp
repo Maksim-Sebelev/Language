@@ -34,11 +34,13 @@ static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation
 static void HandleCondition     (Token_t* tokenArr, Pointers* pointer, Condition condition, size_t wordSize);
 
 
+static bool HandleComment       (const char* word, Pointers* pointer);
 
 static bool IsPassSymbol       (char c);
 static bool IsSpace            (char c);
 static bool IsSlashN           (char c);
 static bool IsSlash0           (char c);
+static bool IsSlashNOrSlashN   (char c);
 
 static bool GetFlagPattern(const char* word, const char* defaultName, size_t defaultNameSize);
 
@@ -100,6 +102,8 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
 
         if (IsSlash0(word[0])) break;
 
+        if (HandleComment(word, &pointer))
+            continue;
 
         Operation operation = GetOperation(word, &wordSize);
         if (operation != Operation::undefined_operation)
@@ -490,6 +494,14 @@ static bool IsSlash0(char c)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsSlashNOrSlashN(char c)
+{
+    return  IsSlashN(c) ||
+            IsSlash0(c);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static bool IsPassSymbol(char c)
 {
     return (IsSpace  (c) ||
@@ -561,8 +573,8 @@ static Operation GetOperation(const char* word, size_t* wordSize)
     {
         DefaultOperation operation = DefaultOperations[operation_i];
     
-        bool flag = GetFlagPattern(word, operation.name, operation.len);
-        RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.len);
+        bool flag = GetFlagPattern(word, operation.nameInfo.name, operation.nameInfo.len);
+        RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.nameInfo.len);
     }
 
     return Operation::undefined_operation;
@@ -579,8 +591,8 @@ static Type GetType(const char* word, size_t* wordSize)
     {
         DefaultType type = DefaultTypes[type_i];
     
-        bool flag = GetFlagPattern(word, type.name, type.len);
-        RETURN_IF_TRUE(flag, type.value, *wordSize = type.len);
+        bool flag = GetFlagPattern(word, type.nameInfo.name, type.nameInfo.len);
+        RETURN_IF_TRUE(flag, type.value, *wordSize = type.nameInfo.len);
     }
 
     return Type::undefined_type;
@@ -598,8 +610,8 @@ static Separator GetSeparator(const char* word, size_t* wordSize)
     {
         DefaultSeparator separator = DefaultSeparators[separator_i];
 
-        bool flag = GetFlagPattern(word, separator.name, separator.len);
-        RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.len);
+        bool flag = GetFlagPattern(word, separator.nameInfo.name, separator.nameInfo.len);
+        RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.nameInfo.len);
     }
     return Separator::undefined_separator;
 }
@@ -615,8 +627,8 @@ static Bracket GetBracket(const char* word, size_t* wordSize)
     {
         DefaultBracket bracket = DefaultBrackets[bracket_i];
 
-        bool flag = GetFlagPattern(word, bracket.name, bracket.len);
-        RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.len);
+        bool flag = GetFlagPattern(word, bracket.nameInfo.name, bracket.nameInfo.len);
+        RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.nameInfo.len);
     }
     return Bracket::undefined_bracket;
 }
@@ -632,8 +644,8 @@ static Cycle GetCycle(const char* word, size_t* wordSize)
     {
         DefaultCycle cycle = DefaultCycles[cycle_i];
     
-        bool flag = GetFlagPattern(word, cycle.name, cycle.len);
-        RETURN_IF_TRUE(flag, cycle.value, *wordSize = cycle.len);
+        bool flag = GetFlagPattern(word, cycle.nameInfo.name, cycle.nameInfo.len);
+        RETURN_IF_TRUE(flag, cycle.value, *wordSize = cycle.nameInfo.len);
     }
     return Cycle::undefined_cycle;
 }
@@ -648,12 +660,62 @@ static Condition GetCondition(const char* word, size_t* wordSize)
     {
         DefaultCondition condition = DefaultConditions[condition_i];
     
-        bool flag = GetFlagPattern(word, condition.name, condition.len);
-        RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.len);
+        bool flag = GetFlagPattern(word, condition.nameInfo.name, condition.nameInfo.len);
+        RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.nameInfo.len);
     }
     return Condition::undefined_condition;
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsComment(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t i = 0; i < OneLineCommentsQuant; i++)
+    {
+        OneLineComment comment = OneLineComments[i];
+
+        bool flag = GetFlagPattern(word, comment.name, comment.len);
+        if (flag)
+        {
+            *wordSize = comment.len;
+            return true;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool HandleComment(const char* word, Pointers* pointer)
+{
+    assert(word);
+    assert(pointer);
+
+    bool flag = false;
+    size_t affterCommentStrLen = 0;
+    for (size_t i = 0; i < OneLineCommentsQuant; i++)
+    {
+        OneLineComment comment = OneLineComments[i];
+
+        flag = GetFlagPattern(word, comment.name, comment.len);
+        if (flag)
+        {
+            affterCommentStrLen = comment.len;
+            break;
+        }
+    }
+
+    if (!flag) return false;
+    while (!IsSlashNOrSlashN(word[affterCommentStrLen])) 
+        affterCommentStrLen++;
+
+    pointer->ip += affterCommentStrLen;
+    pointer->sp += affterCommentStrLen;
+
+    return true;
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
