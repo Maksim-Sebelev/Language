@@ -1,3 +1,17 @@
+int a(int a, double b, char c)
+{
+    if ( a )
+    {
+        return 1;
+    }
+    return 3;
+}
+
+double c ()
+{
+    return 3.0;
+}
+
 start:
     double a = 1123.0123;
     int b = 13;
@@ -7,3 +21,4 @@ start:
         c = c + a;
     }
 end.
+

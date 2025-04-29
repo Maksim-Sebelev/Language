@@ -11,6 +11,10 @@
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+static Node_t* GetDefFunc           (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetDefFuncArgs       (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetReturn            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetMain              (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetCondition         (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetIfCondition       (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -66,8 +70,9 @@ static bool IsTokenRightCurlyBracket         (const Token_t* token);
 static bool IsTokenCycleWhile                (const Token_t* token);
 static bool IsTokenCycleFor                  (const Token_t* token);
 static bool IsTokenFuncAttrCall              (const Token_t* token);
+static bool IsTokenFuncAttrReturn            (const Token_t* token);
 static bool IsTokenMainStart                 (const Token_t* token);
-static bool IsTokenMainEnd                    (const Token_t* token);
+static bool IsTokenMainEnd                   (const Token_t* token);
 
 static bool IsNotAssignOperationBeforeMinus  (const Token_t* token, size_t tp);
 
@@ -82,7 +87,7 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     assert(tokens);
 
     size_t tp = 0;
-    Node_t* node = GetMain(tokens, &tp, inputData);
+    Node_t* node = GetDefFunc(tokens, &tp, inputData);
 
     if (!IsTokenEnd(&tokens[tp]))
         SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '\0'");
@@ -103,7 +108,93 @@ static Node_t* GetDefFunc(const Token_t* token, size_t* tp, const InputData* inp
     assert(token);
     assert(tp);
 
+    if (IsTokenMainStart(&token[*tp]))
+        return GetMain(token, tp, inputData);
+
+    Node_t* type_node = GetType(token, tp, inputData);
+
+    Node_t* name_node = GetName(token, tp, inputData);
+
+    type_node->left = name_node;
+
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+
+    (*tp)++;
+
+    Node_t* args_node = GetDefFuncArgs(token, tp, inputData);
+
+    name_node->left = args_node;
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+
+    (*tp)++;
+
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    Node_t* condition_node = GetCondition(token, tp, inputData);
+
+    NODE_GRAPHIC_DUMP(condition_node);
+
+    if (!IsTokenFuncAttrReturn(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'return'");
+
+    (*tp)++;
+
+    Node_t* call_func_node = GetCallFunction(token, tp, inputData);
+
+    if (!IsTokenSemicolon(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
     
+    (*tp)++;
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+
+    (*tp)++;
+
+    name_node->right = condition_node;
+
+    Node_t* next_def_func_node = GetDefFunc(token, tp, inputData);
+
+    Node_t* connect_node = {};
+
+    _CONNECT(&connect_node, type_node, next_def_func_node);
+    return connect_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetDefFuncArgs(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+        
+    if (!IsTokenType(&token[*tp]))
+        return nullptr;
+
+    Node_t* type_node = GetType(token, tp, inputData);
+
+    Node_t* name_node = GetName(token, tp, inputData);
+
+    if (!IsTokenSeparatorComma(&token[*tp]))
+        return type_node;
+    
+    (*tp)++;
+    
+
+    Node_t* next_name_node = GetDefFuncArgs(token, tp, inputData);
+    
+    Node_t* connect_node = {};
+    type_node->left = name_node;
+    _CONNECT(&connect_node, type_node, next_name_node);
+
+    return connect_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -138,7 +229,7 @@ static Node_t* GetCondition(const Token_t* token, size_t* tp, const InputData* i
     assert(token);
     assert(tp);
 
-    if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]) || IsTokenMainEnd(&token[*tp]))
+    if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]) || IsTokenMainEnd(&token[*tp]) || IsTokenFuncAttrReturn(&token[*tp]))
         return nullptr;
 
     Node_t* main_connect_node = {};
@@ -344,6 +435,9 @@ static Node_t* GetCallFunction(const Token_t* token, size_t* tp, const InputData
     assert(token);
     assert(tp);
 
+    if (IsTokenFuncAttrReturn(&token[*tp]))
+        return GetReturn(token, tp, inputData);
+
     if (!IsTokenFuncAttrCall(&token[*tp]))
         return GetBoolOperation(token, tp, inputData);
 
@@ -366,6 +460,26 @@ static Node_t* GetCallFunction(const Token_t* token, size_t* tp, const InputData
     name_node->left = args_node;
 
     return name_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetReturn(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenFuncAttrReturn(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'return'");
+
+    (*tp)++;
+
+    Node_t* call_func_node = GetCallFunction(token, tp, inputData);
+
+    Node_t* return_node = {};
+    _RET(&return_node, call_func_node);
+
+    return return_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1172,6 +1286,15 @@ static bool IsTokenFuncAttrCall(const Token_t* token)
     assert(token);
     return  (token->type == TokenType::TokenFuncAttr_t) &&
             (token->data.attribute == FunctionAttribute::call);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenFuncAttrReturn(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenFuncAttr_t) &&
+            (token->data.attribute == FunctionAttribute::ret);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

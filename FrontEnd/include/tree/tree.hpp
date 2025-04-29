@@ -63,12 +63,14 @@ enum class NodeArgType
     cycle     ,
     mainInfo  ,
     main      ,
+    attribute,
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 union NodeData_t
 {
+    FunctionAttribute attribute;
     Main         main;
     MainStartEnd mainInfo;
     Condition    condition;
@@ -161,6 +163,7 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 #define _IF(  node, left, right            ) do { NodeData_t data = {.condition = Condition::if_t};              TREE_ASSERT(NodeCtor(node, NodeArgType::condition, data, left,          right));  }         while(0)
 #define _ELIF(node, left, right            ) do { NodeData_t data = {.condition = Condition::else_if_t};         TREE_ASSERT(NodeCtor(node, NodeArgType::condition, data, left,          right));  }         while(0)
 #define _ELSE(node,       right            ) do { NodeData_t data = {.condition = Condition::else_t};            TREE_ASSERT(NodeCtor(node, NodeArgType::condition, data, nullptr,       right));  }         while(0)
+#define _RET( node, left                   ) do { NodeData_t data = {.attribute = FunctionAttribute::ret};       TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data, left,          nullptr));}         while(0)
 
 
 #define _SET_MUL( node, left, right        ) do { NodeData_t data = {.oper = Operation::mul};      TREE_ASSERT(SetNode (node, NodeArgType::operation,  data, left,         right)); }         while(0)
