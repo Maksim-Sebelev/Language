@@ -24,14 +24,15 @@ struct Pointers
 static void TokenCtor        (Token_t* token, TokenType type, void* value, size_t fileLine, size_t linePos);
 
 
-static void HandleName          (Token_t* tokenArr, Pointers* pointer, Name      name                      );
-static void HandleType          (Token_t* tokenArr, Pointers* pointer, Type      type     , size_t wordSize);
-static void HandleCycle         (Token_t* tokenArr, Pointers* pointer, Cycle     cycle    , size_t wordSize);
-static void HandleNumber        (Token_t* tokenArr, Pointers* pointer, Number    number   , size_t wordSize);
-static void HandleBracket       (Token_t* tokenArr, Pointers* pointer, Bracket   bracket  , size_t wordSize);
-static void HandleSeparator     (Token_t* tokenArr, Pointers* pointer, Separator separator, size_t wordSize);
-static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation operation, size_t wordSize);
-static void HandleCondition     (Token_t* tokenArr, Pointers* pointer, Condition condition, size_t wordSize);
+static void HandleName          (Token_t* tokenArr, Pointers* pointer, Name         name                      );
+static void HandleType          (Token_t* tokenArr, Pointers* pointer, Type         type     , size_t wordSize);
+static void HandleCycle         (Token_t* tokenArr, Pointers* pointer, Cycle        cycle    , size_t wordSize);
+static void HandleNumber        (Token_t* tokenArr, Pointers* pointer, Number       number   , size_t wordSize);
+static void HandleBracket       (Token_t* tokenArr, Pointers* pointer, Bracket      bracket  , size_t wordSize);
+static void HandleSeparator     (Token_t* tokenArr, Pointers* pointer, Separator    separator, size_t wordSize);
+static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation    operation, size_t wordSize);
+static void HandleCondition     (Token_t* tokenArr, Pointers* pointer, Condition    condition, size_t wordSize);
+static void HandleMain          (Token_t* tokenArr, Pointers* pointer, MainStartEnd main     , size_t wordSize);
 
 
 static bool HandleComment       (const char* word, Pointers* pointer);
@@ -55,18 +56,18 @@ static bool IsLetterOrNumberOrUnderLineSymbol  (char c);
 static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
 
-static Number    GetInt           (const char* word, size_t* wordSize);
-
-static Name      GetName          (const char* word                  );
-static Operation GetOperation     (const char* word, size_t* wordSize);
-static Separator GetSeparator     (const char* word, size_t* wordSize);
-static Type      GetType          (const char* word, size_t* wordSize);
-static Cycle     GetCycle         (const char* word, size_t* wordSize);
-static Condition GetCondition     (const char* word, size_t* wordSize);
-static Bracket   GetBracket       (const char* word, size_t* wordSize);
-static Number    GetNumber        (const char* word, size_t* wordSize);
-static Number    GetDouble        (const char* word, size_t* wordSize);
-static Number    GetChar          (const char* word, size_t* wordSize);
+static Name         GetName          (const char* word                  );
+static MainStartEnd GetMain          (const char* word, size_t* wordSize);
+static Number       GetInt           (const char* word, size_t* wordSize);
+static Operation    GetOperation     (const char* word, size_t* wordSize);
+static Separator    GetSeparator     (const char* word, size_t* wordSize);
+static Type         GetType          (const char* word, size_t* wordSize);
+static Cycle        GetCycle         (const char* word, size_t* wordSize);
+static Condition    GetCondition     (const char* word, size_t* wordSize);
+static Bracket      GetBracket       (const char* word, size_t* wordSize);
+static Number       GetNumber        (const char* word, size_t* wordSize);
+static Number       GetDouble        (const char* word, size_t* wordSize);
+static Number       GetChar          (const char* word, size_t* wordSize);
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
 
@@ -119,13 +120,6 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
-        Separator separator = GetSeparator(word, &wordSize);
-        if (separator != Separator::undefined_separator)
-        {
-            HandleSeparator(tokenArr, &pointer, separator, wordSize);
-            continue;
-        }
-
         Condition condition = GetCondition(word, &wordSize);
         if (condition != Condition::undefined_condition)
         {
@@ -153,6 +147,21 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         if (bracket != Bracket::undefined_bracket)
         {
             HandleBracket(tokenArr, &pointer, bracket, wordSize);
+            continue;
+        }
+
+        MainStartEnd main = GetMain(word, &wordSize);
+        if (main != MainStartEnd::undefined)
+        {
+            HandleMain(tokenArr, &pointer, main, wordSize);
+            continue;
+        }
+
+
+        Separator separator = GetSeparator(word, &wordSize);
+        if (separator != Separator::undefined_separator)
+        {
+            HandleSeparator(tokenArr, &pointer, separator, wordSize);
             continue;
         }
 
@@ -226,8 +235,9 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
         case TokenType::TokenCondition_t: token->data.condition = *(Condition*) value; break;
-        case TokenType::TokenFunction_t:
         case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle    *) value; break;
+        case TokenType::TokenMainInfo_t:  token->data.main      = *(MainStartEnd*) value; break;
+        case TokenType::TokenFunction_t:
         default:                          assert(0 && "undefined token type symbol."); break;
     }
 
@@ -360,6 +370,22 @@ static void HandleNumber(Token_t* tokenArr, Pointers* pointer, Number number, si
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static void HandleMain(Token_t* tokenArr, Pointers* pointer, MainStartEnd main, size_t wordSize)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenMainInfo_t, &main, pointer->lp, pointer->sp);
+
+    UpdatePointer(pointer, wordSize);
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static Number GetNumber(const char* word, size_t* wordSize)
 {
     assert(word);
@@ -432,6 +458,210 @@ static Number GetChar(const char* word, size_t* wordSize)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Name GetName(const char* word)
+{
+    assert(word);
+    
+    Name name = {};
+
+    if (!IsLetterOrUnderLineSymbol(word[0]))
+    {
+        name.type = NameType::undefined_name_type;
+        return name;
+    }
+    
+    size_t i = 1;
+    while (IsLetterOrNumberOrUnderLineSymbol(word[i])) i++;
+
+    name.name.len = i;
+    name.name.name = word;
+    return name;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Operation GetOperation(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+    
+    for (size_t operation_i = 0; operation_i < DefaultOperationsQuant; operation_i++)
+    {
+        DefaultOperation operation = DefaultOperations[operation_i];
+    
+        bool flag = GetFlagPattern(word, operation.nameInfo.name, operation.nameInfo.len);
+        RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.nameInfo.len);
+    }
+    
+    return Operation::undefined_operation;
+} 
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Type GetType(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t type_i = 0; type_i < DefaultTypesQuant; type_i++)
+    {
+        DefaultType type = DefaultTypes[type_i];
+        
+        bool flag = GetFlagPattern(word, type.nameInfo.name, type.nameInfo.len);
+        RETURN_IF_TRUE(flag, type.value, *wordSize = type.nameInfo.len);
+    }
+
+    return Type::undefined_type;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Separator GetSeparator(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t separator_i = 0; separator_i < DefaultSeparatorsQuant; separator_i++)
+    {
+        DefaultSeparator separator = DefaultSeparators[separator_i];
+        
+        bool flag = GetFlagPattern(word, separator.nameInfo.name, separator.nameInfo.len);
+        RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.nameInfo.len);
+    }
+    return Separator::undefined_separator;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Bracket GetBracket(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+    
+    for (size_t bracket_i = 0; bracket_i < DefaultBracketsQuant; bracket_i++)
+    {
+        DefaultBracket bracket = DefaultBrackets[bracket_i];
+        
+        bool flag = GetFlagPattern(word, bracket.nameInfo.name, bracket.nameInfo.len);
+        RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.nameInfo.len);
+    }
+    return Bracket::undefined_bracket;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Cycle GetCycle(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+    
+    for (size_t cycle_i = 0; cycle_i < DefaultCyclesQuant; cycle_i++)
+    {
+        DefaultCycle cycle = DefaultCycles[cycle_i];
+    
+        bool flag = GetFlagPattern(word, cycle.nameInfo.name, cycle.nameInfo.len);
+        RETURN_IF_TRUE(flag, cycle.value, *wordSize = cycle.nameInfo.len);
+    }
+    return Cycle::undefined_cycle;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Condition GetCondition(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+    for (size_t condition_i = 0; condition_i < DefaultConditionsQuant; condition_i++)
+    {
+        DefaultCondition condition = DefaultConditions[condition_i];
+    
+        bool flag = GetFlagPattern(word, condition.nameInfo.name, condition.nameInfo.len);
+        RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.nameInfo.len);
+    }
+    return Condition::undefined_condition;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static MainStartEnd GetMain(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t main_i = 0; main_i < DefaultMainInfoArrSize; main_i++)
+    {
+        DefaultMainInfo main = DefaultMainInfoArr[main_i];
+    
+        bool flag = GetFlagPattern(word, main.nameInfo.name, main.nameInfo.len);
+        RETURN_IF_TRUE(flag, main.value, *wordSize = main.nameInfo.len);
+    }
+    return MainStartEnd::undefined;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool HandleComment(const char* word, Pointers* pointer)
+{
+    assert(word);
+    assert(pointer);
+    
+    bool flag = false;
+    size_t affterCommentStrLen = 0;
+    for (size_t i = 0; i < OneLineCommentsQuant; i++)
+    {
+        OneLineComment comment = OneLineComments[i];
+        
+        flag = GetFlagPattern(word, comment.name, comment.len);
+        if (flag)
+        {
+            affterCommentStrLen = comment.len;
+            break;
+        }
+    }
+
+    if (!flag) return false;
+    while (!IsSlashNOrSlashN(word[affterCommentStrLen])) 
+    affterCommentStrLen++;
+    
+    pointer->ip += affterCommentStrLen;
+    pointer->sp += affterCommentStrLen;
+    
+    return true;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void CreateDefaultEndToken(Token_t* tokenArr, Pointers* pointer)
+{
+    assert(tokenArr);
+    assert(pointer);
+    
+    size_t    tp   = pointer->tp;
+    
+    TokenType type = TokenType::TokenEndSymbol_t;
+    EndSymbol data = EndSymbol::endd;
+    size_t    lp   = pointer->lp;
+    size_t    sp   = pointer->sp;
+    
+    TokenCtor(&tokenArr[tp], type, &data, lp, sp);
+    
+    pointer->tp++;
+    
+    return;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static bool IsNumSymbol(char c)
 {
@@ -541,204 +771,3 @@ static bool GetFlagPattern(const char* word, const char* defaultName, size_t def
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Name GetName(const char* word)
-{
-    assert(word);
-
-    Name name = {};
-
-    if (!IsLetterOrUnderLineSymbol(word[0]))
-    {
-        name.type = NameType::undefined_name_type;
-        return name;
-    }
-    
-    size_t i = 1;
-    while (IsLetterOrNumberOrUnderLineSymbol(word[i])) i++;
-
-    name.name.len = i;
-    name.name.name = word;
-    return name;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Operation GetOperation(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t operation_i = 0; operation_i < DefaultOperationsQuant; operation_i++)
-    {
-        DefaultOperation operation = DefaultOperations[operation_i];
-    
-        bool flag = GetFlagPattern(word, operation.nameInfo.name, operation.nameInfo.len);
-        RETURN_IF_TRUE(flag, operation.value, *wordSize = operation.nameInfo.len);
-    }
-
-    return Operation::undefined_operation;
-} 
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Type GetType(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t type_i = 0; type_i < DefaultTypesQuant; type_i++)
-    {
-        DefaultType type = DefaultTypes[type_i];
-    
-        bool flag = GetFlagPattern(word, type.nameInfo.name, type.nameInfo.len);
-        RETURN_IF_TRUE(flag, type.value, *wordSize = type.nameInfo.len);
-    }
-
-    return Type::undefined_type;
-}
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Separator GetSeparator(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t separator_i = 0; separator_i < DefaultSeparatorsQuant; separator_i++)
-    {
-        DefaultSeparator separator = DefaultSeparators[separator_i];
-
-        bool flag = GetFlagPattern(word, separator.nameInfo.name, separator.nameInfo.len);
-        RETURN_IF_TRUE(flag, separator.value, *wordSize = separator.nameInfo.len);
-    }
-    return Separator::undefined_separator;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Bracket GetBracket(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t bracket_i = 0; bracket_i < DefaultBracketsQuant; bracket_i++)
-    {
-        DefaultBracket bracket = DefaultBrackets[bracket_i];
-
-        bool flag = GetFlagPattern(word, bracket.nameInfo.name, bracket.nameInfo.len);
-        RETURN_IF_TRUE(flag, bracket.value, *wordSize = bracket.nameInfo.len);
-    }
-    return Bracket::undefined_bracket;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Cycle GetCycle(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t cycle_i = 0; cycle_i < DefaultCyclesQuant; cycle_i++)
-    {
-        DefaultCycle cycle = DefaultCycles[cycle_i];
-    
-        bool flag = GetFlagPattern(word, cycle.nameInfo.name, cycle.nameInfo.len);
-        RETURN_IF_TRUE(flag, cycle.value, *wordSize = cycle.nameInfo.len);
-    }
-    return Cycle::undefined_cycle;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Condition GetCondition(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-    for (size_t condition_i = 0; condition_i < DefaultConditionsQuant; condition_i++)
-    {
-        DefaultCondition condition = DefaultConditions[condition_i];
-    
-        bool flag = GetFlagPattern(word, condition.nameInfo.name, condition.nameInfo.len);
-        RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.nameInfo.len);
-    }
-    return Condition::undefined_condition;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsComment(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t i = 0; i < OneLineCommentsQuant; i++)
-    {
-        OneLineComment comment = OneLineComments[i];
-
-        bool flag = GetFlagPattern(word, comment.name, comment.len);
-        if (flag)
-        {
-            *wordSize = comment.len;
-            return true;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool HandleComment(const char* word, Pointers* pointer)
-{
-    assert(word);
-    assert(pointer);
-
-    bool flag = false;
-    size_t affterCommentStrLen = 0;
-    for (size_t i = 0; i < OneLineCommentsQuant; i++)
-    {
-        OneLineComment comment = OneLineComments[i];
-
-        flag = GetFlagPattern(word, comment.name, comment.len);
-        if (flag)
-        {
-            affterCommentStrLen = comment.len;
-            break;
-        }
-    }
-
-    if (!flag) return false;
-    while (!IsSlashNOrSlashN(word[affterCommentStrLen])) 
-        affterCommentStrLen++;
-
-    pointer->ip += affterCommentStrLen;
-    pointer->sp += affterCommentStrLen;
-
-    return true;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static void CreateDefaultEndToken(Token_t* tokenArr, Pointers* pointer)
-{
-    assert(tokenArr);
-    assert(pointer);
-
-    size_t    tp   = pointer->tp;
-
-    TokenType type = TokenType::TokenEndSymbol_t;
-    EndSymbol data = EndSymbol::endd;
-    size_t    lp   = pointer->lp;
-    size_t    sp   = pointer->sp;
-
-    TokenCtor(&tokenArr[tp], type, &data, lp, sp);
-
-    pointer->tp++;
-    
-    return;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

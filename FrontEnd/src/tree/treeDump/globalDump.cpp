@@ -96,12 +96,13 @@ const char* GetConditionInStr(Condition condition)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-bool IsDoubleEqual(double firstNum, double secondNum, double epss)
+const char* GetMainInStr(MainStartEnd main)
 {
-    double difference = firstNum - secondNum;
-
-    return  (difference <=  epss) &&
-            (difference >= -epss);
+    for (size_t i = 0; i < DefaultMainInfoArrSize; i++)
+        RETURN_IF_TRUE(main == DefaultMainInfoArr[i].value, DefaultMainInfoArr[i].nameInfo.name);
+    
+    assert(0 && "something went wrong");
+    return "wtf?";
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ bool IsDoubleEqual(double firstNum, double secondNum, double epss)
 void FprintNumber(FILE* dotFile, Number number)
 {
     assert(dotFile);
-
+    
     Type type = number.type;
 
     switch (type)
@@ -129,17 +130,27 @@ void FprintNumber(FILE* dotFile, Number number)
 void FprintName(FILE* dotFile, Name name)
 {
     assert(dotFile);
- 
+    
     // Name        name    = table.data[pointer];
     const char* nameStr = name.name.name;
     size_t      nameLen = name.name.len;
-
+    
     for (size_t i = 0; i < nameLen; i++)
     {
         fprintf(dotFile, "%c", nameStr[i]);
     }
-
+    
     return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool IsDoubleEqual(double firstNum, double secondNum, double epss)
+{
+    double difference = firstNum - secondNum;
+
+    return  (difference <=  epss) &&
+            (difference >= -epss);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

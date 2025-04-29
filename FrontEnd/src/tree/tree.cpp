@@ -213,6 +213,12 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
             _SET_TYPE(copy, typ, left);
             break;
         }
+        case NodeArgType::main:
+        {
+            MainStartEnd main = node->data.main;
+            _SET_MAIN(copy, main, left);
+            break;
+        }
         // case NodeArgType::function:
         // {
             // DFunction function = node->data.func;
@@ -341,6 +347,11 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
         }
 
         case NodeArgType::cycle:
+        {
+            return *err;
+        }
+
+        case NodeArgType::main:
         {
             return *err;
         }
