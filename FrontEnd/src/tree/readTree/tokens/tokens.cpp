@@ -24,15 +24,16 @@ struct Pointers
 static void TokenCtor        (Token_t* token, TokenType type, void* value, size_t fileLine, size_t linePos);
 
 
-static void HandleName          (Token_t* tokenArr, Pointers* pointer, Name         name                      );
-static void HandleType          (Token_t* tokenArr, Pointers* pointer, Type         type     , size_t wordSize);
-static void HandleCycle         (Token_t* tokenArr, Pointers* pointer, Cycle        cycle    , size_t wordSize);
-static void HandleNumber        (Token_t* tokenArr, Pointers* pointer, Number       number   , size_t wordSize);
-static void HandleBracket       (Token_t* tokenArr, Pointers* pointer, Bracket      bracket  , size_t wordSize);
-static void HandleSeparator     (Token_t* tokenArr, Pointers* pointer, Separator    separator, size_t wordSize);
-static void HandleOperation     (Token_t* tokenArr, Pointers* pointer, Operation    operation, size_t wordSize);
-static void HandleCondition     (Token_t* tokenArr, Pointers* pointer, Condition    condition, size_t wordSize);
-static void HandleMain          (Token_t* tokenArr, Pointers* pointer, MainStartEnd main     , size_t wordSize);
+static void HandleName               (Token_t* tokenArr, Pointers* pointer, Name         name                      );
+static void HandleType               (Token_t* tokenArr, Pointers* pointer, Type         type     , size_t wordSize);
+static void HandleCycle              (Token_t* tokenArr, Pointers* pointer, Cycle        cycle    , size_t wordSize);
+static void HandleNumber             (Token_t* tokenArr, Pointers* pointer, Number       number   , size_t wordSize);
+static void HandleBracket            (Token_t* tokenArr, Pointers* pointer, Bracket      bracket  , size_t wordSize);
+static void HandleSeparator          (Token_t* tokenArr, Pointers* pointer, Separator    separator, size_t wordSize);
+static void HandleOperation          (Token_t* tokenArr, Pointers* pointer, Operation    operation, size_t wordSize);
+static void HandleCondition          (Token_t* tokenArr, Pointers* pointer, Condition    condition, size_t wordSize);
+static void HandleFunctionAttribute  (Token_t* tokenArr, Pointers* pointer, FunctionAttribute attribute, size_t wordSize);
+static void HandleMain               (Token_t* tokenArr, Pointers* pointer, MainStartEnd main     , size_t wordSize);
 
 
 static bool HandleComment       (const char* word, Pointers* pointer);
@@ -56,20 +57,21 @@ static bool IsLetterOrNumberOrUnderLineSymbol  (char c);
 static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
 
-static Name         GetName          (const char* word                  );
-static MainStartEnd GetMain          (const char* word, size_t* wordSize);
-static Number       GetInt           (const char* word, size_t* wordSize);
-static Operation    GetOperation     (const char* word, size_t* wordSize);
-static Separator    GetSeparator     (const char* word, size_t* wordSize);
-static Type         GetType          (const char* word, size_t* wordSize);
-static Cycle        GetCycle         (const char* word, size_t* wordSize);
-static Condition    GetCondition     (const char* word, size_t* wordSize);
-static Bracket      GetBracket       (const char* word, size_t* wordSize);
-static Number       GetNumber        (const char* word, size_t* wordSize);
-static Number       GetDouble        (const char* word, size_t* wordSize);
-static Number       GetChar          (const char* word, size_t* wordSize);
+static Name              GetName              (const char* word                  );
+static MainStartEnd      GetMain              (const char* word, size_t* wordSize);
+static Number            GetInt               (const char* word, size_t* wordSize);
+static Operation         GetOperation         (const char* word, size_t* wordSize);
+static Separator         GetSeparator         (const char* word, size_t* wordSize);
+static Type              GetType              (const char* word, size_t* wordSize);
+static Cycle             GetCycle             (const char* word, size_t* wordSize);
+static Condition         GetCondition         (const char* word, size_t* wordSize);
+static Bracket           GetBracket           (const char* word, size_t* wordSize);
+static Number            GetNumber            (const char* word, size_t* wordSize);
+static Number            GetDouble            (const char* word, size_t* wordSize);
+static Number            GetChar              (const char* word, size_t* wordSize);
+static FunctionAttribute GetFunctionAttribute (const char* word, size_t* wordSize);
 
-static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
+static void CreateDefaultEndToken (Token_t* tokenArr, Pointers* pointer);
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -106,6 +108,14 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         if (HandleComment(word, &pointer))
             continue;
 
+
+        Number number = GetNumber(word, &wordSize);
+        if (number.type != Type::undefined_type)
+        {
+            HandleNumber(tokenArr, &pointer, number, wordSize);
+            continue;
+        }
+
         Operation operation = GetOperation(word, &wordSize);
         if (operation != Operation::undefined_operation)
         {
@@ -113,12 +123,6 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
         
-        Number number = GetNumber(word, &wordSize);
-        if (number.type != Type::undefined_type)
-        {
-            HandleNumber(tokenArr, &pointer, number, wordSize);
-            continue;
-        }
 
         Condition condition = GetCondition(word, &wordSize);
         if (condition != Condition::undefined_condition)
@@ -157,6 +161,12 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
+        FunctionAttribute attribute = GetFunctionAttribute(word, &wordSize);
+        if (attribute != FunctionAttribute::undefined_attribute)
+        {
+            HandleFunctionAttribute(tokenArr, &pointer, attribute, wordSize);
+            continue;
+        }
 
         Separator separator = GetSeparator(word, &wordSize);
         if (separator != Separator::undefined_separator)
@@ -227,16 +237,17 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 
     switch (type)
     {
-        case TokenType::TokenType_t:      token->data.type      = *(Type     *) value; break;
-        case TokenType::TokenName_t:      token->data.name      = *(Name     *) value; break;
-        case TokenType::TokenNumber_t:    token->data.number    = *(Number   *) value; break;
-        case TokenType::TokenOperation_t: token->data.operation = *(Operation*) value; break;
-        case TokenType::TokenSeparator_t: token->data.separator = *(Separator*) value; break;
-        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
-        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
-        case TokenType::TokenCondition_t: token->data.condition = *(Condition*) value; break;
-        case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle    *) value; break;
-        case TokenType::TokenMainInfo_t:  token->data.main      = *(MainStartEnd*) value; break;
+        case TokenType::TokenType_t:      token->data.type      = *(Type             *) value; break;
+        case TokenType::TokenName_t:      token->data.name      = *(Name             *) value; break;
+        case TokenType::TokenNumber_t:    token->data.number    = *(Number           *) value; break;
+        case TokenType::TokenOperation_t: token->data.operation = *(Operation        *) value; break;
+        case TokenType::TokenSeparator_t: token->data.separator = *(Separator        *) value; break;
+        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket          *) value; break;
+        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol        *) value; break;
+        case TokenType::TokenCondition_t: token->data.condition = *(Condition        *) value; break;
+        case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle            *) value; break;
+        case TokenType::TokenMainInfo_t:  token->data.main      = *(MainStartEnd     *) value; break;
+        case TokenType::TokenFuncAttr_t:  token->data.attribute = *(FunctionAttribute*) value; break;
         case TokenType::TokenFunction_t:
         default:                          assert(0 && "undefined token type symbol."); break;
     }
@@ -370,6 +381,20 @@ static void HandleNumber(Token_t* tokenArr, Pointers* pointer, Number number, si
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static void HandleFunctionAttribute(Token_t* tokenArr, Pointers* pointer, FunctionAttribute attribute, size_t wordSize)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenFuncAttr_t, &attribute, pointer->lp, pointer->sp);
+
+    UpdatePointer(pointer, wordSize);
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static void HandleMain(Token_t* tokenArr, Pointers* pointer, MainStartEnd main, size_t wordSize)
 {
     assert(tokenArr);
@@ -393,9 +418,10 @@ static Number GetNumber(const char* word, size_t* wordSize)
 
     Number number = {};
 
+    
     number = GetInt(word, wordSize);
     RETURN_IF_TRUE(number.type == Type::int_type, number);
-
+    
     number = GetDouble(word, wordSize);
     RETURN_IF_TRUE(number.type == Type::double_type, number);
 
@@ -419,12 +445,14 @@ static Number GetInt(const char* word, size_t* wordSize)
 
     char* numEnd = nullptr;
     number.value.int_val = (int) strtol(word, &numEnd, 10);
-    *wordSize = (size_t) (numEnd - word);
+    size_t size = (size_t) (numEnd - word);
 
-    if (*wordSize > 0)
+    if (((size == 1 && (word[0] != '+' && word[0] != '-')) || size > 1) && word[size] != '.')
         number.type = Type::int_type;
 
-    return number;    
+    *wordSize = size;
+
+    return number; 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -434,14 +462,16 @@ static Number GetDouble(const char* word, size_t* wordSize)
     assert(word);
     assert(wordSize);
 
-
     Number number = {};
 
     char* numEnd = nullptr;
     number.value.double_val = strtod(word, &numEnd);
-    *wordSize =  (size_t) (numEnd - word);
+    size_t size = (size_t) (numEnd - word);
 
-    if (*wordSize > 0) number.type = Type::char_type;
+    if ((size == 1 && (word[0] != '+' && word[0] != '-')) || size > 1)
+        number.type = Type::double_type;
+
+    *wordSize = size;
 
     return number;    
 }
@@ -573,6 +603,7 @@ static Condition GetCondition(const char* word, size_t* wordSize)
 {
     assert(word);
     assert(wordSize);
+
     for (size_t condition_i = 0; condition_i < DefaultConditionsQuant; condition_i++)
     {
         DefaultCondition condition = DefaultConditions[condition_i];
@@ -581,6 +612,23 @@ static Condition GetCondition(const char* word, size_t* wordSize)
         RETURN_IF_TRUE(flag, condition.value, *wordSize = condition.nameInfo.len);
     }
     return Condition::undefined_condition;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static FunctionAttribute GetFunctionAttribute(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t condition_i = 0; condition_i < DefaultFunctionAttributesQuant; condition_i++)
+    {
+        DefaultFunctionAttribute atrribute = DefaultFunctionsAttributes[condition_i];
+    
+        bool flag = GetFlagPattern(word, atrribute.nameInfo.name, atrribute.nameInfo.len);
+        RETURN_IF_TRUE(flag, atrribute.value, *wordSize = atrribute.nameInfo.len);
+    }
+    return FunctionAttribute::undefined_attribute;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

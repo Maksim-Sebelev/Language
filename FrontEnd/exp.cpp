@@ -1,13 +1,9 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 
 int main()
 {
-    if (int a =5)
-    {
-        a++;
-        printf("a = %d\n", a);
-    }
+    const char* str = "3.1415";
 
     return 0;
 }

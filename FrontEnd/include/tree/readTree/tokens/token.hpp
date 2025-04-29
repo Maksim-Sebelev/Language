@@ -20,16 +20,17 @@ struct FilePlace
 
 union TokenData
 {
-    MainStartEnd main;
-    Condition    condition;
-    Separator    separator;
-    Operation    operation;
-    Bracket      bracket;
-    Number       number;
-    Cycle        cycle;
-    Type         type;
-    Name         name;
-    EndSymbol    end;
+    FunctionAttribute attribute;
+    MainStartEnd      main;
+    Condition         condition;
+    Separator         separator;
+    Operation         operation;
+    Bracket           bracket;
+    Number            number;
+    Cycle             cycle;
+    Type              type;
+    Name              name;
+    EndSymbol         end;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -47,6 +48,7 @@ enum TokenType
     TokenCycle_t     ,
     TokenCondition_t ,
     TokenMainInfo_t  ,
+    TokenFuncAttr_t  ,
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

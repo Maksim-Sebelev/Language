@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "tree/tree.hpp"
 #include "tree/treeDump/globalDump.hpp"
+#include "log/log.hpp"
 
 //=============================== GLobal Graphic Dump Function ==============================================================================================================================
 
@@ -96,11 +97,24 @@ const char* GetConditionInStr(Condition condition)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+const char* GetFuncAttrInStr(FunctionAttribute attr)
+{
+    for (size_t i = 0; i < DefaultFunctionAttributesQuant; i++)
+        RETURN_IF_TRUE(attr == DefaultFunctionsAttributes[i].value, DefaultFunctionsAttributes[i].nameInfo.name);
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 const char* GetMainInStr(MainStartEnd main)
 {
     for (size_t i = 0; i < DefaultMainInfoArrSize; i++)
         RETURN_IF_TRUE(main == DefaultMainInfoArr[i].value, DefaultMainInfoArr[i].nameInfo.name);
     
+    LOG_PRINT(Yellow, "main = '%d'\n", main);   
+
     assert(0 && "something went wrong");
     return "wtf?";
 }

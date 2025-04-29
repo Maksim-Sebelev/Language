@@ -11,10 +11,13 @@
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetMain              (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetCondition         (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetIfCondition       (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetElseIfCondition   (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetElseCondition     (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetCallFunction      (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetCallFunctionArgs  (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetCycle             (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetWhile             (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetFor               (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -30,7 +33,6 @@ static Node_t* GetPow               (const Token_t* token, size_t* tp, const Inp
 static Node_t* GetNot               (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetMinus             (const Token_t* token, size_t* tp, const InputData* inputData);
 
-
 static Number       GetTokenNumber           (const Token_t* token);
 static Name         GetTokenName             (const Token_t* token);
 static Type         GetTokenType             (const Token_t* token);
@@ -41,6 +43,7 @@ static bool IsTokenNum                       (const Token_t* token);
 static bool IsTokenName                      (const Token_t* token);
 static bool IsTokenType                      (const Token_t* token);
 static bool IsTokenFunction                  (const Token_t* token);
+static bool IsTokenOperation                 (const Token_t* token);
 
 
 static bool IsTokenSeparatorComma            (const Token_t* token);
@@ -62,6 +65,10 @@ static bool IsTokenLeftCurlyBracket          (const Token_t* token);
 static bool IsTokenRightCurlyBracket         (const Token_t* token);
 static bool IsTokenCycleWhile                (const Token_t* token);
 static bool IsTokenCycleFor                  (const Token_t* token);
+static bool IsTokenFuncAttrCall              (const Token_t* token);
+static bool IsTokenMainStart                 (const Token_t* token);
+static bool IsTokenMainEnd                    (const Token_t* token);
+
 static bool IsNotAssignOperationBeforeMinus  (const Token_t* token, size_t tp);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,13 +82,12 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     assert(tokens);
 
     size_t tp = 0;
-    Node_t* node = GetCondition(tokens, &tp, inputData);
+    Node_t* node = GetMain(tokens, &tp, inputData);
 
     if (!IsTokenEnd(&tokens[tp]))
-        SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '$'");
+        SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '\0'");
 
     tp++;
-
 
     TreeErr err = {};
 
@@ -92,12 +98,47 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetDefFunc(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetMain(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenMainStart(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'start' (main start)");
+
+    (*tp)++;
+
+    Node_t* condition_node = GetCondition(token, tp, inputData);
+
+    if (!IsTokenMainEnd(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'end' (main end)");
+
+    (*tp)++;
+
+    Node_t* main_node = {};
+    _MAIN(&main_node, condition_node);
+
+    return main_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static Node_t* GetCondition(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(token);
     assert(tp);
 
-    if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]))
+    if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]) || IsTokenMainEnd(&token[*tp]))
         return nullptr;
 
     Node_t* main_connect_node = {};
@@ -109,6 +150,14 @@ static Node_t* GetCondition(const Token_t* token, size_t* tp, const InputData* i
         _CONNECT(&main_connect_node, cycle_node, next_condition_node);
 
         return main_connect_node;
+    }
+
+    else if (IsTokenFuncAttrCall(&token[*tp]))
+    {
+        Node_t* call_function_node = GetCallFunction(token, tp, inputData);
+        NODE_GRAPHIC_DUMP(call_function_node);
+        Node_t* next_condition_node = GetCondition(token, tp, inputData);
+        _CONNECT(&main_connect_node, call_function_node, next_condition_node);
     }
 
     else if (!IsTokenConditionIf(&token[*tp]))
@@ -290,6 +339,63 @@ static Node_t* GetElseCondition(const Token_t* token, size_t* tp, const InputDat
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetCallFunction(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenFuncAttrCall(&token[*tp]))
+        return GetBoolOperation(token, tp, inputData);
+
+    (*tp)++;
+
+    Node_t* name_node = GetName(token, tp, inputData);
+
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+
+    (*tp)++;
+
+    Node_t* args_node = GetCallFunctionArgs(token, tp, inputData);
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+
+    (*tp)++;
+
+    name_node->left = args_node;
+
+    return name_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetCallFunctionArgs(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+    
+    
+    if (!IsTokenName(&token[*tp]))
+    return nullptr;
+
+    Node_t* name_node = GetName(token, tp, inputData);    
+    
+    if (!IsTokenSeparatorComma(&token[*tp]))
+    return name_node;
+    
+    (*tp)++;
+    
+    Node_t* next_name_node = GetCallFunctionArgs(token, tp, inputData);
+    
+    Node_t* connect_node = {};
+    _CONNECT(&connect_node, name_node, next_name_node);
+
+    return connect_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static Node_t* GetCycle(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(token);
@@ -297,8 +403,11 @@ static Node_t* GetCycle(const Token_t* token, size_t* tp, const InputData* input
 
     if (IsTokenCycleFor(&token[*tp]))
         return GetFor(token, tp, inputData);
-        
-    return GetWhile(token, tp, inputData);
+    
+    if (IsTokenCycleWhile(&token[*tp]))
+        return GetWhile(token, tp, inputData);
+
+    return nullptr;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -437,7 +546,7 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
 
     (*tp)++;
 
-    Node_t* node2 = GetBoolOperation(token, tp, inputData);
+    Node_t* node2 = GetCallFunction(token, tp, inputData);
 
     Node_t* assign_node = {};
 
@@ -680,7 +789,7 @@ static Node_t* GetBracket(const Token_t* token, size_t* tp, const InputData* inp
     if (IsTokenLeftRoundBracket(&token[*tp]))
     {
         (*tp)++;  
-        Node_t* node = GetBoolOperation(token, tp, inputData);
+        Node_t* node = GetCallFunction(token, tp, inputData);
     
         if (!IsTokenRightRoundBracket(&token[*tp])) 
             SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
@@ -868,6 +977,14 @@ static bool IsBoolOperation(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsTokenOperation(const Token_t* token)
+{   
+    assert(token);
+    return token->type == TokenType::TokenOperation_t;    
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static bool IsAddSub(const Token_t* token)
 {   
     assert(token);
@@ -974,7 +1091,7 @@ static bool IsNotAssignOperationBeforeMinus(const Token_t* token, size_t tp)
 {
     assert(token);
 
-    return (tp >= 1 && !IsTokenAssign(&token[tp - 1]));   
+    return (tp >= 1 && IsTokenOperation(&token[tp - 1]) && !IsTokenAssign(&token[tp - 1]));   
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1046,6 +1163,33 @@ static bool IsTokenSeparatorComma(const Token_t* token)
     assert(token);
     return  (token->type == TokenType::TokenSeparator_t) &&
             (token->data.separator == Separator::comma);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenFuncAttrCall(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenFuncAttr_t) &&
+            (token->data.attribute == FunctionAttribute::call);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenMainStart(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenMainInfo_t) &&
+            (token->data.main == MainStartEnd::start);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenMainEnd(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenMainInfo_t) &&
+            (token->data.main == MainStartEnd::end);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

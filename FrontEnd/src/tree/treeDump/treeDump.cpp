@@ -333,6 +333,7 @@ static const char* GetNodeColor(const Node_t* node)
         case NodeArgType::condition: return "#CDFC5C";
         case NodeArgType::cycle:     return "#CFFC5C";
         case NodeArgType::main:      return "#0140ff";
+        case NodeArgType::mainInfo:  return "#a140ff";
         case NodeArgType::undefined: return "red";
         default:
             assert(0 && "undefined situation in GetColorType.\n");
@@ -377,6 +378,9 @@ static const char* GetNodeTypeInStr(const Node_t* node)
         
         case NodeArgType::type:
             return "type";
+
+        case NodeArgType::mainInfo:
+            return "main";
 
         case NodeArgType::main:
             return "main";
@@ -442,10 +446,15 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return GetCycleInStr(cycle);
         }
 
+        case NodeArgType::mainInfo:
+        {
+            MainStartEnd main = node->data.mainInfo;
+            return GetMainInStr(main);
+        }
+
         case NodeArgType::main:
         {
-            MainStartEnd main = node->data.main;
-            return GetMainInStr(main);
+            return "MAIN";
         }
 
         default:

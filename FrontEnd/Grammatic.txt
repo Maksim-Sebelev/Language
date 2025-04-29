@@ -1,9 +1,11 @@
 Tree          ::=   DefFunc '\0'
 DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' {Condition}* 'return' CallFunc '}' } * | main
 DefFuncArgs   ::=   Type Name {',' Type Nama } *
+
+
 main          ::=   'start' Condition 'end'
-Condition     ::=   { ConditionIf ConditionElif ConditionElse | Assign ';' | Cycle | CallFunc }*
-CallFunc      ::=   Name '(' Args ')' | BoolOperation
+Condition     ::=   { ConditionIf ConditionElif ConditionElse | Assign ';' | Cycle | CallFunc ';' }*
+CallFunc      ::=   'call' Name '(' Args ')' | BoolOperation
 Args          ::=   Name {',' Name} *
 ConditionIf   ::=   'if' '(' CallFunc ')' '{' Condition '}'
 ConditionElif ::=   { 'else if' '(' CallFunc ')' '{' Condition '}' }*

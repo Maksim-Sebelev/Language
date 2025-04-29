@@ -61,6 +61,7 @@ enum class NodeArgType
     type      ,
     condition ,
     cycle     ,
+    mainInfo  ,
     main      ,
 };
 
@@ -68,7 +69,8 @@ enum class NodeArgType
 
 union NodeData_t
 {
-    MainStartEnd main;
+    Main         main;
+    MainStartEnd mainInfo;
     Condition    condition;
     Operation    oper;
     Number       num;
@@ -115,15 +117,18 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _NUM(    node, val                 ) do { NodeData_t data = {.num      = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::number   , data,  nullptr,      nullptr)); }       while(0)
-#define _FUNC(   node, val, left           ) do { NodeData_t data = {.func     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::function , data,  left,         nullptr)); }       while(0)
-#define _NAME(   node, val                 ) do { NodeData_t data = {.name     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::name     , data,  nullptr,      nullptr)); }       while(0)
-#define _OPER(   node, val, left, right    ) do { NodeData_t data = {.oper     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data,  left,         right));   }       while(0)
-#define _TYPE(   node, val, left           ) do { NodeData_t data = {.type     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::type     , data,  left,         nullptr)); }       while(0)
-#define _CONNECT(node,      left, right    ) do { NodeData_t data = {.connect = '\0'};            TREE_ASSERT(NodeCtor(node, NodeArgType::connect  , data,  left,         right));   }       while(0)
+#define _NUM(      node, val                 ) do { NodeData_t data = {.num      = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::number   , data,  nullptr,      nullptr)); }       while(0)
+#define _FUNC(     node, val, left           ) do { NodeData_t data = {.func     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::function , data,  left,         nullptr)); }       while(0)
+#define _NAME(     node, val                 ) do { NodeData_t data = {.name     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::name     , data,  nullptr,      nullptr)); }       while(0)
+#define _OPER(     node, val, left, right    ) do { NodeData_t data = {.oper     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::operation, data,  left,         right));   }       while(0)
+#define _TYPE(     node, val, left           ) do { NodeData_t data = {.type     = val};            TREE_ASSERT(NodeCtor(node, NodeArgType::type     , data,  left,         nullptr)); }       while(0)
+#define _CONNECT(  node,      left, right    ) do { NodeData_t data = {.connect = '\0'};            TREE_ASSERT(NodeCtor(node, NodeArgType::connect  , data,  left,         right));   }       while(0)
 
-#define _WHILE( node,    left, right  ) do { NodeData_t data = {.cycle = Cycle::while_t};    TREE_ASSERT(NodeCtor(node, NodeArgType::cycle,    data,        left,         right));   }       while(0)
-#define _FOR(   node,    left, right  ) do { NodeData_t data = {.cycle = Cycle::for_t};      TREE_ASSERT(NodeCtor(node, NodeArgType::cycle,    data,        left,         right));   }       while(0)
+#define _WHILE(    node,      left, right    ) do { NodeData_t data = {.cycle = Cycle::while_t};    TREE_ASSERT(NodeCtor(node, NodeArgType::cycle,    data,        left,    right));   }       while(0)
+#define _FOR(      node,      left, right    ) do { NodeData_t data = {.cycle = Cycle::for_t};      TREE_ASSERT(NodeCtor(node, NodeArgType::cycle,    data,        left,    right));   }       while(0)
+
+#define _MAIN(     node,      left           ) do { NodeData_t data = {.main = '\0'};               TREE_ASSERT(NodeCtor(node, NodeArgType::main,     data,        left,    nullptr)); }       while(0)
+
 
 #define _SET_NUM(  node, val               ) do { NodeData_t data = {.num  = val};                 TREE_ASSERT(SetNode (node, NodeArgType::number,    data, nullptr,       nullptr)); }       while(0)
 #define _SET_FUNC( node, val, left         ) do { NodeData_t data = {.func = val};                 TREE_ASSERT(SetNode (node, NodeArgType::function,  data, left,          nullptr)); }       while(0)
@@ -131,8 +136,8 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 #define _SET_OPER( node, val, left, right  ) do { NodeData_t data = {.oper = val};                 TREE_ASSERT(SetNode (node, NodeArgType::operation, data, left,          right));   }       while(0)
 #define _SET_COND( node, val, left, right  ) do { NodeData_t data = {.condition = val};            TREE_ASSERT(SetNode (node, NodeArgType::condition, data, left,          right));   }       while(0)
 #define _SET_CYCLE(node, val, left, right  ) do { NodeData_t data = {.cycle = val};                TREE_ASSERT(SetNode (node, NodeArgType::cycle,     data, left,          right));   }       while(0)
-#define _SET_TYPE( node, val, left         ) do { NodeData_t data = {.type  = val};                TREE_ASSERT(SetNode (node, NodeArgType::type,       data, left,          right));   }       while(0)
-#define _SET_MAIN( node, val, left         ) do { NodeData_t data = {.main  = val};                TREE_ASSERT(SetNode (node, NodeArgType::main,       data, left,          right));   }       while(0)
+#define _SET_TYPE( node, val, left         ) do { NodeData_t data = {.type  = val};                TREE_ASSERT(SetNode (node, NodeArgType::type,      data, left,          right));   }       while(0)
+#define _SET_MAIN( node, val, left         ) do { NodeData_t data = {.mainInfo  = val};            TREE_ASSERT(SetNode (node, NodeArgType::mainInfo,  data, left,          right));   }       while(0)
 
 #define _SET_FUNC_ONLY( node, val          ) do { NodeData_t data = {.func      = val};                 TREE_ASSERT(SetNode (node, NodeArgType::function,  data, (node)->left,  (node)->right)); } while(0)
 #define _SET_OPER_ONLY( node, val          ) do { NodeData_t data = {.oper      = val};                 TREE_ASSERT(SetNode (node, NodeArgType::operation, data, (node)->left,  (node)->right)); } while(0)
