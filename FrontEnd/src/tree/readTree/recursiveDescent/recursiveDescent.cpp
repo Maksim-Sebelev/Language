@@ -11,9 +11,13 @@
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static Node_t* GetCondition         (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetIfCondition       (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetElseIfCondition   (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetElseCondition     (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetCycle             (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetWhile             (const Token_t* token, size_t* tp, const InputData* inputData);
+static Node_t* GetFor               (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetAssign            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetNumber            (const Token_t* token, size_t* tp, const InputData* inputData);
 static Node_t* GetName              (const Token_t* token, size_t* tp, const InputData* inputData);
@@ -36,10 +40,11 @@ static bool IsTokenEnd                       (const Token_t* token);
 static bool IsTokenNum                       (const Token_t* token);
 static bool IsTokenName                      (const Token_t* token);
 static bool IsTokenType                      (const Token_t* token);
-static bool IsTokenOperation                 (const Token_t* token);
 static bool IsTokenFunction                  (const Token_t* token);
 
 
+static bool IsTokenSeparatorComma            (const Token_t* token);
+static bool IsTokenCycle                     (const Token_t* token);
 static bool IsTokenAssign                    (const Token_t* token);
 static bool IsTokenSemicolon                 (const Token_t* token);
 static bool IsBoolOperation                  (const Token_t* token);
@@ -49,14 +54,17 @@ static bool IsPow                            (const Token_t* token);
 static bool IsTokenLeftRoundBracket          (const Token_t* token);
 static bool IsTokenRightRoundBracket         (const Token_t* token);
 static bool IsTokenMinus                     (const Token_t* token);
-static bool IsOperationToken                 (const Token_t* token);
 static bool IsTokenConditionIf               (const Token_t* token);
 static bool IsTokenConditionElseIf           (const Token_t* token);
 static bool IsTokenConditionElse             (const Token_t* token);
 static bool IsTokenOperationNot              (const Token_t* token);
 static bool IsTokenLeftCurlyBracket          (const Token_t* token);
 static bool IsTokenRightCurlyBracket         (const Token_t* token);
+static bool IsTokenCycleWhile                (const Token_t* token);
+static bool IsTokenCycleFor                  (const Token_t* token);
 static bool IsNotAssignOperationBeforeMinus  (const Token_t* token, size_t tp);
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,7 +75,7 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
     assert(tokens);
 
     size_t tp = 0;
-    Node_t* node = GetIfCondition(tokens, &tp, inputData);
+    Node_t* node = GetCondition(tokens, &tp, inputData);
 
     if (!IsTokenEnd(&tokens[tp]))
         SYNTAX_ERR_FOR_TOKEN(tokens[tp], inputData, "expected '$'");
@@ -84,7 +92,7 @@ Node_t* GetTree(const Token_t* tokens, const InputData* inputData)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData* inputData)
+static Node_t* GetCondition(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(token);
     assert(tp);
@@ -92,14 +100,75 @@ static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData*
     if (IsTokenEnd(&token[*tp]) || IsTokenRightCurlyBracket(&token[*tp]))
         return nullptr;
 
-    if (!IsTokenConditionIf(&token[*tp]))
+    Node_t* main_connect_node = {};
+    
+    if (IsTokenCycle(&token[*tp]))
     {
-        Node_t* assign_node = GetAssign(token, tp, inputData);
-        Node_t* next_if_condition_node = GetIfCondition(token, tp, inputData);
-        Node_t* main_connect_node = {};
-        _CONNECT(&main_connect_node, assign_node, next_if_condition_node);
+        Node_t* cycle_node = GetCycle(token, tp, inputData);
+        Node_t* next_condition_node = GetCondition(token, tp, inputData);
+        _CONNECT(&main_connect_node, cycle_node, next_condition_node);
+
         return main_connect_node;
     }
+
+    else if (!IsTokenConditionIf(&token[*tp]))
+    {
+
+        Node_t* assign_node = GetAssign(token, tp, inputData);
+
+        if (!IsTokenSemicolon(&token[*tp]))
+            SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
+
+        (*tp)++;
+
+        Node_t* next_condition_node = GetCondition(token, tp, inputData);
+        _CONNECT(&main_connect_node, assign_node, next_condition_node);
+
+        return main_connect_node;
+    }
+
+    Node_t* if_node      = GetIfCondition    (token, tp, inputData);
+    Node_t* else_if_node = GetElseIfCondition(token, tp, inputData);
+    Node_t* else_node    = GetElseCondition  (token, tp, inputData);
+
+
+    Node_t* connect_node = {};
+
+    if (!else_node && else_if_node)
+        _CONNECT(&connect_node, if_node, else_if_node);
+
+    else if (else_node && !else_if_node)
+        _CONNECT(&connect_node, if_node, else_node);
+
+    else if (else_node && else_if_node)
+    {
+        Node_t* connect_node_2 = {};
+        _CONNECT(&connect_node_2, else_if_node, else_node     );
+        _CONNECT(&connect_node  , if_node     , connect_node_2);
+    }
+
+    else
+    {
+        Node_t* next_condition = GetCondition(token, tp, inputData);
+        _CONNECT(&connect_node, if_node, next_condition);
+        return connect_node;
+    }
+
+    Node_t* next_condition = GetCondition(token, tp, inputData);
+    _CONNECT(&main_connect_node, connect_node, next_condition);
+
+    return main_connect_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenConditionIf(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'if'");
 
     (*tp)++;
  
@@ -129,7 +198,7 @@ static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData*
 
     old_tp = *tp;
 
-    Node_t* body_node = GetIfCondition(token, tp, inputData);
+    Node_t* body_node = GetCondition(token, tp, inputData);
 
     if (!IsTokenRightCurlyBracket(&token[*tp]))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
@@ -137,38 +206,8 @@ static Node_t* GetIfCondition(const Token_t* token, size_t* tp, const InputData*
     (*tp)++;
 
     _IF(&if_node, bool_node, body_node);
-
-    Node_t* else_if_node = GetElseIfCondition(token, tp, inputData);
-    Node_t* else_node    = GetElseCondition   (token, tp, inputData);
     
-
-    Node_t* connect_node = {};
-
-    if (!else_node && else_if_node)
-        _CONNECT(&connect_node, if_node, else_if_node);
-
-    else if (else_node && !else_if_node)
-        _CONNECT(&connect_node, if_node, else_node);
-
-    else if (else_node && else_if_node)
-    {
-        Node_t* connect_node_2 = {};
-        _CONNECT(&connect_node_2, else_if_node, else_node     );
-        _CONNECT(&connect_node  , if_node     , connect_node_2);
-    }
-
-    else
-    {
-        Node_t* next_if_condition = GetIfCondition(token, tp, inputData);
-        _CONNECT(&connect_node, if_node, next_if_condition);
-        return connect_node;
-    }
-    
-    Node_t* main_connect_node = {};
-    Node_t* next_if_condition = GetIfCondition(token, tp, inputData);
-    _CONNECT(&main_connect_node, connect_node, next_if_condition);
-    
-    return main_connect_node;
+    return if_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -182,8 +221,6 @@ static Node_t* GetElseIfCondition(const Token_t* token, size_t* tp, const InputD
         return nullptr;
     
     (*tp)++;
-
-    Node_t* else_if = {};
 
     if (!IsTokenLeftRoundBracket(&token[*tp]))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
@@ -202,7 +239,7 @@ static Node_t* GetElseIfCondition(const Token_t* token, size_t* tp, const InputD
 
     (*tp)++;
 
-    Node_t* body_node = GetIfCondition(token, tp, inputData);
+    Node_t* body_node = GetCondition(token, tp, inputData);
 
     if (!IsTokenRightCurlyBracket(&token[*tp]))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
@@ -238,7 +275,7 @@ static Node_t* GetElseCondition(const Token_t* token, size_t* tp, const InputDat
 
     (*tp)++;
 
-    Node_t* body_node = GetIfCondition(token, tp, inputData);
+    Node_t* body_node = GetCondition(token, tp, inputData);
 
     if (!IsTokenRightCurlyBracket(&token[*tp]))
         SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
@@ -252,6 +289,127 @@ static Node_t* GetElseCondition(const Token_t* token, size_t* tp, const InputDat
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetCycle(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (IsTokenCycleFor(&token[*tp]))
+        return GetFor(token, tp, inputData);
+        
+    return GetWhile(token, tp, inputData);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetWhile(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenCycleWhile(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'while'");
+
+    (*tp)++;
+
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+
+    (*tp)++;
+
+    Node_t* bool_node = GetBoolOperation(token, tp, inputData);
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+        
+    (*tp)++;
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    
+    Node_t* condition_node = GetCondition(token, tp, inputData);
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+
+    (*tp)++;
+
+    Node_t* while_node = {};
+    _WHILE(&while_node, bool_node, condition_node);
+
+    return while_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetFor(const Token_t* token, size_t* tp, const InputData* inputData)
+{
+    assert(token);
+    assert(tp);
+
+    if (!IsTokenCycleFor(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected 'for'");
+
+    (*tp)++;
+
+    if (!IsTokenLeftRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '('");
+
+    (*tp)++;
+
+    Node_t* assign_node_1 = GetAssign(token, tp, inputData);
+
+    if (!IsTokenSemicolon(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
+
+    (*tp)++;
+
+    Node_t* bool_node = GetBoolOperation(token, tp, inputData);
+
+    if (!IsTokenSemicolon(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
+
+    (*tp)++;
+
+    Node_t* assign_node_2 = GetAssign(token, tp, inputData);
+
+    if (!IsTokenRightRoundBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ')'");
+        
+    (*tp)++;
+
+    if (!IsTokenLeftCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '{'");
+
+    (*tp)++;
+
+    
+    Node_t* condition_node = GetCondition(token, tp, inputData);
+
+    if (!IsTokenRightCurlyBracket(&token[*tp]))
+        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected '}'");
+
+    (*tp)++;
+
+    Node_t* connect_node_1 = {};
+    Node_t* connect_node_2 = {};
+
+    _CONNECT(&connect_node_1, assign_node_1, bool_node);
+    _CONNECT(&connect_node_2, connect_node_1, assign_node_2);
+
+
+    Node_t* for_node = {};
+    _FOR(&for_node, connect_node_2, condition_node);
+
+    return for_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inputData)
 {
     assert(tp);
@@ -281,13 +439,7 @@ static Node_t* GetAssign(const Token_t* token, size_t* tp, const InputData* inpu
 
     Node_t* node2 = GetBoolOperation(token, tp, inputData);
 
-    if (!IsTokenSemicolon(&token[*tp]))
-        SYNTAX_ERR_FOR_TOKEN(token[*tp], inputData, "expected ';'");
-
-    (*tp)++;
-    
     Node_t* assign_node = {};
-    Node_t* connect_node = {};
 
     if (wasType)
         _ASG(&assign_node, type_node, node2);
@@ -331,6 +483,13 @@ static Node_t* GetBoolOperation(const Token_t* token, size_t* tp, const InputDat
             case Operation::not_equal:           _NEQ (&new_node, node, node2); break;
             case Operation::bool_and:            _AND (&new_node, node, node2); break;
             case Operation::bool_or:             _OR  (&new_node, node, node2); break;
+            case Operation::bool_not:
+            case Operation::plus:
+            case Operation::minus:
+            case Operation::mul:
+            case Operation::dive:
+            case Operation::power:
+            case Operation::assign: break;
             case Operation::undefined_operation:
             default:
             {
@@ -663,14 +822,6 @@ static bool IsTokenType(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenOperation(const Token_t* token)
-{
-    assert(token);
-    return (token->type == TokenType::TokenOperation_t);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static bool IsTokenFunction(const Token_t* token)
 {   
     assert(token);
@@ -828,14 +979,6 @@ static bool IsNotAssignOperationBeforeMinus(const Token_t* token, size_t tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsOperationToken(const Token_t* token)
-{
-    assert(token);
-    return (token->type == TokenType::TokenOperation_t);   
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static bool IsTokenConditionIf(const Token_t* token)
 {
     assert(token);
@@ -872,7 +1015,37 @@ static bool IsTokenOperationNot(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsTokenCycle(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenCycle_t);
+}
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsTokenCycleWhile(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenCycle_t) &&
+            (token->data.cycle == Cycle::while_t);
+}
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool IsTokenCycleFor(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenCycle_t) &&
+            (token->data.cycle == Cycle::for_t);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenSeparatorComma(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenSeparator_t) &&
+            (token->data.separator == Separator::comma);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

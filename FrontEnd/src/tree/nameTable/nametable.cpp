@@ -103,6 +103,7 @@ Variable VariableCtor(Type type, void* value)
         case Type::int_type:    variable.value.int_val    = *(int*   ) value; break;
         case Type::char_type:   variable.value.char_val   = *(char*  ) value; break;
         case Type::double_type: variable.value.double_val = *(double*) value; break;
+        case Type::void_type:
         case Type::undefined_type:
         default: assert(0 && "something went wrong");
     }
@@ -118,6 +119,7 @@ NameInfo NameInfoCtor(const char* name, size_t len)
     NameInfo nameInfo = {};
     nameInfo.name = name;
     nameInfo.len  = len; 
+
     return nameInfo;
 }
 
@@ -125,8 +127,6 @@ NameInfo NameInfoCtor(const char* name, size_t len)
 
 Name NameCtor(const char* nameName, size_t len)
 {
-    StackErrorType err = {};
-
     Name name = {};
 
     name.name.name = nameName;

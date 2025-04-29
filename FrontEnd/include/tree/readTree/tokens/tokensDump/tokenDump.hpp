@@ -4,12 +4,12 @@
 #include <stddef.h>
 #include "tree/readTree/tokens/token.hpp"
 
-void TokenTextDump    (const Token_t* tokenArr, size_t tokenNum, const char* file, const int line, const char* func);
-void TokenGraphicDump (const Token_t* tokenArr, size_t arrSize, const char* file, const int line, const char* func);
+void TokensLog        (const Token_t* tokens, size_t tokensQuant, const InputData* inputData);
+void TokenGraphicDump (const Token_t* tokens, size_t tokensQuant, const char* file, const int line, const char* func);
 
 
-#define TOKEN_GRAPHIC_DUMP(tokenArr, arrSize)  TokenGraphicDump(tokenArr, arrSize,  __FILE__, __LINE__, __func__)
-#define TOKEN_TEXT_DUMP(   token,    tokenNum) TokenTextDump   (token,    tokenNum, __FILE__, __LINE__, __func__)
+#define TOKEN_GRAPHIC_DUMP(tokenArr, arrSize)        TokenGraphicDump(tokenArr, arrSize,  __FILE__, __LINE__, __func__)
+#define TOKEN_LOG(         tokenArr, arrSize, input) TokensLog       (tokenArr, arrSize, input                        )
 
 
 #endif

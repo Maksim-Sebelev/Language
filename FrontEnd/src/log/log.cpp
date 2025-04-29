@@ -121,6 +121,8 @@ const char* pink_text_html_name   = "pink_text";
 const char* yellow_text_html_name = "yellow_text";
 const char* blue_text_html_name   = "blue_text";
 const char* black_text_html_name  = "black_text";
+const char* white_text_html_name  = "white_text";
+
 
 const char* red_text_rgb    = " { color: #ff4444; } \n";
 const char* green_text_rgb  = " { color: #0bf80b; } \n";
@@ -128,6 +130,7 @@ const char* pink_text_rgb   = " { color: #f605c7; } \n";
 const char* yellow_text_rgb = " { color: #ecc40b; } \n";
 const char* blue_text_rgb   = " { color: #0c89e8; } \n"; 
 const char* black_text_rgb  = " { color: #000000; } \n";
+const char* white_text_rgb  = " { color: #ffffff; } \n";
 
 //=== ===//
 
@@ -566,6 +569,10 @@ static void makeTextColor(size_t nTabBefore)
     fprintfInHtml(".%s %s", black_text_html_name  , black_text_rgb  );
 
     fprintfNTab(nTabBefore);
+    fprintfInHtml(".%s %s", white_text_html_name  , white_text_rgb  );
+    
+
+    fprintfNTab(nTabBefore);
     fprintfInHtml(".%s %s", pink_text_html_name   , pink_text_rgb   );
 
     fprintfNTab(nTabBefore);
@@ -902,7 +909,7 @@ static const char* GetHtmlColor(LogColor color)
         case LogColor::Yellow: return yellow_text_html_name;
         case LogColor::Black:  return black_text_html_name;
         case LogColor::Blue:   return blue_text_html_name;
-        case LogColor::White:  return "";
+        case LogColor::White:  return white_text_html_name;
         default:               assert(0 && "undef color in log");
     }
 
@@ -910,4 +917,3 @@ static const char* GetHtmlColor(LogColor color)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-

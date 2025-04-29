@@ -50,10 +50,8 @@ static void UpdatePointersAfterSlashN (Pointers* pointer);
 static bool IsNumSymbol                        (char c);
 static bool IsLetterSymbol                     (char c);
 static bool IsLetterOrNumberOrUnderLineSymbol  (char c);
-static bool IsBracketSymbol                    (char c);
 static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
-static bool IsLetterOrNumberOrUnderLineSymbol  (char c);
 
 static Number    GetInt           (const char* word, size_t* wordSize);
 
@@ -65,12 +63,10 @@ static Cycle     GetCycle         (const char* word, size_t* wordSize);
 static Condition GetCondition     (const char* word, size_t* wordSize);
 static Bracket   GetBracket       (const char* word, size_t* wordSize);
 static Number    GetNumber        (const char* word, size_t* wordSize);
-static Number    GetInt           (const char* word, size_t* wordSize);
 static Number    GetDouble        (const char* word, size_t* wordSize);
 static Number    GetChar          (const char* word, size_t* wordSize);
 
 static void CreateDefaultEndToken (      Token_t* tokenArr, Pointers* pointer);
-static bool IsTokenTypeEnd        (const Token_t* token);
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -104,8 +100,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
 
         if (IsSlash0(word[0])) break;
 
-        
-        
+
         Operation operation = GetOperation(word, &wordSize);
         if (operation != Operation::undefined_operation)
         {
@@ -227,6 +222,7 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket  *) value; break;
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol*) value; break;
         case TokenType::TokenCondition_t: token->data.condition = *(Condition*) value; break;
+        case TokenType::TokenFunction_t:
         case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle    *) value; break;
         default:                          assert(0 && "undefined token type symbol."); break;
     }
@@ -393,15 +389,11 @@ static Number GetInt(const char* word, size_t* wordSize)
 
     char* numEnd = nullptr;
     number.value.int_val = (int) strtol(word, &numEnd, 10);
-    LOG_PRINT(Red, "num int value = %d\n", number.value.int_val);
+    *wordSize = (size_t) (numEnd - word);
 
-    
-    *wordSize = (numEnd - word);
-    
     if (*wordSize > 0)
-    {number.type = Type::int_type;
-    LOG_PRINT(Red, "num int value = %d\n", number.value.int_val);
-    }
+        number.type = Type::int_type;
+
     return number;    
 }
 
@@ -417,7 +409,7 @@ static Number GetDouble(const char* word, size_t* wordSize)
 
     char* numEnd = nullptr;
     number.value.double_val = strtod(word, &numEnd);
-    *wordSize = (numEnd - word);
+    *wordSize =  (size_t) (numEnd - word);
 
     if (*wordSize > 0) number.type = Type::char_type;
 
@@ -431,7 +423,7 @@ static Number GetChar(const char* word, size_t* wordSize)
 
     Number number = {}; 
 
-
+    number.value.char_val = word[*wordSize];  /// TODO
     return number;
 }
 
@@ -473,14 +465,6 @@ static bool IsLetterOrNumberOrUnderLineSymbol(char c)
     return  IsLetterSymbol    (c) ||
             IsUnderLineSymbol (c) ||
             IsNumSymbol       (c);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsBracketSymbol(char c)
-{
-    return (c == '(') ||
-           (c == ')');
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -693,17 +677,6 @@ static void CreateDefaultEndToken(Token_t* tokenArr, Pointers* pointer)
     pointer->tp++;
     
     return;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsTokenTypeEnd(const Token_t* token)
-{
-    assert(token);
-
-    TokenType type = token->type;
-
-    return (type == TokenType::TokenEndSymbol_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

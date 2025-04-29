@@ -47,23 +47,23 @@ EXECUTABLE 	   ?= frontend
 override CFLAGS += $(COMMONINC)
 
 CSRC =  main.cpp 					  			   			     \
-		src/tree/treeDump/treeDump.cpp 				             \
 		src/tree/tree.cpp							             \
 		src/lib/lib.cpp										     \
 		src/tree/readTree/fileread/fileread.cpp			         \
-		src/tree/treeDump/globalDump.cpp 				     	 \
 		src/tree/readTree/tokens/tokens.cpp 			         \
-		src/tree/readTree/tokens/tokensDump/tokensDump.cpp       \
 		src/tree/readTree/recursiveDescent/recursiveDescent.cpp  \
 		src/tree/readTree/syntaxErr/syntaxErr.cpp                \
 		src/tree/nameTable/nametable.cpp    				     \
 		src/tree/nameTable/hash.cpp      				  	     \
-		# src/tree/nameTable/nameTableDump/nameTableDump.cpp       \
 
 
 ifeq ($(BUILD_TYPE), debug)
-	CSRC += src/log/log.cpp								         \
-		    src/tree/nameTable/nameTableLog/nameTableLog.cpp     \
+
+CSRC += src/log/log.cpp								             \
+	    src/tree/nameTable/nameTableLog/nameTableLog.cpp         \
+		src/tree/readTree/tokens/tokensDump/tokensDump.cpp       \
+		src/tree/treeDump/treeDump.cpp 				             \
+		src/tree/treeDump/globalDump.cpp 				     	 \
 
 endif
 

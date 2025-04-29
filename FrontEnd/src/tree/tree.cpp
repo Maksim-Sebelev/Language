@@ -43,6 +43,7 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
     }
 
     TOKEN_GRAPHIC_DUMP  (token, tokenQuant);
+    TOKEN_LOG(token, tokenQuant, &inputData);
     tree->root = GetTree(token, &inputData);
 
     // NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
@@ -194,12 +195,31 @@ TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
             _SET_OPER(copy, operation, left, right);
             break;
         }
+        case NodeArgType::condition:
+        {
+            Condition condition = node->data.condition;
+            _SET_COND(copy, condition, left, right);
+            break;
+        }
+        case NodeArgType::cycle:
+        {
+            Cycle cycle = node->data.cycle;
+            _SET_CYCLE(copy, cycle, left, right);
+            break;
+        }
+        case NodeArgType::type:
+        {
+            Type typ = node->data.type;
+            _SET_TYPE(copy, typ, left);
+            break;
+        }
         // case NodeArgType::function:
         // {
             // DFunction function = node->data.func;
             // _SET_FUNC(copy, function, left);
             // break;
-        // }
+            // }
+        case NodeArgType::connect:
         case NodeArgType::undefined:
         default:  err.err = TreeErrorType::NODE_NULL; return NODE_VERIF(node, err);
     }
@@ -300,8 +320,8 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
 
         case NodeArgType::operation:
         {
-            // RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
-            // RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
+            RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
+            RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
 
@@ -355,7 +375,7 @@ static bool HasOperationChildren(const Node_t* node)
 
     Operation operation = node->data.oper;
 
-    if (operation == Operation::minus || operation == Operation::assign)
+    if (operation == Operation::minus || operation == Operation::bool_not)
     {
         return (node->left);
     }
@@ -380,25 +400,7 @@ static bool IsNodeTypeOperationDataCorrect(const Node_t* node)
 
     Operation operation = node->data.oper;
 
-    switch (operation)
-    {
-        case Operation::plus:
-        case Operation::minus:
-        case Operation::mul:
-        case Operation::dive:
-        case Operation::power:
-        case Operation::assign: 
-        case Operation::greater:
-        case Operation::greater_or_equal:
-        case Operation::less:
-        case Operation::less_or_equal:
-        case Operation::equal:
-        case Operation::not_equal: break;
-        case Operation::undefined_operation:
-        default: return false;
-    }
-
-    return true;
+    return (operation != Operation::undefined_operation);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -85,6 +85,7 @@ static const char* GetNameTypeInStr(Name name)
     {
         case NameType::variable: return "variable";
         case NameType::function: return "function";
+        case NameType::undefined_name_type:
         default: assert(0 && "you forgot about some name type");
     }
 

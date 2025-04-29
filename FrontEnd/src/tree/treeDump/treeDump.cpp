@@ -115,18 +115,19 @@ void NodeDump(const Node_t* node, const char* file, const int line, const char* 
     system("mkdir -p dot/node/img/");
     system("mkdir -p dot/node/dot/");
 
-    static const size_t MaxfileNameLen = 128;
-    char outfile[MaxfileNameLen] = {};
-    sprintf(outfile, "dot/node/img/node%lu.png", ImgQuant);
+    static const size_t MaxBufferLen = 64;
+
+    char outfile[MaxBufferLen] = {};
+    snprintf(outfile, MaxBufferLen,"dot/node/img/node%lu.png", ImgQuant);
     
-    static const size_t MaxCommandLen = 256;
-    char dotFileName[MaxfileNameLen] = {};
-    sprintf(dotFileName, "dot/node/dot/node%lu.dot", ImgQuant);
+    char dotFileName[MaxBufferLen] = {};
+    snprintf(dotFileName, MaxBufferLen, "dot/node/dot/node%lu.dot", ImgQuant);
 
     NodeDumpHelper(node, dotFileName, file, line, func);
     
+    static const size_t MaxCommandLen = 512;
     char command[MaxCommandLen] = {};
-    sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
+    snprintf(command, MaxCommandLen, "dot -Tpng %s > %s", dotFileName, outfile);
     system(command);
 
     ImgQuant++;
@@ -176,17 +177,19 @@ void TreeDump(const Tree_t* tree, const char* file, const int line, const char* 
 
     static size_t ImgQuant = 1;
 
-    static const size_t MaxfileNameLen = 128;
-    char outfile[MaxfileNameLen] = {};
-    sprintf(outfile, "dot/tree/img/tree%lu.png", ImgQuant);
+    static const size_t MaxBufferLen = 64;
+
+    char outfile[MaxBufferLen] = {};
+    snprintf(outfile, MaxBufferLen, "dot/tree/img/tree%lu.png", ImgQuant);
     
-    static const size_t MaxCommandLen = 256;
-    char command[MaxCommandLen] = {};
-    char dotFileName[MaxfileNameLen] = {};
-    sprintf(dotFileName, "dot/tree/dot/tree%lu.dot", ImgQuant);
-    sprintf(command, "dot -Tpng %s > %s", dotFileName, outfile);
+    char dotFileName[MaxBufferLen ] = {};
+    snprintf(dotFileName, MaxBufferLen, "dot/tree/dot/tree%lu.dot", ImgQuant);
     
     TreeDumpHelper(tree, dotFileName, file, line, func);
+    
+    static const size_t MaxCommandLen = 512;
+    char command    [MaxCommandLen] = {};
+    snprintf(command, MaxCommandLen, "dot -Tpng %s > %s", dotFileName, outfile);
     system(command);
     
     ImgQuant++;
