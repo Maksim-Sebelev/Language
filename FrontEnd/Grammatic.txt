@@ -1,26 +1,42 @@
 Tree          ::=   DefFunc '\0'
-DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' Condition }' } * | main
-DefFuncArgs   ::=   Type Name {',' Type Nama } *
+DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' Condition }' } *
+DefFuncArgs   ::=   {Type Name} ? {',' Type Name } *
 
-main          ::=   'start' Condition 'end'
-Condition     ::=   { ConditionIf ConditionElif ConditionElse | Assign ';' | Cycle | CallFunc ';' }*
-CallFunc      ::=   'call' Name '(' Args ')' | Return | BoolOperation 
-Args          ::=   Name {',' Name} *
-ConditionIf   ::=   'if' '(' CallFunc ')' '{' Condition '}'
-ConditionElif ::=   { 'else if' '(' CallFunc ')' '{' Condition '}' }*
-ConditionElse ::=   else '{' Condition '}'
-Cycle         ::=   While | For
-While         ::=   'while' '(' BoolOperation ')' '{' ConditionIf '}'
-For           ::=   'for' '(' Assign ';' BoolOperation ';' Assign ')' '{' ConditionIf '}'
-Assign        ::=   Type ? Name '=' CallFunc
+Condition     ::=   { If Elif Else | Cycle } *
+If            ::=   {'if' '(' Assign ')' '{' Condition '}' } ?
+Elif          ::=   { 'else if' '(' Assign ')' '{' Condition '}' } *
+Else          ::=   { else '{' Condition '}' } ?
+
+Cycle         ::=   While | For | Return ';'
+While         ::=   'while' '(' Assign ')' '{' Condition '}'
+For           ::=   'for' '(' DefVariable ';' Assign ';' Assign ')' '{' Condition '}'
+
+Return        ::=   'return'  BoolOperation ';' | DefVariable
+
+DefVariable   ::=   Type Name '=' BoolOperation | Assign
+
+Assign        ::=   Name '=' BoolOperation | BoolOperation
+
 BoolOperation ::=   AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
-Return        ::=  'return' 'CallFunc'
 AddSub        ::=   MulDiv { ['+' '-'] MulDiv } *
 MulDiv        ::=   Pow { ['*' '/'] Pow } *
-Pow           ::=   Not { '^' Not } *
-Not           ::=   {'!' Minus}  | Minus
+Pow           ::=   CallFunc { '^' CallFunc } *
+
+CallFunc      ::    Name '(' Args ')' | Minus
+CallFuncArgs  ::=   {Assign} ? {',' Assign} *
+
+Not           ::=   {'!' MulDiv} | Bracket
 Minus         ::=   '-' MulDiv | Bracket
-Bracket       ::=   '(' CallFunc ')' | Name | Number
+
+Bracket       ::=   '(' BoolOperation ')' | Number
+
+Number        ::=   ['0' - '9'] + | Name
 Name          ::=   [letter] { [letter | number] } *
-Number        ::=   ['0' - '9'] +
-Type          ::=   {'int' 'double' 'char ' 'void'}
+
+Type          ::=   {'int' 'double' 'char' 'void'}
+
+
+// справочник по обозначениям:
+// * - повторять пока можно (>= 0 раз) (аналог while)
+// + - повторить хотя бы раз и пока можно (>= 1 раз) (аналог do while)
+// ? - сделать 1 раз если можно (аналог if)

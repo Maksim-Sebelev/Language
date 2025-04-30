@@ -3,14 +3,12 @@
 
 int main()
 {
-    const char* str = "3.1415";
+    char buffer[256] = {};
+    const unsigned long size = 256;
 
-    return 0;
-}
+    int a = 0, b = 3;
 
-
-
-int f()
-{
-    return 5;
+    return (a++ == 5); 
+    return main();
+    return main() + 1;
 }
