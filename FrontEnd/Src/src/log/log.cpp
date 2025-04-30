@@ -35,7 +35,7 @@
 
 
 ON_IMG(
-const char* background_image = "FrontEnd/Src/include/log/backgrounds/anime_tyan.webp";
+const char* background_image = "../Src/include/log/backgrounds/anime_tyan.webp";
 )
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -71,6 +71,7 @@ static bool IsTokenCycleWhile                (const Token_t* token);
 static bool IsTokenCycleFor                  (const Token_t* token);
 static bool IsTokenFuncAttrCall              (const Token_t* token);
 static bool IsTokenFuncAttrReturn            (const Token_t* token);
+static bool IsTokenOperationSelfChange       (const Token_t* token);
 static bool IsCallFunction                   (const Token_t* tokensArr, const size_t* tp);
 static bool IsNotAssignOperationBeforeMinus  (const Token_t* tokensArr, size_t tp);
 
@@ -177,8 +178,11 @@ static Node_t* GetDefFunc(const Token_t* tokensArr, size_t* tp, const InputData*
 
     // NODE_GRAPHIC_DUMP(next_def_func_node);
 
+    Node_t* def_func_node = {};
+    _DEF_FUNC(&def_func_node, type_node);
+
     Node_t* connect_node = {};
-    _CONNECT(&connect_node, type_node, next_def_func_node);
+    _CONNECT(&connect_node, def_func_node, next_def_func_node);
 
     return connect_node;
 }
@@ -409,7 +413,7 @@ static Node_t* GetCallFunction(const Token_t* tokensArr, size_t* tp, const Input
     const Token_t* token = PickToken(tokensArr, tp);
 
     if (!IsCallFunction(tokensArr, tp))
-        return GetMinus(tokensArr, tp, inputData);
+        return GetNot(tokensArr, tp, inputData);
 
     Node_t* name_node = GetName(tokensArr, tp, inputData);
 
@@ -424,8 +428,6 @@ static Node_t* GetCallFunction(const Token_t* tokensArr, size_t* tp, const Input
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ')'");
 
     name_node->left = args_node;
-
-    // NODE_GRAPHIC_DUMP(name_node);
 
     return name_node;
 }
@@ -637,7 +639,10 @@ static Node_t* GetDefVariable(const Token_t* tokensArr, size_t* tp, const InputD
 
     _ASG(&assign_node, type_node, bool_operation_node);
     
-    return assign_node;
+    Node_t* def_variable_node = {};
+    _DEF_VAR(&def_variable_node, assign_node);
+
+    return def_variable_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -867,8 +872,8 @@ static Node_t* GetMinus(const Token_t* tokensArr, size_t* tp, const InputData* i
     assert(tp);
 
     const Token_t* token = PickToken(tokensArr, tp);
-    if (!IsCallFunction(tokensArr, tp))
-        return GetBracket(tokensArr, tp, inputData);
+    if (!IsTokenMinus(token))
+        return GetNot(tokensArr, tp, inputData);
 
     (*tp)++;
 
@@ -1298,24 +1303,6 @@ static bool IsTokenFuncAttrReturn(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenMainStart(const Token_t* token)
-{
-    assert(token);
-    return  (token->type == TokenType::TokenMainInfo_t) &&
-            (token->data.main == MainStartEnd::start);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static bool IsTokenMainEnd(const Token_t* token)
-{
-    assert(token);
-    return  (token->type == TokenType::TokenMainInfo_t) &&
-            (token->data.main == MainStartEnd::end);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static bool IsCallFunction(const Token_t* tokensArr, const size_t* tp)
 {
     assert(tokensArr);
@@ -1326,6 +1313,24 @@ static bool IsCallFunction(const Token_t* tokensArr, const size_t* tp)
 
     return  IsTokenName            (token     ) && 
             IsTokenLeftRoundBracket(next_token);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenOperationSelfChange(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenOperation_t) && 
+            (
+            (token->data.operation == Operation::plus_equal ) ||
+            (token->data.operation == Operation::minus_equal) ||
+            (token->data.operation == Operation::mul_equal  ) ||
+            (token->data.operation == Operation::div_equal  ) ||
+            (token->data.operation == Operation::plus_plus  ) ||
+            (token->data.operation == Operation::plus_plus  ) ||
+            (token->data.operation == Operation::plus_equal ) ||
+            (token->data.operation == Operation::plus_equal )
+            );
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

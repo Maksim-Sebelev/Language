@@ -33,7 +33,6 @@ static void HandleSeparator          (Token_t* tokenArr, Pointers* pointer, Sepa
 static void HandleOperation          (Token_t* tokenArr, Pointers* pointer, Operation    operation, size_t wordSize);
 static void HandleCondition          (Token_t* tokenArr, Pointers* pointer, Condition    condition, size_t wordSize);
 static void HandleFunctionAttribute  (Token_t* tokenArr, Pointers* pointer, FunctionAttribute attribute, size_t wordSize);
-static void HandleMain               (Token_t* tokenArr, Pointers* pointer, MainStartEnd main     , size_t wordSize);
 
 
 static bool HandleComment       (const char* word, Pointers* pointer);
@@ -58,7 +57,6 @@ static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
 
 static Name              GetName              (const char* word                  );
-static MainStartEnd      GetMain              (const char* word, size_t* wordSize);
 static Number            GetInt               (const char* word, size_t* wordSize);
 static Operation         GetOperation         (const char* word, size_t* wordSize);
 static Separator         GetSeparator         (const char* word, size_t* wordSize);
@@ -154,13 +152,6 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
             continue;
         }
 
-        MainStartEnd main = GetMain(word, &wordSize);
-        if (main != MainStartEnd::undefined)
-        {
-            HandleMain(tokenArr, &pointer, main, wordSize);
-            continue;
-        }
-
         FunctionAttribute attribute = GetFunctionAttribute(word, &wordSize);
         if (attribute != FunctionAttribute::undefined_attribute)
         {
@@ -246,7 +237,6 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
         case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol        *) value; break;
         case TokenType::TokenCondition_t: token->data.condition = *(Condition        *) value; break;
         case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle            *) value; break;
-        case TokenType::TokenMainInfo_t:  token->data.main      = *(MainStartEnd     *) value; break;
         case TokenType::TokenFuncAttr_t:  token->data.attribute = *(FunctionAttribute*) value; break;
         case TokenType::TokenFunction_t:
         default:                          assert(0 && "undefined token type symbol."); break;
@@ -395,19 +385,6 @@ static void HandleFunctionAttribute(Token_t* tokenArr, Pointers* pointer, Functi
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void HandleMain(Token_t* tokenArr, Pointers* pointer, MainStartEnd main, size_t wordSize)
-{
-    assert(tokenArr);
-    assert(pointer);
-
-    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenMainInfo_t, &main, pointer->lp, pointer->sp);
-
-    UpdatePointer(pointer, wordSize);
-
-    return;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -629,23 +606,6 @@ static FunctionAttribute GetFunctionAttribute(const char* word, size_t* wordSize
         RETURN_IF_TRUE(flag, atrribute.value, *wordSize = atrribute.nameInfo.len);
     }
     return FunctionAttribute::undefined_attribute;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static MainStartEnd GetMain(const char* word, size_t* wordSize)
-{
-    assert(word);
-    assert(wordSize);
-
-    for (size_t main_i = 0; main_i < DefaultMainInfoArrSize; main_i++)
-    {
-        DefaultMainInfo main = DefaultMainInfoArr[main_i];
-    
-        bool flag = GetFlagPattern(word, main.nameInfo.name, main.nameInfo.len);
-        RETURN_IF_TRUE(flag, main.value, *wordSize = main.nameInfo.len);
-    }
-    return MainStartEnd::undefined;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

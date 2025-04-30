@@ -3,12 +3,11 @@
 
 int main()
 {
-    char buffer[256] = {};
-    const unsigned long size = 256;
+    int a = 2;
 
-    int a = 0, b = 3;
+    a = 2*a++;
 
-    return (a++ == 5); 
-    return main();
-    return main() + 1;
+    printf("a = %d\n", a);
+
+    return a;
 }

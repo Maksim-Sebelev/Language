@@ -108,14 +108,17 @@ const char* GetConditionInStr(Condition condition)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const char* GetMainInStr(MainStartEnd main)
+const char* GetInitInStr(Initialisation init)
 {
-    for (size_t i = 0; i < DefaultMainInfoArrSize; i++)
-        RETURN_IF_TRUE(main == DefaultMainInfoArr[i].value, DefaultMainInfoArr[i].nameInfo.name);
-    
-    LOG_PRINT(Yellow, "main = '%d'\n", main);   
+    switch (init)
+    {
+        case Initialisation::def_function: return "def function";
+        case Initialisation::def_variable: return "def variable";
+        case Initialisation::undefined_initialisation:
+        default: assert(0 && "undef init type"); return "undef init";
+    }
 
-    assert(0 && "something went wrong");
+    assert(0 && "you forgot about some init type.");
     return "wtf?";
 }
 

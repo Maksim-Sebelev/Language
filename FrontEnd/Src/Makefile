@@ -46,7 +46,7 @@ OUT_O_DIR	   ?= $(RELATIVE_PATH)bin
 EXECUTABLE_DIR ?= $(RELATIVE_PATH)build
 COMMONINC 	    = -I./$(RELATIVE_PATH)include
 SRC 			= $(RELATIVE_PATH)src
-EXECUTABLE 	   ?= $(RELATIVE_PATH)frontend
+EXECUTABLE 	   ?= frontend
 
 
 -include $(RELATIVE_PATH)local.mk

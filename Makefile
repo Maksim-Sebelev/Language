@@ -23,3 +23,9 @@ rerun:
 
 rebuild:
 	make clean && make
+
+
+git:
+	git add --all
+	git commit -m "ZoV"
+	git push --all

@@ -325,16 +325,16 @@ static const char* GetNodeColor(const Node_t* node)
 
     switch (type)
     {
-        case NodeArgType::number:    return "#1cb9ff";
-        case NodeArgType::operation: return "#00ca2c";
-        case NodeArgType::name:      return "#f31807";
-        case NodeArgType::connect:   return "#FFFACD";
-        case NodeArgType::type:      return "#CD5C5C";
-        case NodeArgType::condition: return "#CDFC5C";
-        case NodeArgType::cycle:     return "#CFFC5C";
-        case NodeArgType::main:      return "#0140ff";
-        case NodeArgType::attribute: return "#FF0080";
-        case NodeArgType::undefined: return "red";
+        case NodeArgType::number:         return "#1cb9ff";
+        case NodeArgType::operation:      return "#00ca2c";
+        case NodeArgType::name:           return "#f31807";
+        case NodeArgType::connect:        return "#FFFACD";
+        case NodeArgType::type:           return "#CD5C5C";
+        case NodeArgType::condition:      return "#CDFC5C";
+        case NodeArgType::cycle:          return "#CFFC5C";
+        case NodeArgType::attribute:      return "#FF0080";
+        case NodeArgType::initialisation: return "#931807";
+        case NodeArgType::undefined:      return "red";
         default:
             assert(0 && "undefined situation in GetColorType.\n");
             break;
@@ -378,12 +378,6 @@ static const char* GetNodeTypeInStr(const Node_t* node)
         
         case NodeArgType::type:
             return "type";
-
-        case NodeArgType::mainInfo:
-            return "main";
-
-        case NodeArgType::main:
-            return "main";
 
         default:
             assert(0 && "You forgot about some node type in text dump.\n");
@@ -446,15 +440,16 @@ static const char* GetNodeDataInStr(const Node_t* node)
             return GetCycleInStr(cycle);
         }
 
-        case NodeArgType::main:
-        {
-            return "MAIN";
-        }
-
         case NodeArgType::attribute:
         {
             FunctionAttribute attribute = node->data.attribute;
             return GetFuncAttrInStr(attribute);
+        }
+
+        case NodeArgType::initialisation:
+        {
+            Initialisation init = node->data.init;
+            return GetInitInStr(init);
         }
 
         default:

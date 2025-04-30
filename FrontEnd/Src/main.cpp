@@ -13,7 +13,7 @@ int main()
     OPEN_LOG();
     )
 
-    const char* input = "programm/programm.cpp";
+    const char* input = "../../programm/programm.cpp";
 
     Tree_t tree = {};
 
@@ -21,7 +21,6 @@ int main()
 
     TREE_GRAPHIC_DUMP(&tree);
 
-    
     TREE_ASSERT(TreeDtor(&tree));
 
     ON_DEBUG(

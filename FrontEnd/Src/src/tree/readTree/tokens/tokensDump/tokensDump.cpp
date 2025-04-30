@@ -256,7 +256,6 @@ static const char* GetTokenColor(const Token_t* token)
         case TokenType::TokenType_t:        return "#CD5C5C";
         case TokenType::TokenCondition_t:   return "#CDFC5C";
         case TokenType::TokenCycle_t:       return "#CFFC5C";
-        case TokenType::TokenMainInfo_t:    return "#0140ff";
         case TokenType::TokenFuncAttr_t:    return "#01f0af";
         default: assert(0 && "undefined token type."); break; 
     }
@@ -297,7 +296,6 @@ static const char* GetTokenTypeInStr(const Token_t* token)
         case TokenType::TokenName_t:      return "name";
         case TokenType::TokenCondition_t: return "condition";
         case TokenType::TokenCycle_t:     return "cycle";
-        case TokenType::TokenMainInfo_t:  return "main";
         case TokenType::TokenFuncAttr_t:  return "function attribute";
         default: assert(0 && "nudefindef type."); return "undefined";
     }

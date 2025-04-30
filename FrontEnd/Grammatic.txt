@@ -15,7 +15,10 @@ Return        ::=   'return'  BoolOperation ';' | DefVariable
 
 DefVariable   ::=   Type Name '=' BoolOperation | Assign
 
-Assign        ::=   Name '=' BoolOperation | BoolOperation
+Assign        ::=   Name '=' BoolOperation | PpMM
+
+PpMm          ::=   Name  [ '++ '--' ] | PlusEqual
+PlusEqual     ::=   Name ['+=' '-=' '*=' '/=' ] BoolOperation | BoolOperation
 
 BoolOperation ::=   AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
 AddSub        ::=   MulDiv { ['+' '-'] MulDiv } *
@@ -25,8 +28,9 @@ Pow           ::=   CallFunc { '^' CallFunc } *
 CallFunc      ::    Name '(' Args ')' | Minus
 CallFuncArgs  ::=   {Assign} ? {',' Assign} *
 
+Minus         ::=   '-' MulDiv | Not
 Not           ::=   {'!' MulDiv} | Bracket
-Minus         ::=   '-' MulDiv | Bracket
+
 
 Bracket       ::=   '(' BoolOperation ')' | Number
 

@@ -17,7 +17,7 @@ const char* GetBracketInStr    (Bracket bracket);
 const char* GetCycleInStr      (Cycle cycle);
 const char* GetConditionInStr  (Condition condition);
 const char* GetFuncAttrInStr   (FunctionAttribute attr);
-const char* GetCycleInStr      (Cycle cycle);
+const char* GetInitInStr       (Initialisation init);
 
 bool        IsDoubleEqual      (double firstNum, double secondNum, double epss);
 
