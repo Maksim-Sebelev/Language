@@ -14,7 +14,6 @@ all:
 run:
 	make -f $(FRONT_MAKE) $(SET_MAIN_MAKE_FOR_OTHER_MAKES) run
 
-
 clean:
 	make -f $(FRONT_MAKE) $(SET_MAIN_MAKE_FOR_OTHER_MAKES) clean
 

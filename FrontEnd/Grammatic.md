@@ -41,6 +41,9 @@ Name          ::=   [letter] { [letter | number] } *
 Type          ::=   {'int' 'double' 'char' 'void'}
 ```
 
+<br>
+<br>
+<br>
 
 # Справочная информация по обозначениям
 
@@ -58,7 +61,6 @@ Type          ::=   {'int' 'double' 'char' 'void'}
 ## ?
 **Сделать 1 раз если можно (аналог if).**
 
-<br>
 **Пример:**
 
 ```bash

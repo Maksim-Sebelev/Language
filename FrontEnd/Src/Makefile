@@ -12,8 +12,8 @@ endif
 CFLAGS ?=
 LDFLAGS =
 
-BUILD_TYPE ?= debug
-# BUILD_TYPE ?= release
+# BUILD_TYPE ?= debug
+BUILD_TYPE ?= release
 
 
 ifeq ($(BUILD_TYPE), release)
