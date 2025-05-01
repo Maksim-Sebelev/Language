@@ -1,4 +1,3 @@
-# THIS_MAKEFILE_WAY := $(abspath $(lastword $(MAKEFILE_LIST)))
 THIS_FILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 THIS_MAKEFILE_WAY := $(dir $(THIS_FILE))
 MAIN_MAKEFILE_WAY ?= $(THIS_MAKEFILE_WAY)
@@ -8,7 +7,6 @@ RELATIVE_PATH = $(subst $(MAIN_MAKEFILE_WAY),,$(THIS_MAKEFILE_WAY))
 ifeq ($(origin CC),default)
   CC = g++
 endif
-
 
 
 CFLAGS ?=
@@ -53,24 +51,24 @@ EXECUTABLE 	   ?= frontend
 
 override CFLAGS += $(COMMONINC)
 
-CSRC =  $(RELATIVE_PATH)main.cpp 					  			   			         \
-		$(RELATIVE_PATH)src/tree/tree.cpp							             \
+CSRC =  $(RELATIVE_PATH)main.cpp 					  			   			     \
 		$(RELATIVE_PATH)src/lib/lib.cpp										     \
-		$(RELATIVE_PATH)src/tree/readTree/fileread/fileread.cpp			         \
-		$(RELATIVE_PATH)src/tree/readTree/tokens/tokens.cpp 			         \
-		$(RELATIVE_PATH)src/tree/readTree/recursiveDescent/recursiveDescent.cpp  \
-		$(RELATIVE_PATH)src/tree/readTree/syntaxErr/syntaxErr.cpp                \
-		$(RELATIVE_PATH)src/tree/nameTable/nametable.cpp    				     \
+		$(RELATIVE_PATH)src/tree/tree.cpp							             \
 		$(RELATIVE_PATH)src/tree/nameTable/hash.cpp      				  	     \
-
+		$(RELATIVE_PATH)src/tree/nameTable/nametable.cpp    				     \
+		$(RELATIVE_PATH)src/tree/readTree/tokens/tokens.cpp 			         \
+		$(RELATIVE_PATH)src/tree/fprintfTree/fprintfTree.cpp					 \
+		$(RELATIVE_PATH)src/tree/readTree/fileread/fileread.cpp			         \
+		$(RELATIVE_PATH)src/tree/readTree/syntaxErr/syntaxErr.cpp                \
+		$(RELATIVE_PATH)src/tree/readTree/recursiveDescent/recursiveDescent.cpp  \
 
 ifeq ($(BUILD_TYPE), debug)
 
 CSRC += $(RELATIVE_PATH)src/log/log.cpp								             \
-	    $(RELATIVE_PATH)src/tree/nameTable/nameTableLog/nameTableLog.cpp         \
-		$(RELATIVE_PATH)src/tree/readTree/tokens/tokensDump/tokensDump.cpp       \
 		$(RELATIVE_PATH)src/tree/treeDump/treeDump.cpp 				             \
 		$(RELATIVE_PATH)src/tree/treeDump/globalDump.cpp 				     	 \
+	    $(RELATIVE_PATH)src/tree/nameTable/nameTableLog/nameTableLog.cpp         \
+		$(RELATIVE_PATH)src/tree/readTree/tokens/tokensDump/tokensDump.cpp       \
 
 endif
 
@@ -132,7 +130,7 @@ iwyu:
 
 #==================================================
 
-NODEPS = clean
+NODEPS = clean clean_dirs clean_log clean_dot iwyu
 
 ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
 include $(DEPS)

@@ -25,7 +25,14 @@ rebuild:
 	make clean && make
 
 
-git-%:
+# git-%:
+# 	git add --all
+# 	git commit -m "$*"
+# 	git push --all
+
+commit ?= "ZoV"
+git:
 	git add --all
-	git commit -m "$*"
+	git commit -m $(commit)
 	git push --all
+

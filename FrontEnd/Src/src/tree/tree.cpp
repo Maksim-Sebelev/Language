@@ -1,14 +1,16 @@
 #include <assert.h>
 #include "tree/tree.hpp"
-#include "tree/treeDump/treeDump.hpp"
+#include "lib/lib.hpp"
+#include "lib/colorPrint.hpp"
+#include "tree/nameTable/nametable.hpp"
+#include "tree/readTree/tokens/token.hpp"
 #include "tree/readTree/fileread/fileread.hpp"
 #include "tree/readTree/recursiveDescent/recursiveDescent.hpp"
-#include "tree/readTree/tokens/token.hpp"
-#include "lib/colorPrint.hpp"
-#include "lib/lib.hpp"
-#include "tree/nameTable/nametable.hpp"
-#include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
 
+#ifdef _DEBUG
+#include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
+#include "tree/treeDump/treeDump.hpp"
+#endif
 
 //======================================================================================================================================================================
 
@@ -42,8 +44,10 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
         exit(0); 
     }
 
+    ON_DEBUG(
     TOKEN_GRAPHIC_DUMP  (token, tokenQuant);
     TOKENS_LOG(token, tokenQuant, &inputData);
+    )
     tree->root = GetTree(token, &inputData);
 
     // NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
@@ -93,7 +97,7 @@ TreeErr NodeCtor(Node_t** node, NodeArgType type, NodeData_t data, Node_t* left,
     TreeErr err = {};
 
     *node = (Node_t*) calloc(1, sizeof(Node_t));
-
+ 
     if (*node == NULL)
     {
         err.err = TreeErrorType::CTOR_CALLOC_RETURN_NULL;
@@ -320,8 +324,8 @@ TreeErr NodeVerif(const Node_t* node, TreeErr* err, const char* file, const int 
 
         case NodeArgType::operation:
         {
-            RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
-            RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
+            // RETURN_IF_FALSE(IsNodeTypeOperationDataCorrect (node), *err, err->err = TreeErrorType::OPER_TYPE_NODES_ARG_IS_UNDEFINED);
+            // RETURN_IF_FALSE(HasOperationChildren           (node), *err, err->err = TreeErrorType::OPER_HAS_INCORRECT_CHILD_QUANT);
             break;
         }
 

@@ -7,7 +7,11 @@
 #include "tree/readTree/readTreeGlobalnclude.hpp"
 #include "tree/readTree/tokens/token.hpp"
 #include "tree/NodesAndTokensTypes.hpp"
+
+
+#ifdef _DEBUG
 #include "log/log.hpp"
+#endif
 
 //=============================== Tokens (Read Tree)  =======================================================================================================================================================================================
 

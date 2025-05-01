@@ -5,10 +5,15 @@
 #include "tree/readTree/tokens/token.hpp"
 #include "tree/readTree/syntaxErr/syntaxErr.hpp"
 #include "tree/readTree/readTreeGlobalnclude.hpp"
-#include "tree/treeDump/treeDump.hpp"
 #include "tree/readTree/recursiveDescent/recursiveDescent.hpp"
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#ifdef _DEBUG
 #include "log/log.hpp"
+#include "tree/treeDump/treeDump.hpp"
 #include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
+#endif
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -267,8 +272,6 @@ static Node_t* GetCondition(const Token_t* tokensArr, size_t* tp, const InputDat
         return connect_node;
     }
 
-
-
     Node_t* next_condition = GetCondition(tokensArr, tp, inputData);
     _CONNECT(&main_connect_node, connect_node, next_condition);
 
@@ -429,7 +432,10 @@ static Node_t* GetCallFunction(const Token_t* tokensArr, size_t* tp, const Input
 
     name_node->left = args_node;
 
-    return name_node;
+    Node_t* call_func_node = {};
+    _CALL_FUNC(&call_func_node, name_node);
+
+    return call_func_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -637,10 +643,12 @@ static Node_t* GetDefVariable(const Token_t* tokensArr, size_t* tp, const InputD
 
     Node_t* assign_node = {};
 
-    _ASG(&assign_node, type_node, bool_operation_node);
-    
+    _ASG(&assign_node, bool_operation_node);
+
+    name_node->left = assign_node;
+
     Node_t* def_variable_node = {};
-    _DEF_VAR(&def_variable_node, assign_node);
+    _DEF_VAR(&def_variable_node, type_node);
 
     return def_variable_node;
 }
@@ -666,10 +674,16 @@ static Node_t* GetAssign(const Token_t* tokensArr, size_t* tp, const InputData* 
 
     Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);
 
+   
     Node_t* assign_node = {};
-    _ASG(&assign_node, name_node, bool_operation_node);
+    _ASG(&assign_node, bool_operation_node);
 
-    return assign_node;
+    name_node->left = assign_node;
+
+    Node_t* asg_variable_node = {};
+    _ASG_VAR(&asg_variable_node, name_node);
+
+    return asg_variable_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

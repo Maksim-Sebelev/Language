@@ -1,23 +1,5 @@
 int foo(int a, int b)
 {
-    int a = 3;
-    int b = a + 3;
-
-    if (foo(a, a + b))
-    {
-        return a + b;
-    }
-
-    for (int a = 0; a < 0; a = not a + 1)
-    {
-        a = foo(a, a + 1);
-    }
-
-    return a;
-}
-
-int govno()
-{
     while (int a = 3)
     {
         if (a > 3)
