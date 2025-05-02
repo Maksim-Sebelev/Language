@@ -1,7 +1,7 @@
-THIS_FILE := $(abspath $(lastword $(MAKEFILE_LIST)))
+THIS_FILE 		  := $(abspath $(lastword $(MAKEFILE_LIST)))
 THIS_MAKEFILE_WAY := $(dir $(THIS_FILE))
 MAIN_MAKEFILE_WAY ?= $(THIS_MAKEFILE_WAY)
-RELATIVE_PATH = $(subst $(MAIN_MAKEFILE_WAY),,$(THIS_MAKEFILE_WAY))
+RELATIVE_PATH 	  := $(subst $(MAIN_MAKEFILE_WAY),,$(THIS_MAKEFILE_WAY))
 
 
 ifeq ($(origin CC),default)
@@ -12,8 +12,8 @@ endif
 CFLAGS ?=
 LDFLAGS =
 
-# BUILD_TYPE ?= debug
-BUILD_TYPE ?= release
+BUILD_TYPE ?= debug
+# BUILD_TYPE ?= release
 
 
 ifeq ($(BUILD_TYPE), release)
@@ -57,10 +57,10 @@ CSRC =  $(RELATIVE_PATH)main.cpp 					  			   			     \
 		$(RELATIVE_PATH)src/tree/nameTable/hash.cpp      				  	     \
 		$(RELATIVE_PATH)src/tree/nameTable/nametable.cpp    				     \
 		$(RELATIVE_PATH)src/tree/readTree/tokens/tokens.cpp 			         \
-		$(RELATIVE_PATH)src/tree/fprintfTree/fprintfTree.cpp					 \
 		$(RELATIVE_PATH)src/tree/readTree/fileread/fileread.cpp			         \
 		$(RELATIVE_PATH)src/tree/readTree/syntaxErr/syntaxErr.cpp                \
 		$(RELATIVE_PATH)src/tree/readTree/recursiveDescent/recursiveDescent.cpp  \
+		$(RELATIVE_PATH)src/tree/writeTree/writeTree.cpp					     \
 
 ifeq ($(BUILD_TYPE), debug)
 

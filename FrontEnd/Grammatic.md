@@ -1,4 +1,5 @@
 # Грамматика языка
+
 ```bash
 Tree          ::=   DefFunc '\0'
 DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' Condition }' } *
@@ -16,10 +17,9 @@ For           ::=   'for' '(' DefVariable ';' Assign ';' Assign ')' '{' Conditio
 Return        ::=   'return'  BoolOperation ';' | DefVariable
 
 DefVariable   ::=   Type Name '=' BoolOperation | Assign
-
 Assign        ::=   Name '=' BoolOperation | PpMM
 
-PpMm          ::=   Name  [ '++ '--' ] | PlusEqual
+PpMm          ::=   Name [ '++ '--' ] | PlusEqual
 PlusEqual     ::=   Name ['+=' '-=' '*=' '/=' ] BoolOperation | BoolOperation
 
 BoolOperation ::=   AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *

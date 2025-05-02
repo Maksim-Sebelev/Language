@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "tree/tree.hpp"
 #include "lib/lib.hpp"
+#include "tree/writeTree/writeTree.hpp"
 
 #ifdef _DEBUG
 #include "log/log.hpp"
@@ -26,6 +27,9 @@ int main()
     ON_DEBUG(
     TREE_GRAPHIC_DUMP(&tree);
     )
+
+    const char* output = "../tree/tree.txt";
+    PrintTree(&tree, output);
 
     TREE_ASSERT(TreeDtor(&tree));
 

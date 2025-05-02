@@ -15,103 +15,86 @@
 #include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
 #endif
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------ Recusrsive Descent function  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetDefFunc           (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetDefFuncArgs       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetReturn            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetCondition         (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetIfCondition       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetElseIfCondition   (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetElseCondition     (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetCallFunction      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetCallFunctionArgs  (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetCycle             (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetWhile             (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetFor               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetDefVariable       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetAssign            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetNumber            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetName              (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetType              (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetBoolOperation     (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetAddSub            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetMulDiv            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetBracket           (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetPow               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetNot               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
-static Node_t* GetMinus             (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetDefFunc                     (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetDefFuncArgs                 (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
-static Number       GetTokenNumber           (const Token_t* token);
-static Name         GetTokenName             (const Token_t* token);
-static Type         GetTokenType             (const Token_t* token);
-static Operation    GetTokenOperation        (const Token_t* token);
+static Node_t*   GetCondition                   (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetIfCondition                 (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetElseIfCondition             (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetElseCondition               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
-static bool IsTokenEnd                       (const Token_t* token);
-static bool IsTokenNum                       (const Token_t* token);
-static bool IsTokenName                      (const Token_t* token);
-static bool IsTokenType                      (const Token_t* token);
-static bool IsTokenFunction                  (const Token_t* token);
-static bool IsTokenOperation                 (const Token_t* token);
+static Node_t*   GetCycle                       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetWhile                       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetFor                         (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
+static Node_t*   GetReturn                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
-static bool IsTokenSeparatorComma            (const Token_t* token);
-static bool IsTokenCycle                     (const Token_t* token);
-static bool IsTokenAssign                    (const Token_t* token);
-static bool IsTokenSemicolon                 (const Token_t* token);
-static bool IsBoolOperation                  (const Token_t* token);
-static bool IsAddSub                         (const Token_t* token);
-static bool IsMulDiv                         (const Token_t* token);
-static bool IsPow                            (const Token_t* token);
-static bool IsTokenLeftRoundBracket          (const Token_t* token);
-static bool IsTokenRightRoundBracket         (const Token_t* token);
-static bool IsTokenMinus                     (const Token_t* token);
-static bool IsTokenConditionIf               (const Token_t* token);
-static bool IsTokenConditionElseIf           (const Token_t* token);
-static bool IsTokenConditionElse             (const Token_t* token);
-static bool IsTokenOperationNot              (const Token_t* token);
-static bool IsTokenLeftCurlyBracket          (const Token_t* token);
-static bool IsTokenRightCurlyBracket         (const Token_t* token);
-static bool IsTokenCycleWhile                (const Token_t* token);
-static bool IsTokenCycleFor                  (const Token_t* token);
-static bool IsTokenFuncAttrCall              (const Token_t* token);
-static bool IsTokenFuncAttrReturn            (const Token_t* token);
-static bool IsTokenOperationSelfChange       (const Token_t* token);
-static bool IsCallFunction                   (const Token_t* tokensArr, const size_t* tp);
-static bool IsNotAssignOperationBeforeMinus  (const Token_t* tokensArr, size_t tp);
+static Node_t*   GetDefVariable                 (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetAssign                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+
+static Node_t*   GetBoolOperation               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetAddSub                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetMulDiv                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetBracket                     (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetPow                         (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetCallFunction                (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetCallFunctionArgs            (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetNot                         (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetMinus                       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+
+static Node_t*   GetNumber                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetName                        (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+
+static Node_t*   GetType                        (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const Token_t* ConsumeToken(const Token_t* tokenArr, size_t* pointer)
-{
-    assert(tokenArr);
-    assert(pointer);
-
-    size_t pointer_copy = *pointer;
-    (*pointer)++;
-
-    return &tokenArr[pointer_copy];
-}
+static Number    GetTokenNumber                  (const Token_t* token);
+static Name      GetTokenName                    (const Token_t* token);
+static Type      GetTokenType                    (const Token_t* token);
+static Operation GetTokenOperation               (const Token_t* token);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const Token_t* PickToken(const Token_t* tokenArr, const size_t* pointer)
-{
-    assert(tokenArr);
-    assert(pointer);
+static bool      IsTokenEnd                       (const Token_t* token);
+static bool      IsTokenNum                       (const Token_t* token);
+static bool      IsTokenName                      (const Token_t* token);
+static bool      IsTokenType                      (const Token_t* token);
+static bool      IsTokenFunction                  (const Token_t* token);
+static bool      IsTokenOperation                 (const Token_t* token);
 
-    return &tokenArr[*pointer];
-}
+static bool      IsTokenSeparatorComma            (const Token_t* token);
+static bool      IsTokenCycle                     (const Token_t* token);
+static bool      IsTokenAssign                    (const Token_t* token);
+static bool      IsTokenSemicolon                 (const Token_t* token);
+static bool      IsBoolOperation                  (const Token_t* token);
+static bool      IsAddSub                         (const Token_t* token);
+static bool      IsMulDiv                         (const Token_t* token);
+static bool      IsPow                            (const Token_t* token);
+static bool      IsTokenLeftRoundBracket          (const Token_t* token);
+static bool      IsTokenRightRoundBracket         (const Token_t* token);
+static bool      IsTokenMinus                     (const Token_t* token);
+static bool      IsTokenConditionIf               (const Token_t* token);
+static bool      IsTokenConditionElseIf           (const Token_t* token);
+static bool      IsTokenConditionElse             (const Token_t* token);
+static bool      IsTokenOperationNot              (const Token_t* token);
+static bool      IsTokenLeftCurlyBracket          (const Token_t* token);
+static bool      IsTokenRightCurlyBracket         (const Token_t* token);
+static bool      IsTokenCycleWhile                (const Token_t* token);
+static bool      IsTokenCycleFor                  (const Token_t* token);
+static bool      IsTokenFuncAttrCall              (const Token_t* token);
+static bool      IsTokenFuncAttrReturn            (const Token_t* token);
+static bool      IsTokenOperationSelfChange       (const Token_t* token);
+static bool      IsCallFunction                   (const Token_t* tokensArr, const size_t* tp);
+static bool      IsNotAssignOperationBeforeMinus  (const Token_t* tokensArr, size_t tp);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const Token_t* PickNextToken(const Token_t* tokenArr, const size_t* pointer)
-{
-    assert(tokenArr);
-    assert(pointer);
-
-    return &tokenArr[*pointer + 1];
-}
+const Token_t* ConsumeToken                       (const Token_t* tokenArr, size_t* pointer);
+const Token_t* PickToken                          (const Token_t* tokenArr, const size_t* pointer);
+const Token_t* PickNextToken                      (const Token_t* tokenArr, const size_t* pointer);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -124,7 +107,7 @@ Node_t* GetTree(const Token_t* tokensArr, const InputData* inputData)
     assert(tokensArr);
 
     size_t tp = 0;
-    Node_t* node = GetDefFunc(tokensArr, &tp, inputData);
+    Node_t* node = GetDefVariable(tokensArr, &tp, inputData);
 
     const Token_t* token = ConsumeToken(tokensArr, &tp);
     if (!IsTokenEnd(token))
@@ -408,102 +391,6 @@ static Node_t* GetElseCondition(const Token_t* tokensArr, size_t* tp, const Inpu
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetCallFunction(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
-{
-    assert(tokensArr);
-    assert(tp);
-
-    const Token_t* token = PickToken(tokensArr, tp);
-
-    if (!IsCallFunction(tokensArr, tp))
-        return GetNot(tokensArr, tp, inputData);
-
-    Node_t* name_node = GetName(tokensArr, tp, inputData);
-
-    token = ConsumeToken(tokensArr, tp);
-    if (!IsTokenLeftRoundBracket(token))
-        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '('");
-
-    Node_t* args_node = GetCallFunctionArgs(tokensArr, tp, inputData);
-
-    token = ConsumeToken(tokensArr, tp);
-    if (!IsTokenRightRoundBracket(token))
-        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ')'");
-
-    name_node->left = args_node;
-
-    Node_t* call_func_node = {};
-    _CALL_FUNC(&call_func_node, name_node);
-
-    return call_func_node;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Node_t* GetCallFunctionArgs(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
-{
-    assert(tokensArr);
-    assert(tp);
-    
-    const Token_t* token = PickToken(tokensArr, tp);
-
-    if (IsTokenRightRoundBracket(token))
-        return nullptr;
-
-    Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);    
-    
-
-    token = PickToken(tokensArr, tp);
-    if (!IsTokenSeparatorComma(token))
-        return bool_operation_node;
-
-    (*tp)++;
-
-    size_t old_tp = *tp;
-    Node_t* next_name_node = GetCallFunctionArgs(tokensArr, tp, inputData);
-    
-    token = PickToken(tokensArr, tp);
-    if (old_tp == *tp)
-        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected some expression");
-
-    if (!next_name_node)
-        return bool_operation_node;
-
-    Node_t* connect_node = {};
-    _CONNECT(&connect_node, bool_operation_node, next_name_node);
-
-    return connect_node;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static Node_t* GetReturn(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
-{
-    assert(tokensArr);
-    assert(tp);
-
-    Node_t* return_node = {};
-    const Token_t* token = PickToken(tokensArr, tp);
-
-    if (!IsTokenFuncAttrReturn(token))
-        return_node = GetDefVariable(tokensArr, tp, inputData);
-    
-    else
-    {
-        (*tp)++;
-        Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);
-        _RET(&return_node, bool_operation_node);
-    }
-
-    token = ConsumeToken(tokensArr, tp);
-    if (!IsTokenSemicolon(token))
-        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ';'");
-
-    return return_node;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static Node_t* GetCycle(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
 {
     assert(tokensArr);
@@ -615,6 +502,33 @@ static Node_t* GetFor(const Token_t* tokensArr, size_t* tp, const InputData* inp
     _FOR(&for_node, connect_node_2, condition_node);
 
     return for_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetReturn(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    Node_t* return_node = {};
+    const Token_t* token = PickToken(tokensArr, tp);
+
+    if (!IsTokenFuncAttrReturn(token))
+        return_node = GetDefVariable(tokensArr, tp, inputData);
+    
+    else
+    {
+        (*tp)++;
+        Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);
+        _RET(&return_node, bool_operation_node);
+    }
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenSemicolon(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ';'");
+
+    return return_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -853,29 +767,71 @@ static Node_t* GetPow(const Token_t* tokensArr, size_t* tp, const InputData* inp
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static Node_t* GetNot(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+static Node_t* GetCallFunction(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
 {
     assert(tokensArr);
     assert(tp);
 
     const Token_t* token = PickToken(tokensArr, tp);
-    if (!IsTokenOperationNot(token))
-        return GetBracket(tokensArr, tp, inputData);
 
-    size_t old_tp = *tp;
+    if (!IsCallFunction(tokensArr, tp))
+        return GetMinus(tokensArr, tp, inputData);
+
+    Node_t* name_node = GetName(tokensArr, tp, inputData);
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenLeftRoundBracket(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '('");
+
+    Node_t* args_node = GetCallFunctionArgs(tokensArr, tp, inputData);
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenRightRoundBracket(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ')'");
+
+    name_node->left = args_node;
+
+    Node_t* call_func_node = {};
+    _CALL_FUNC(&call_func_node, name_node);
+
+    return call_func_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetCallFunctionArgs(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tokensArr);
+    assert(tp);
+    
+    const Token_t* token = PickToken(tokensArr, tp);
+
+    if (IsTokenRightRoundBracket(token))
+        return nullptr;
+
+    Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);    
+    
+
+    token = PickToken(tokensArr, tp);
+    if (!IsTokenSeparatorComma(token))
+        return bool_operation_node;
 
     (*tp)++;
 
-    Node_t* node = GetMulDiv(tokensArr, tp, inputData);
-
+    size_t old_tp = *tp;
+    Node_t* next_name_node = GetCallFunctionArgs(tokensArr, tp, inputData);
+    
     token = PickToken(tokensArr, tp);
     if (old_tp == *tp)
-        SYNTAX_ERR_FOR_TOKEN(token, inputData, "nothing after '!'");
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected some expression");
 
-    Node_t* not_node = {};
-    _NOT(&not_node, node);
+    if (!next_name_node)
+        return bool_operation_node;
 
-    return not_node;
+    Node_t* connect_node = {};
+    _CONNECT(&connect_node, bool_operation_node, next_name_node);
+
+    return connect_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -907,6 +863,33 @@ static Node_t* GetMinus(const Token_t* tokensArr, size_t* tp, const InputData* i
     _SUB(&new_node, node, nullptr);
 
     return new_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetNot(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    const Token_t* token = PickToken(tokensArr, tp);
+    if (!IsTokenOperationNot(token))
+        return GetBracket(tokensArr, tp, inputData);
+
+    size_t old_tp = *tp;
+
+    (*tp)++;
+
+    Node_t* node = GetMulDiv(tokensArr, tp, inputData);
+
+    token = PickToken(tokensArr, tp);
+    if (old_tp == *tp)
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "nothing after '!'");
+
+    Node_t* not_node = {};
+    _NOT(&not_node, node);
+
+    return not_node;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1345,6 +1328,41 @@ static bool IsTokenOperationSelfChange(const Token_t* token)
             (token->data.operation == Operation::plus_equal ) ||
             (token->data.operation == Operation::plus_equal )
             );
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const Token_t* ConsumeToken(const Token_t* tokenArr, size_t* pointer)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    size_t pointer_copy = *pointer;
+    (*pointer)++;
+
+    return &tokenArr[pointer_copy];
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const Token_t* PickToken(const Token_t* tokenArr, const size_t* pointer)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    return &tokenArr[*pointer];
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+const Token_t* PickNextToken(const Token_t* tokenArr, const size_t* pointer)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    return &tokenArr[*pointer + 1];
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
