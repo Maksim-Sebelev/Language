@@ -8,7 +8,7 @@ FrontEnd/Src/bin/FrontEnd/Src/src/tree/readTree/recursiveDescent/recursiveDescen
  FrontEnd/Src/include/tree/NodesAndTokensTypes.hpp \
  FrontEnd/Src/include/tree/readTree/tokens/token.hpp \
  FrontEnd/Src/include/tree/readTree/syntaxErr/syntaxErr.hpp \
- FrontEnd/Src/include/tree/treeDump/treeDump.hpp \
  FrontEnd/Src/include/tree/readTree/recursiveDescent/recursiveDescent.hpp \
  FrontEnd/Src/include/log/log.hpp \
+ FrontEnd/Src/include/tree/treeDump/treeDump.hpp \
  FrontEnd/Src/include/tree/readTree/tokens/tokensDump/tokenDump.hpp

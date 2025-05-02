@@ -2,33 +2,33 @@
 
 ```bash
 Tree          ::=   DefFunc '\0'
-DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' Condition }' } *
+DefFunc       ::=   {Type Name '(' DefFuncArgs ')' '{' Condition '}' } *
 DefFuncArgs   ::=   {Type Name} ? {',' Type Name } *
 
 Condition     ::=   { If Elif Else | Cycle } *
-If            ::=   {'if' '(' Assign ')' '{' Condition '}' } ?
+If            ::=   { 'if'      '(' Assign ')' '{' Condition '}' } ?
 Elif          ::=   { 'else if' '(' Assign ')' '{' Condition '}' } *
-Else          ::=   { else '{' Condition '}' } ?
+Else          ::=   { 'else'                   '{' Condition '}' } ?
 
 Cycle         ::=   While | For | Return ';'
-While         ::=   'while' '(' Assign ')' '{' Condition '}'
-For           ::=   'for' '(' DefVariable ';' Assign ';' Assign ')' '{' Condition '}'
+While         ::=   'while' '(' Assign ')'                            '{' Condition '}'
+For           ::=   'for'   '(' DefVariable ';' Assign ';' Assign ')' '{' Condition '}'
 
 Return        ::=   'return'  BoolOperation ';' | DefVariable
 
 DefVariable   ::=   Type Name '=' BoolOperation | Assign
-Assign        ::=   Name '=' BoolOperation | PpMM
+Assign        ::=        Name '=' BoolOperation | PpMM
 
-PpMm          ::=   Name [ '++ '--' ] | PlusEqual
+PpMm          ::=   Name [ '++' '--' ]                        | PlusEqual
 PlusEqual     ::=   Name ['+=' '-=' '*=' '/=' ] BoolOperation | BoolOperation
 
-BoolOperation ::=   AddSub { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub } *
-AddSub        ::=   MulDiv { ['+' '-'] MulDiv } *
-MulDiv        ::=   Pow { ['*' '/'] Pow } *
-Pow           ::=   CallFunc { '^' CallFunc } *
+BoolOperation ::=   AddSub   { ['>' '>=' ... '==' '!=' '&&' '||'] AddSub   } *
+AddSub        ::=   MulDiv   { ['+' '-']                          MulDiv   } *
+MulDiv        ::=   Pow      { ['*' '/']                          Pow      } *
+Pow           ::=   CallFunc { '^'                                CallFunc } *
 
 CallFunc      ::    Name '(' Args ')' | Minus
-CallFuncArgs  ::=   {Assign} ? { ',' Assign } *
+CallFuncArgs  ::=   Assign ? { ',' Assign } *
 
 Minus         ::=   '-' MulDiv | Not
 Not           ::=   '!' MulDiv | Bracket

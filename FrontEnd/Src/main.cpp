@@ -28,7 +28,7 @@ int main()
     TREE_GRAPHIC_DUMP(&tree);
     )
 
-    const char* output = "../tree/tree.txt";
+    const char* output = "../tree/tree.ast";
     PrintTree(&tree, output);
 
     TREE_ASSERT(TreeDtor(&tree));

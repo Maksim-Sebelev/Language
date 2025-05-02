@@ -29,59 +29,6 @@ static const double eps = 1e-50;
 
 //=============================== Node Text Dump ==================================================================================================================================================
 
-void NodeTextDump(const Node_t* node, const char* file, const int line, const char* func)
-{
-    assert(file);
-    assert(func);
-
-    COLOR_PRINT(GREEN, "\nNode Dump:\n\n");
-
-    PRINT_PLACE(YELLOW, file, line, func);
-
-    COLOR_PRINT(GREEN, "\nnode:\n");
-
-    if (!node)
-    {
-        COLOR_PRINT(RED, "'nullptr'\n\n");
-        return;
-    }
-
-    COLOR_PRINT(CYAN,  "type = '%s'\n", GetNodeTypeInStr  (node));
-
-    NodeArgType type = node->type;
-
-
-    COLOR_PRINT(CYAN, "data = '");
-
-    if (type == NodeArgType::number)
-    {
-        COLOR_PRINT(CYAN, "%d", node->data.num.value.int_val);
-    }
-
-    else if (type == NodeArgType::name)
-    {
-        // NamePointer namePointer = node->data.name;
-        // PrintName(namePointer, table);
-        PrintName(node->data.name);
-    }
-
-    else
-    {
-        COLOR_PRINT(CYAN,  "%s", GetNodeDataInStr(node));
-    }
-
-    COLOR_PRINT(CYAN, "'\n");
-
-    COLOR_PRINT(VIOLET, "left  = %p\n", node->left);
-    COLOR_PRINT(VIOLET, "right = %p\n", node->right);
-
-    COLOR_PRINT(GREEN, "\nNode Dump End.\n\n");
-
-    return;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 static void PrintName(Name name)
 {
     const char* nameStr = name.name.name;

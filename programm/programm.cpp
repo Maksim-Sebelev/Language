@@ -1,1 +1,1 @@
-love = 4 + 15 - 3*4 / 15
+a + print(eda(3) + 4 * fuck(senya)) + 4 * print(xyq)

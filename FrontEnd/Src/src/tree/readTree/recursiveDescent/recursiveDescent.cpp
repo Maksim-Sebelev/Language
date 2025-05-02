@@ -106,8 +106,8 @@ Node_t* GetTree(const Token_t* tokensArr, const InputData* inputData)
 {
     assert(tokensArr);
 
-    size_t tp = 0;
-    Node_t* node = GetDefVariable(tokensArr, &tp, inputData);
+    size_t  tp   = 0;
+    Node_t* node = GetDefFunc(tokensArr, &tp, inputData);
 
     const Token_t* token = ConsumeToken(tokensArr, &tp);
     if (!IsTokenEnd(token))
@@ -130,8 +130,6 @@ static Node_t* GetDefFunc(const Token_t* tokensArr, size_t* tp, const InputData*
     const Token_t* token = PickToken(tokensArr, tp);
     if (IsTokenEnd(token))
         return nullptr;
-
-
 
     Node_t* type_node = GetType(tokensArr, tp, inputData);
     Node_t* name_node = GetName(tokensArr, tp, inputData);
@@ -421,7 +419,6 @@ static Node_t* GetWhile(const Token_t* tokensArr, size_t* tp, const InputData* i
     if (!IsTokenLeftRoundBracket(token))
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '('");
 
-    
     Node_t* bool_node = GetDefVariable(tokensArr, tp, inputData);
 
     token = ConsumeToken(tokensArr, tp);

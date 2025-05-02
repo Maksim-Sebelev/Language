@@ -1,0 +1,45 @@
+OP: +
+{
+	OP: +
+	{
+		NAME: a
+		CALL_FUNCTION
+		{
+			CALL_FUNCTION_ARGS
+			{
+				OP: +
+				{
+					CALL_FUNCTION
+					{
+						CALL_FUNCTION_ARGS
+						{
+							NUM: 3
+						}
+					}
+					OP: +
+					{
+						NUM: 4
+						CALL_FUNCTION
+						{
+							CALL_FUNCTION_ARGS
+							{
+								NAME: senya
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	OP: +
+	{
+		NUM: 4
+		CALL_FUNCTION
+		{
+			CALL_FUNCTION_ARGS
+			{
+				NAME: xyq
+			}
+		}
+	}
+}
