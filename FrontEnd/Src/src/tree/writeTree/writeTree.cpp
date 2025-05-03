@@ -8,27 +8,31 @@
 
 #ifdef _DEBUG
 #include "log/log.hpp"
-#endif
+#include "tree/treeDump/treeDump.hpp"
+#endif // _DEBUG
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _TAB
+// #define _TAB
 
 #ifdef _TAB
     #define ON_TAB(...) __VA_ARGS__
     #define OFF_TAB(...)
-#else
+#else // _TAB
     #define ON_TAB(...)
     #define OFF_TAB(...)  __VA_ARGS__
-#endif
+#endif // _TAB
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static void PrintSignature         (FILE* outstream);
 
-static void PrintConditon          (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
-static void PrintConditonIf        (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
-static void PrintConditonElseIf    (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
-static void PrintConditonElse      (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintDefFunc           (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintDefFuncArg        (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintCondition         (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintConditionIf       (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintConditionElseIf   (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
+static void PrintConditionElse     (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
 static void PrintCycle             (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
 static void PrintCycleWhile        (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
 static void PrintCycleFor          (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
@@ -51,141 +55,300 @@ static void PrintSlashN       (FILE* outstream                                  
 )
 static void PrintLeftBracket  (FILE* outstream                     ON_TAB(, size_t nTab      ));
 static void PrintRightBracket (FILE* outstream                     ON_TAB(, size_t nTab      ));
-static void PrintInit         (FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore));
-static void PrintSpace        (FILE* outstream                                                );
 static void PrintBefore       (FILE* outstream                     ON_TAB(, size_t nTab      ));
 static void PrintAfter        (FILE* outstream                                                );
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+OFF_TAB
+(
+static void PrintSpace        (FILE* outstream                                                );
+)
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ON_WRITE_TREE_DEBUG(
+void WherePrintTreeIs(const char* func);
+)
+
+#define WHERE_PRINT_TREE_IS() ON_WRITE_TREE_DEBUG(WherePrintTreeIs(__func__))
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 void PrintTree(const Tree_t* tree, const char* outstream)
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(tree);
     assert(outstream);
-
     FILE* out = fopen(outstream, "wb");
 
     if (!out) EXIT(EXIT_FAILURE, "failed open '%s'", outstream);
 
-    PrintOperation(out, tree->root ON_TAB(, 0));
+    PrintSignature(out);
+    PrintDefFunc(out, tree->root ON_TAB(, 0));
 
     return;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintConditon(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+static void PrintSignature(FILE* outstream)
 {
+    assert(outstream);
+
+    fprintf(outstream,  "file signature:\n"
+                        "name: ast txt format\n"
+                        "autor: Sebelev M. M.\n"
+                         "version: 1.0\n"
+                         "\n"
+                    );
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void PrintDefFunc(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+{
+    WHERE_PRINT_TREE_IS();
+
+    assert(outstream);
+
+    if (!node) return;
+    
+    if (node->type == NodeArgType::connect)
+    {
+        PrintDefFunc(outstream, node->left  ON_TAB(, nTabBefore));
+        PrintDefFunc(outstream, node->right ON_TAB(, nTabBefore));
+        return;
+    }
+
+    if (node->type != NodeArgType::initialisation || node->data.init != Initialisation::def_function)
+        EXIT(EXIT_FAILURE, "here must be def func node");
+
+
+    const Node_t* type = node->left;
+    const Node_t* name = node->left->left;
+    const Node_t* args = node->left->left->left;
+    const Node_t* body = node->left->left->right;
+
+    PrintBefore       (outstream              ON_TAB(, nTabBefore    ));
+    fprintf           (outstream, "DEF_FUNC"                          );
+    PrintAfter        (outstream                                      );
+    PrintLeftBracket  (outstream              ON_TAB(, nTabBefore    ));
+
+    PrintType         (outstream, type        ON_TAB(, nTabBefore + 1));
+    PrintName         (outstream, name        ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN(outstream                                     ));
+
+    PrintBefore       (outstream              ON_TAB(, nTabBefore + 1));
+    fprintf           (outstream, "ARGS"                              );
+    PrintAfter        (outstream                                      );
+    PrintLeftBracket  (outstream              ON_TAB(, nTabBefore + 1));
+    PrintDefFuncArg   (outstream, args        ON_TAB(, nTabBefore + 2));
+    PrintRightBracket (outstream              ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN(outstream                                     ));
+    PrintBefore       (outstream              ON_TAB(, nTabBefore + 1));
+    fprintf           (outstream, "BODY"                              );
+    PrintAfter        (outstream                                      );
+    PrintLeftBracket  (outstream              ON_TAB(, nTabBefore + 1));
+    PrintCondition     (outstream, body        ON_TAB(, nTabBefore + 2));
+    PrintRightBracket (outstream              ON_TAB(, nTabBefore + 1));
+
+    PrintRightBracket (outstream              ON_TAB(, nTabBefore    ));
+
+    ON_TAB(PrintSlashN(outstream                                     ));
+
+    return;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void PrintDefFuncArg(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+{
+    WHERE_PRINT_TREE_IS();
+
+    assert(outstream);
+
+    if (!node) return;
+
+    PrintType(outstream, node->left       ON_TAB(, nTabBefore));
+    PrintName(outstream, node->left->left ON_TAB(, nTabBefore));
+    
+    
+    if (!node->right) return;
+    
+    ON_TAB(
+    PrintSlashN(outstream);
+    )
+
+    if (node->right->type == NodeArgType::connect)
+        return PrintDefFuncArg(outstream, node->right ON_TAB(, nTabBefore));
+
+    PrintType(outstream, node->right       ON_TAB(, nTabBefore));
+    PrintName(outstream, node->right->left ON_TAB(, nTabBefore));
+
+    return;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void PrintCondition(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+{
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
 
     NodeArgType type = node->type;
 
-    if (type == NodeArgType::connect)
+    if (node->type == NodeArgType::connect)
     {
-        PrintConditon(outstream, node->left  ON_TAB(, nTabBefore));
-        PrintConditon(outstream, node->right ON_TAB(, nTabBefore));
+        PrintCondition(outstream, node->left  ON_TAB(, nTabBefore));
+        PrintCondition(outstream, node->right ON_TAB(, nTabBefore));
         return;
     }
 
-    if (type != NodeArgType::condition)
-        return PrintReturn(outstream, node ON_TAB(, nTabBefore));
+    NodeData_t data = node->data;
 
-    assert(node->data.condition == Condition::if_t);
+    if (type == NodeArgType::condition && data.condition == Condition::if_t)
+        return PrintConditionIf(outstream, node ON_TAB(, nTabBefore));
 
-    PrintConditonIf    (outstream, node ON_TAB(, nTabBefore));
-    PrintConditonElseIf(outstream, node ON_TAB(, nTabBefore));
-    PrintConditonElse  (outstream, node ON_TAB(, nTabBefore));
 
+    else if (type == NodeArgType::condition && data.condition == Condition::else_if_t)
+        return PrintConditionElseIf(outstream, node ON_TAB(, nTabBefore));
+
+    else if (type == NodeArgType::condition && data.condition == Condition::else_t)
+    {
+        return PrintConditionElse(outstream, node ON_TAB(, nTabBefore));
+    }
+
+    return PrintCycle(outstream, node ON_TAB(, nTabBefore));
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void PrintConditionIf(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+{
+    WHERE_PRINT_TREE_IS();
+
+    assert(outstream);
+
+    if (!node || node->type != NodeArgType::condition || node->data.condition != Condition::if_t)
+        EXIT(EXIT_FAILURE, "here must be connect node (left = if; right = else(if))'");
+
+    PrintBefore      (outstream                 ON_TAB(, nTabBefore    ));
+    fprintf          (outstream, "CONDITION: if"                        );
+    PrintAfter       (outstream                                         );
+    PrintLeftBracket (outstream                 ON_TAB(, nTabBefore    ));
+    
+    PrintBefore      (outstream                 ON_TAB(, nTabBefore + 1));
+    fprintf          (outstream, "CONDITION"                            );
+    PrintAfter       (outstream                                         );
+    PrintLeftBracket (outstream                 ON_TAB(, nTabBefore + 1));
+    PrintAssign      (outstream, node->left     ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream                 ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN(outstream                                       ));
+
+    PrintBefore      (outstream                 ON_TAB(, nTabBefore + 1));
+    fprintf          (outstream, "BODY"                                 );
+    PrintAfter       (outstream                                         );
+    PrintLeftBracket (outstream                 ON_TAB(, nTabBefore + 1));
+    PrintCondition   (outstream, node->right    ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream                 ON_TAB(, nTabBefore + 1));
+
+    PrintRightBracket(outstream                  ON_TAB(, nTabBefore   ));
+
+    ON_TAB(PrintSlashN(outstream));
+
+    return;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintConditonIf(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+static void PrintConditionElseIf(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
 
-    NodeArgType type = node->type;
-
-    // if (type == NodeArgType::connect)
-    // {
-    //     PrintCycle(outstream, node->left  ON_TAB(, nTabBefore));
-    //     PrintCycle(outstream, node->right ON_TAB(, nTabBefore));
-    //     return;
-    // }
-
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::while_t)
-        return PrintCycleWhile(outstream, node ON_TAB(, nTabBefore));
-
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::for_t)
-        return PrintCycleFor(outstream, node ON_TAB(, nTabBefore));
-
-    return PrintReturn(outstream, node ON_TAB(, nTabBefore));
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static void PrintConditonElseIf(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
-{
-    assert(outstream);
-
-    if (!node) return;
-
-    NodeArgType type = node->type;
-
-    if (type == NodeArgType::connect)
+    if (node->type == NodeArgType::connect)
     {
-        PrintCycle(outstream, node->left  ON_TAB(, nTabBefore));
-        PrintCycle(outstream, node->right ON_TAB(, nTabBefore));
+        PrintConditionElseIf(outstream, node->left  ON_TAB(, nTabBefore));
+        PrintConditionElseIf(outstream, node->right ON_TAB(, nTabBefore));
         return;
     }
 
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::while_t)
-        return PrintCycleWhile(outstream, node ON_TAB(, nTabBefore));
+    PrintBefore      (outstream                   ON_TAB(, nTabBefore    ));
+    fprintf          (outstream, "CONDITION: else_if"                     );
+    PrintAfter       (outstream                                           );
+    PrintLeftBracket (outstream                   ON_TAB(, nTabBefore    ));
+    
+    PrintBefore      (outstream                   ON_TAB(, nTabBefore + 1));
+    fprintf          (outstream, "CONDITION"                              );
+    PrintAfter       (outstream                                           );
+    PrintLeftBracket (outstream                   ON_TAB(, nTabBefore + 1));
+    PrintAssign      (outstream, node->left       ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream                   ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN(outstream                                         ));
 
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::for_t)
-        return PrintCycleFor(outstream, node ON_TAB(, nTabBefore));
+    PrintBefore      (outstream                   ON_TAB(, nTabBefore + 1));
+    fprintf          (outstream, "BODY"                                   );
+    PrintAfter       (outstream                                           );
+    PrintLeftBracket (outstream                   ON_TAB(, nTabBefore + 1));
+    PrintCondition   (outstream, node->right      ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream                   ON_TAB(, nTabBefore + 1));
 
-    return PrintReturn(outstream, node ON_TAB(, nTabBefore));
+    PrintRightBracket(outstream                   ON_TAB(, nTabBefore    ));
+
+    ON_TAB(PrintSlashN(outstream                                         ));
+
+    // return PrintConditionElseIf(outstream, node->right ON_TAB(, nTabBefore));
+    return;
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintConditonElse(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
+static void PrintConditionElse(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
 
-    NodeArgType type = node->type;
+    if (node->type != NodeArgType::condition || node->data.condition != Condition::else_t)
+        EXIT(EXIT_FAILURE, "here must be condition 'else'");
 
-    if (type == NodeArgType::connect)
-    {
-        PrintCycle(outstream, node->left  ON_TAB(, nTabBefore));
-        PrintCycle(outstream, node->right ON_TAB(, nTabBefore));
-        return;
-    }
+    PrintBefore      (outstream               ON_TAB(, nTabBefore    ));
+    fprintf          (outstream, "CONDITION: else"                    );
+    PrintAfter       (outstream                                       );
+    PrintLeftBracket (outstream               ON_TAB(, nTabBefore    ));
+    
+    PrintBefore      (outstream               ON_TAB(, nTabBefore + 1));
+    fprintf          (outstream, "BODY"                               );
+    PrintAfter       (outstream                                       );
+    PrintLeftBracket (outstream               ON_TAB(, nTabBefore + 1));
+    PrintCondition    (outstream, node->right ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream               ON_TAB(, nTabBefore + 1));
+    
+    PrintRightBracket(outstream               ON_TAB(, nTabBefore    ));
+    
+    ON_TAB(PrintSlashN(outstream                                     ));
 
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::while_t)
-        return PrintCycleWhile(outstream, node ON_TAB(, nTabBefore));
-
-    if (type == NodeArgType::cycle && node->data.cycle == Cycle::for_t)
-        return PrintCycleFor(outstream, node ON_TAB(, nTabBefore));
-
-    return PrintReturn(outstream, node ON_TAB(, nTabBefore));
+    return;
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void PrintCycle(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -212,6 +375,8 @@ static void PrintCycle(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabB
 
 static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -220,8 +385,8 @@ static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t 
 
     if (type == NodeArgType::connect)
     {
-        PrintCycleFor(outstream, node->left  ON_TAB(, nTabBefore));
-        PrintCycleFor(outstream, node->right ON_TAB(, nTabBefore));
+        PrintCycleWhile(outstream, node->left  ON_TAB(, nTabBefore));
+        PrintCycleWhile(outstream, node->right ON_TAB(, nTabBefore));
         return;
     }
 
@@ -238,13 +403,19 @@ static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t 
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintAssign      (outstream, node->left ON_TAB(, nTabBefore + 2));
     PrintRightBracket(outstream             ON_TAB(, nTabBefore + 1));
+
+    ON_TAB(PrintSlashN(outstream                                   ));
+
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
     fprintf          (outstream, "BODY"                             );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
-    // PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
+    PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
     PrintRightBracket(outstream             ON_TAB(, nTabBefore + 1));
+
     PrintRightBracket(outstream             ON_TAB(, nTabBefore    ));
+
+    ON_TAB(PrintSlashN(outstream                                   ));
 
     return;
 }
@@ -253,6 +424,8 @@ static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t 
 
 static void PrintCycleFor(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -279,13 +452,19 @@ static void PrintCycleFor(FILE* outstream, const Node_t* node ON_TAB(, size_t nT
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintDefVariable (outstream, node->left ON_TAB(, nTabBefore + 2));
     PrintRightBracket(outstream             ON_TAB(, nTabBefore + 1));
+
+    ON_TAB(PrintSlashN(outstream                                   ));
+
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
     fprintf          (outstream, "BODY"                             );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
-    // PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
+    PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
     PrintRightBracket(outstream             ON_TAB(, nTabBefore + 1));
+
     PrintRightBracket(outstream             ON_TAB(, nTabBefore    ));
+
+    ON_TAB(PrintSlashN(outstream                                   ));
 
     return;
 }
@@ -294,9 +473,15 @@ static void PrintCycleFor(FILE* outstream, const Node_t* node ON_TAB(, size_t nT
 
 static void PrintReturn(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
+
+    ON_DEBUG(
+    NODE_GRAPHIC_DUMP(node);
+    )
 
     NodeArgType type = node->type;
 
@@ -317,6 +502,8 @@ static void PrintReturn(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
     PrintOperation   (outstream, node->left ON_TAB(, nTabBefore + 1));
     PrintRightBracket(outstream             ON_TAB(, nTabBefore    ));
 
+    ON_TAB(PrintSlashN(outstream                                   ));
+
     return;
 }
 
@@ -324,6 +511,8 @@ static void PrintReturn(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
 
 static void PrintDefVariable(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -341,14 +530,23 @@ static void PrintDefVariable(FILE* outstream, const Node_t* node ON_TAB(, size_t
         return PrintAssign(outstream, node ON_TAB(, nTabBefore));
 
 
-    PrintBefore      (outstream                                ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "DEF_VAR"                                             );
-    PrintAfter       (outstream                                                        );
-    PrintLeftBracket (outstream                                ON_TAB(, nTabBefore    ));
-    PrintType        (outstream, node->left                    ON_TAB(, nTabBefore + 1));
-    PrintName        (outstream, node->left->left              ON_TAB(, nTabBefore + 1));
-    PrintOperation   (outstream, node->left->left->left->left  ON_TAB(, nTabBefore + 1));
-    PrintRightBracket(outstream                                ON_TAB(, nTabBefore    ));
+    PrintBefore       (outstream                                ON_TAB(, nTabBefore    ));
+    fprintf           (outstream, "DEF_VAR"                                             );
+    PrintAfter        (outstream                                                        );
+    PrintLeftBracket  (outstream                                ON_TAB(, nTabBefore    ));
+    PrintType         (outstream, node->left                    ON_TAB(, nTabBefore + 1));
+    PrintName         (outstream, node->left->left              ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN(outstream                                                       ));
+
+    PrintBefore(outstream ON_TAB(, nTabBefore + 1));
+    fprintf(outstream, "ASSIGN");
+    PrintAfter(outstream);
+    PrintLeftBracket(outstream ON_TAB(, nTabBefore + 1));
+    PrintOperation    (outstream, node->right  ON_TAB(, nTabBefore + 2));
+    PrintRightBracket(outstream ON_TAB(, nTabBefore + 1));
+    
+    PrintRightBracket (outstream                                ON_TAB(, nTabBefore    ));
+    ON_TAB(PrintSlashN(outstream                                                       ));
 
     return;
 }
@@ -357,6 +555,8 @@ static void PrintDefVariable(FILE* outstream, const Node_t* node ON_TAB(, size_t
 
 static void PrintAssign(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -379,7 +579,7 @@ static void PrintAssign(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
     PrintAfter       (outstream                                                 );
     PrintLeftBracket (outstream                         ON_TAB(, nTabBefore    ));
     PrintName        (outstream, node->left             ON_TAB(, nTabBefore + 1));
-    PrintOperation   (outstream, node->left->left->left ON_TAB(, nTabBefore + 1));
+    PrintOperation   (outstream, node->right            ON_TAB(, nTabBefore + 1));
     PrintRightBracket(outstream                         ON_TAB(, nTabBefore    ));
 
     return;
@@ -389,6 +589,8 @@ static void PrintAssign(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
 
 static void PrintOperation(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -416,13 +618,13 @@ static void PrintOperation(FILE* outstream, const Node_t* node ON_TAB(, size_t n
         case Operation::assign:            fprintf(outstream, "=" ); break;
         case Operation::plus:              fprintf(outstream, "+" ); break;
         case Operation::minus:             fprintf(outstream, "-" ); break;
-        case Operation::mul:               fprintf(outstream, "+" ); break;
-        case Operation::dive:              fprintf(outstream, "+" ); break;
-        case Operation::power:             fprintf(outstream, "+" ); break;
+        case Operation::mul:               fprintf(outstream, "*" ); break;
+        case Operation::dive:              fprintf(outstream, "/" ); break;
+        case Operation::power:             fprintf(outstream, "^" ); break;
         case Operation::equal:             fprintf(outstream, "=="); break;
         case Operation::not_equal:         fprintf(outstream, ">="); break;
-        case Operation::greater:           fprintf(outstream, "> "); break;
-        case Operation::greater_or_equal:  fprintf(outstream, ">+"); break;
+        case Operation::greater:           fprintf(outstream, ">" ); break;
+        case Operation::greater_or_equal:  fprintf(outstream, ">="); break;
         case Operation::less:              fprintf(outstream, "<" ); break;
         case Operation::less_or_equal:     fprintf(outstream, "<="); break;
         case Operation::bool_and:          fprintf(outstream, "&&"); break;
@@ -454,6 +656,8 @@ static void PrintOperation(FILE* outstream, const Node_t* node ON_TAB(, size_t n
 
 static void PrintCallFunction(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     NodeArgType type = node->type;
@@ -468,12 +672,14 @@ static void PrintCallFunction(FILE* outstream, const Node_t* node ON_TAB(, size_
     if (node->data.init != Initialisation::call_function)
         return PrintNumber(outstream, node ON_TAB(, nTabBefore));
 
-
     PrintBefore           (outstream                       ON_TAB(, nTabBefore    ));
     fprintf               (outstream, "CALL_FUNCTION"                              );
     PrintAfter            (outstream                                               );
     PrintLeftBracket      (outstream                       ON_TAB(, nTabBefore    ));
-    PrintCallFunctionArgs (outstream, node->left           ON_TAB(, nTabBefore + 1));
+
+    PrintName             (outstream, node->left           ON_TAB(, nTabBefore + 1));
+    
+    PrintCallFunctionArgs (outstream, node->left->left     ON_TAB(, nTabBefore + 1));
     PrintRightBracket     (outstream                       ON_TAB(, nTabBefore    )); 
 
     return;
@@ -484,6 +690,8 @@ static void PrintCallFunction(FILE* outstream, const Node_t* node ON_TAB(, size_
 
 static void PrintCallFunctionArgs(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
     if (!node) return;
@@ -500,8 +708,9 @@ static void PrintCallFunctionArgs(FILE* outstream, const Node_t* node ON_TAB(, s
     PrintBefore      (outstream                       ON_TAB(, nTabBefore    ));
     fprintf          (outstream, "CALL_FUNCTION_ARGS"                         );
     PrintAfter       (outstream                                               );
+
     PrintLeftBracket (outstream                       ON_TAB(, nTabBefore    ));
-    PrintAssign      (outstream, node->left           ON_TAB(, nTabBefore + 1));
+    PrintAssign      (outstream, node                 ON_TAB(, nTabBefore + 1));
     PrintRightBracket(outstream                       ON_TAB(, nTabBefore    )); 
 }
 
@@ -509,6 +718,8 @@ static void PrintCallFunctionArgs(FILE* outstream, const Node_t* node ON_TAB(, s
 
 static void PrintNumber(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(node);
     assert(outstream);
 
@@ -543,15 +754,15 @@ static void PrintNumber(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
 
 static void PrintName(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(node);
     assert(outstream);
 
     PrintBefore(outstream ON_TAB(, nTabBefore));
 
-    NodeArgType node_type = node->type;
-
-    if (node_type != NodeArgType::name)
-        EXIT(EXIT_FAILURE, "here must be node with type 'name'");
+    if (node->type != NodeArgType::name)
+        EXIT(EXIT_FAILURE, "here must be node with type 'name'\n");
 
     fprintf(outstream, "NAME: ");
 
@@ -570,6 +781,8 @@ static void PrintName(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBe
 
 static void PrintType(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBefore))
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(node);
     assert(outstream);
 
@@ -592,17 +805,6 @@ static void PrintType(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBe
     }
 
     PrintAfter(outstream);
-
-    return;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static void PrintSpace(FILE* outstream)
-{
-    assert(outstream);
-
-    fprintf(outstream, " ");
 
     return;
 }
@@ -671,6 +873,21 @@ static void PrintSlashN(FILE* outstream)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+OFF_TAB(
+
+static void PrintSpace(FILE* outstream)
+{
+    assert(outstream);
+
+    fprintf(outstream, " ");
+
+    return;
+}
+
+)
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static void PrintBefore(FILE* outstream ON_TAB(, size_t nTab))
 {
     assert(outstream);
@@ -700,3 +917,16 @@ static void PrintAfter(FILE* outstream)
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ON_WRITE_TREE_DEBUG
+(
+void WherePrintTreeIs(const char* func)
+{
+    assert(func);
+
+    ON_DEBUG(
+    LOG_PRINT(Yellow, "write_tree::%s\n", func);
+    )
+    return;
+}
+)

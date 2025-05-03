@@ -20,7 +20,7 @@ static void NodeDumpHelper        (const Node_t* node, const char* dotFileName, 
 
 
 static const char* GetNodeColor       (const Node_t* node);
-static const char* GetNodeTypeInStr   (const Node_t* node);
+// static const char* GetNodeTypeInStr   (const Node_t* node);
 static const char* GetNodeDataInStr   (const Node_t* node);
 
 static void PrintName(Name name);
@@ -54,9 +54,6 @@ void NodeDump(const Node_t* node, const char* file, const int line, const char* 
 
 
     static size_t ImgQuant = 1;
-
-    // system("rm -rf dot/node/img/*");
-    // system("rm -rf dot/node/dot/*");
 
     system("mkdir -p ../dot/");
     system("mkdir -p ../dot/node/");
@@ -294,46 +291,52 @@ static const char* GetNodeColor(const Node_t* node)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static const char* GetNodeTypeInStr(const Node_t* node)
-{
-    assert(node);
+// static const char* GetNodeTypeInStr(const Node_t* node)
+// {
+//     assert(node);
 
-    NodeArgType type = node->type;
+//     NodeArgType type = node->type;
 
-    switch (type)
-    {
-        case NodeArgType::number:
-            return "number";
+//     switch (type)
+//     {
+//         case NodeArgType::number:
+//             return "number";
 
-        case NodeArgType::operation:
-            return "operation";
+//         case NodeArgType::operation:
+//             return "operation";
 
-        case NodeArgType::name:
-            return "name";
+//         case NodeArgType::name:
+//             return "name";
 
-        case NodeArgType::undefined:
-            return "undefined";
+//         case NodeArgType::undefined:
+//             return "undefined";
 
-        case NodeArgType::condition:
-            return "condition";
+//         case NodeArgType::condition:
+//             return "condition";
 
-        case NodeArgType::cycle:
-            return "cycle";
+//         case NodeArgType::cycle:
+//             return "cycle";
 
-        case NodeArgType::connect:
-            return "connect";
+//         case NodeArgType::connect:
+//             return "connect";
         
-        case NodeArgType::type:
-            return "type";
+//         case NodeArgType::type:
+//             return "type";
 
-        default:
-            assert(0 && "You forgot about some node type in text dump.\n");
-            return "undefined";
-    }
+//         case NodeArgType::attribute:
+//             return "func attr";
 
-    assert(0 && "We must not be here.\n");
-    return "wtf?";
-}
+//         case NodeArgType::initialisation:
+//             return "init";
+
+//         default:
+//             assert(0 && "You forgot about some node type in text dump.\n");
+//             return "undefined";
+//     }
+
+//     assert(0 && "We must not be here.\n");
+//     return "wtf?";
+// }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

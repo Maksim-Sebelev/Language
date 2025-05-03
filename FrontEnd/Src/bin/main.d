@@ -3,5 +3,4 @@ bin/main.o: main.cpp include/tree/tree.hpp include/lib/colorPrint.hpp \
  include/tree/readTree/readTreeGlobalnclude.hpp \
  include/tree/nameTable/nametable.hpp \
  include/tree/NodesAndTokensTypes.hpp \
- include/tree/writeTree/writeTree.hpp include/log/log.hpp \
- include/tree/treeDump/treeDump.hpp
+ include/tree/writeTree/writeTree.hpp

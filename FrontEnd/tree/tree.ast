@@ -1,45 +1,6 @@
-OP: +
-{
-	OP: +
-	{
-		NAME: a
-		CALL_FUNCTION
-		{
-			CALL_FUNCTION_ARGS
-			{
-				OP: +
-				{
-					CALL_FUNCTION
-					{
-						CALL_FUNCTION_ARGS
-						{
-							NUM: 3
-						}
-					}
-					OP: +
-					{
-						NUM: 4
-						CALL_FUNCTION
-						{
-							CALL_FUNCTION_ARGS
-							{
-								NAME: senya
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	OP: +
-	{
-		NUM: 4
-		CALL_FUNCTION
-		{
-			CALL_FUNCTION_ARGS
-			{
-				NAME: xyq
-			}
-		}
-	}
-}
+file signature:
+name: ast txt format
+autor: Sebelev M. M.
+version: 1.0
+
+DEF_FUNC { TYPE: int NAME: a ARGS { TYPE: int NAME: a TYPE: int NAME: b TYPE: int NAME: c } BODY { DEF_VAR { TYPE: int NAME: tmp ASSIGN { OP: * { OP: * { NAME: a NAME: b } NAME: c } } } CONDITION: if { CONDITION { NAME: tmp } BODY { RETURN { NAME: tmp } } } CONDITION: else_if { CONDITION { OP: == { NAME: tmp NUM: 1 } } BODY { RETURN { OP: * { NAME: tmp NAME: tmp } } } } RETURN { OP: + { OP: + { NAME: a NAME: b } NAME: c } } } } DEF_FUNC { TYPE: int NAME: a ARGS { TYPE: int NAME: a TYPE: int NAME: b TYPE: int NAME: c } BODY { } } DEF_FUNC { TYPE: int NAME: a ARGS { } BODY { DEF_VAR { TYPE: int NAME: b ASSIGN { NUM: 0 } } CONDITION: if { CONDITION { NUM: 1 } BODY { CYCLE: WHILE { CYCLE_CONDITION { NUM: 1 } BODY { ASGN { NAME: b OP: + { NAME: b NUM: 1 } } } } RETURN { NUM: 1 } } } CONDITION: else_if { CONDITION { NUM: 1 } BODY { RETURN { NUM: 2 } } } CONDITION: else_if { CONDITION { NUM: 1 } BODY { RETURN { NUM: 2 } } } CONDITION: else_if { CONDITION { NUM: 1 } BODY { RETURN { NUM: 2 } } } CONDITION: else { BODY { RETURN { NUM: 3 } } } DEF_VAR { TYPE: int NAME: c ASSIGN { NUM: 5 } } DEF_VAR { TYPE: int NAME: d ASSIGN { NUM: 6 } } DEF_VAR { TYPE: int NAME: e ASSIGN { OP: + { NAME: c OP: * { NAME: d NUM: 4 } } } } RETURN { OP: * { NAME: c NAME: e } } } } 

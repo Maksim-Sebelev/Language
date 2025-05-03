@@ -30,8 +30,11 @@ void TokensLog(const Token_t* tokens, size_t tokensQuant, const InputData* input
     assert(inputData);
 
     LOG_PRINT(Red, "Tokens Dump\n");
+
+    
     LOG_PRINT(White, "log made in:\n");
     LOG_PLACE(White);
+
 
     for (size_t i = 0; i < tokensQuant; i++)
     {

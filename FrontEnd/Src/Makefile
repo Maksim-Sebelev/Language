@@ -95,6 +95,7 @@ $(DEPS) : $(OUT_O_DIR)/%.d : %.cpp
 #======= run ==========================================
 
 run:
+	make clean_dot
 	./$(EXECUTABLE_DIR)/$(EXECUTABLE)
 
 rebuild:
@@ -114,10 +115,10 @@ clean_dirs:
 	rm -rf $(OUT_O_DIR) $(EXECUTABLE_DIR)
 
 clean_log:
-	rm -rf $(RELATIVE_PATH)Log/
+	rm -rf $(RELATIVE_PATH)../Log/
 
 clean_dot:
-	rm -rf FrontEnd/dot/
+	rm -rf $(RELATIVE_PATH)../dot/
 
 #========= iwyu ======================================
 

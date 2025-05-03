@@ -48,9 +48,8 @@ TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
     TOKEN_GRAPHIC_DUMP  (token, tokenQuant);
     TOKENS_LOG(token, tokenQuant, &inputData);
     )
-    tree->root = GetTree(token, &inputData);
 
-    // NAME_TABLE_GRAPHIC_DUMP(&tree->nameTable);
+    tree->root = GetTree(token, &inputData);
 
     TokenDtor(token);
 
@@ -146,7 +145,6 @@ TreeErr NodeCopy(Node_t** copy, const Node_t* node)
 
     TREE_ASSERT(NodeCtor(copy, type, data, left, right));
 
-
     if (*copy == nullptr)
     {
         err.err = TreeErrorType::NODE_NULL;
@@ -154,82 +152,83 @@ TreeErr NodeCopy(Node_t** copy, const Node_t* node)
     }
 
     if (node->left)
-    {
         TREE_ASSERT(NodeCopy(&(*copy)->left,  node->left));
-    }
 
     if (node->right)
-    {
         TREE_ASSERT(NodeCopy(&(*copy)->right, node->right));
-    }
 
     return NODE_VERIF(*copy, err);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
-{
-    assert(node);
+// TreeErr NodeSetCopy(Node_t* copy, const Node_t* node)
+// {
+//     assert(node);
 
-    TreeErr err = {};
+//     TreeErr err = {};
 
-    NodeArgType type  = node->type;
+//     NodeArgType type  = node->type;
     
-    Node_t*     left  = node->left;
-    Node_t*     right = node->right;
+//     Node_t*     left  = node->left;
+//     Node_t*     right = node->right;
 
-    switch (type)
-    {
-        case NodeArgType::number:
-        {
-            Number number = node->data.num;
-            _SET_NUM(copy, number);
-            break;
-        }
-        case NodeArgType::name:  
-        {
-            Name name = node->data.name;
-            _SET_NAME(copy, name);
-            break;
-        }
-        case NodeArgType::operation: 
-        {
-            Operation operation = node->data.oper;
-            _SET_OPER(copy, operation, left, right);
-            break;
-        }
-        case NodeArgType::condition:
-        {
-            Condition condition = node->data.condition;
-            _SET_COND(copy, condition, left, right);
-            break;
-        }
-        case NodeArgType::cycle:
-        {
-            Cycle cycle = node->data.cycle;
-            _SET_CYCLE(copy, cycle, left, right);
-            break;
-        }
-        case NodeArgType::type:
-        {
-            Type typ = node->data.type;
-            _SET_TYPE(copy, typ, left);
-            break;
-        }
-        // case NodeArgType::function:
-        // {
-            // DFunction function = node->data.func;
-            // _SET_FUNC(copy, function, left);
-            // break;
-            // }
-        case NodeArgType::connect:
-        case NodeArgType::undefined:
-        default:  err.err = TreeErrorType::NODE_NULL; return NODE_VERIF(node, err);
-    }
+//     switch (type)
+//     {
+//         case NodeArgType::number:
+//         {
+//             Number number = node->data.num;
+//             _SET_NUM(copy, number);
+//             break;
+//         }
+//         case NodeArgType::name:  
+//         {
+//             Name name = node->data.name;
+//             _SET_NAME(copy, name);
+//             break;
+//         }
+//         case NodeArgType::operation: 
+//         {
+//             Operation operation = node->data.oper;
+//             _SET_OPER(copy, operation, left, right);
+//             break;
+//         }
+//         case NodeArgType::condition:
+//         {
+//             Condition condition = node->data.condition;
+//             _SET_COND(copy, condition, left, right);
+//             break;
+//         }
+//         case NodeArgType::cycle:
+//         {
+//             Cycle cycle = node->data.cycle;
+//             _SET_CYCLE(copy, cycle, left, right);
+//             break;
+//         }
+//         case NodeArgType::type:
+//         {
+//             Type typ = node->data.type;
+//             _SET_TYPE(copy, typ, left);
+//             break;
+//         }
+//         case NodeArgType::attribute:
+//         {
+//             FunctionAttribute attr = node->data.attribute;
+//             _SET_TYPE(copy, attr, left);
+//         }
+//         // case NodeArgType::function:
+//         // {
+//             // DFunction function = node->data.func;
+//             // _SET_FUNC(copy, function, left);
+//             // break;
+//             // }
+//         case NodeArgType::connect:
+//         case NodeArgType::undefined:
+//         default:  err.err = TreeErrorType::NODE_NULL; return NODE_VERIF(node, err);
+//     }
 
-    return NODE_VERIF(copy, err);
-}
+//     return NODE_VERIF(copy, err);
+// }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

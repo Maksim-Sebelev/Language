@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include "log/log.hpp"
+#include "lib/lib.hpp"
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -139,10 +140,16 @@ void OpenLog()
     assert(LogName && "logName = nullptr");
 
     int sys_return = system("mkdir -p ../Log/");
-    assert(sys_return == 0 && "failed make log dir");
+    
+    if (sys_return != 0)
+        EXIT(EXIT_FAILURE, "failed build log dir.");
+
 
     LogFile = fopen(LogName, "w");
-    assert(LogFile && "failed open log file");
+
+    if (!LogFile)
+        EXIT(EXIT_FAILURE, "failed open log file.");
+
 
     fprintfHtml(); fprintfNS();
 
@@ -215,6 +222,8 @@ void LogAdcPrint(const char* format, ...)
 
 void LogPrint(LogColor color, const char* format, ...)
 {
+    assert(format);
+
     va_list args;
     va_start(args, format);
     

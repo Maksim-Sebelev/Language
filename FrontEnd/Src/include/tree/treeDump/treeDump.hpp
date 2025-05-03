@@ -12,5 +12,5 @@ void TreeDump     (const Tree_t* tree, const char* file, const int line, const c
 #define NODE_GRAPHIC_DUMP(node) NodeDump     (node, __FILE__, __LINE__, __func__)
 
 
-#endif TREE_GRAPHIC_DUMP_HPP
+#endif // TREE_GRAPHIC_DUMP_HPP
 

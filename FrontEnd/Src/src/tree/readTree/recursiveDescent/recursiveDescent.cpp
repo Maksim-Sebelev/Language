@@ -34,6 +34,9 @@ static Node_t*   GetReturn                      (const Token_t* tokensArr, size_
 static Node_t*   GetDefVariable                 (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 static Node_t*   GetAssign                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
+static Node_t*   GetPlusPlus                    (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetPlusEqual                   (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+
 static Node_t*   GetBoolOperation               (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 static Node_t*   GetAddSub                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 static Node_t*   GetMulDiv                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
@@ -86,9 +89,11 @@ static bool      IsTokenCycleWhile                (const Token_t* token);
 static bool      IsTokenCycleFor                  (const Token_t* token);
 static bool      IsTokenFuncAttrCall              (const Token_t* token);
 static bool      IsTokenFuncAttrReturn            (const Token_t* token);
-static bool      IsTokenOperationSelfChange       (const Token_t* token);
+static bool      IsTokenOperationPlusEquale       (const Token_t* token);
 static bool      IsCallFunction                   (const Token_t* tokensArr, const size_t* tp);
 static bool      IsNotAssignOperationBeforeMinus  (const Token_t* tokensArr, size_t tp);
+static bool      IsOperationPlusPlus              (const Token_t* tokensArr, const size_t* tp);
+static bool      IsOperationPlusEqual             (const Token_t* tokensArr, const size_t* tp);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -152,7 +157,6 @@ static Node_t* GetDefFunc(const Token_t* tokensArr, size_t* tp, const InputData*
     if (!IsTokenLeftCurlyBracket(token))
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '{'");
 
-
     Node_t* return_node = GetCondition(tokensArr, tp, inputData);
     name_node->right = return_node;
 
@@ -162,10 +166,11 @@ static Node_t* GetDefFunc(const Token_t* tokensArr, size_t* tp, const InputData*
 
     Node_t* next_def_func_node = GetDefFunc(tokensArr, tp, inputData);
 
-    // NODE_GRAPHIC_DUMP(next_def_func_node);
-
     Node_t* def_func_node = {};
     _DEF_FUNC(&def_func_node, type_node);
+
+    if (!next_def_func_node)
+        return def_func_node;
 
     Node_t* connect_node = {};
     _CONNECT(&connect_node, def_func_node, next_def_func_node);
@@ -179,27 +184,30 @@ static Node_t* GetDefFuncArgs(const Token_t* tokensArr, size_t* tp, const InputD
 {
     assert(tokensArr);
     assert(tp);
-        
+
     const Token_t* token = PickToken(tokensArr, tp);
 
     if (!IsTokenType(token))
         return nullptr;
-    
+
     Node_t* type_node = GetType(tokensArr, tp, inputData);
 
     Node_t* name_node = GetName(tokensArr, tp, inputData);
 
     type_node->left = name_node;
 
+    Node_t* connect_node = {};
+    _CONNECT(&connect_node, type_node, nullptr);
+
     token = PickToken(tokensArr, tp);
     if (!IsTokenSeparatorComma(token))
-        return type_node;
+        return connect_node;
+
     (*tp)++;
 
     Node_t* next_name_node = GetDefFuncArgs(tokensArr, tp, inputData);
     
-    Node_t* connect_node = {};
-    _CONNECT(&connect_node, type_node, next_name_node);
+    connect_node->right = next_name_node;
 
     return connect_node;
 }
@@ -222,9 +230,12 @@ static Node_t* GetCondition(const Token_t* tokensArr, size_t* tp, const InputDat
     {
         Node_t* cycle_node          = GetCycle     (tokensArr, tp, inputData);
         Node_t* next_condition_node = GetCondition (tokensArr, tp, inputData);
-        _CONNECT(&main_connect_node, cycle_node, next_condition_node);
 
-        return main_connect_node;
+        if (!next_condition_node)
+            return cycle_node;
+
+        _CONNECT(&main_connect_node, cycle_node, next_condition_node);
+        return main_connect_node;    
     }
 
     Node_t* if_node      = GetIfCondition    (tokensArr, tp, inputData);
@@ -249,11 +260,18 @@ static Node_t* GetCondition(const Token_t* tokensArr, size_t* tp, const InputDat
     else
     {
         Node_t* next_condition = GetCondition(tokensArr, tp, inputData);
+        if (!next_condition)
+            return if_node;
+
         _CONNECT(&connect_node, if_node, next_condition);
         return connect_node;
     }
 
     Node_t* next_condition = GetCondition(tokensArr, tp, inputData);
+
+    if (!next_condition)
+        return connect_node;
+    
     _CONNECT(&main_connect_node, connect_node, next_condition);
 
     return main_connect_node;
@@ -349,6 +367,9 @@ static Node_t* GetElseIfCondition(const Token_t* tokensArr, size_t* tp, const In
 
     Node_t* next_else_if_node = GetElseIfCondition(tokensArr, tp, inputData);
     
+    if (!next_else_if_node)
+        return else_if_node;
+
     Node_t* connect_node = {};
     _CONNECT(&connect_node, else_if_node, next_else_if_node);
 
@@ -552,14 +573,9 @@ static Node_t* GetDefVariable(const Token_t* tokensArr, size_t* tp, const InputD
 
     Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);
 
-    Node_t* assign_node = {};
-
-    _ASG(&assign_node, bool_operation_node);
-
-    name_node->left = assign_node;
 
     Node_t* def_variable_node = {};
-    _DEF_VAR(&def_variable_node, type_node);
+    _DEF_VAR(&def_variable_node, type_node, bool_operation_node);
 
     return def_variable_node;
 }
@@ -585,16 +601,33 @@ static Node_t* GetAssign(const Token_t* tokensArr, size_t* tp, const InputData* 
 
     Node_t* bool_operation_node = GetBoolOperation(tokensArr, tp, inputData);
 
-   
-    Node_t* assign_node = {};
-    _ASG(&assign_node, bool_operation_node);
-
-    name_node->left = assign_node;
-
     Node_t* asg_variable_node = {};
-    _ASG_VAR(&asg_variable_node, name_node);
+    _ASG_VAR(&asg_variable_node, name_node, bool_operation_node);
 
     return asg_variable_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetPlusPlus(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tp);
+    assert(tokensArr);
+
+    if (!IsOperationPlusPlus(tokensArr, tp))
+        return GetPlusEqual(tokensArr, tp, inputData);
+
+
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetPlusEqual(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tp);
+    assert(tokensArr);
+
+    
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -629,6 +662,12 @@ static Node_t* GetBoolOperation(const Token_t* tokensArr, size_t* tp, const Inpu
             case Operation::bool_or:             _OR  (&new_node, node, node2); break;
     
             case Operation::bool_not:
+            case Operation::plus_plus:
+            case Operation::minus_minus:
+            case Operation::plus_equal:
+            case Operation::minus_equal:
+            case Operation::mul_equal:
+            case Operation::div_equal:
             case Operation::plus:
             case Operation::minus:
             case Operation::mul:
@@ -1311,7 +1350,7 @@ static bool IsCallFunction(const Token_t* tokensArr, const size_t* tp)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenOperationSelfChange(const Token_t* token)
+static bool IsTokenOperationPlusEquale(const Token_t* token)
 {
     assert(token);
     return  (token->type == TokenType::TokenOperation_t) && 
@@ -1319,11 +1358,43 @@ static bool IsTokenOperationSelfChange(const Token_t* token)
             (token->data.operation == Operation::plus_equal ) ||
             (token->data.operation == Operation::minus_equal) ||
             (token->data.operation == Operation::mul_equal  ) ||
-            (token->data.operation == Operation::div_equal  ) ||
-            (token->data.operation == Operation::plus_plus  ) ||
-            (token->data.operation == Operation::plus_plus  ) ||
+            (token->data.operation == Operation::div_equal  )
+            );
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsOperationPlusPlus(const Token_t* tokensArr, const size_t* tp)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    const Token_t* token      = PickToken     (tokensArr, tp);
+    const Token_t* next_token = PickNextToken (tokensArr, tp);
+
+    return  (token->type == TokenType::TokenName_t) && 
+            (
+            (token->data.operation == Operation::plus_plus) ||
+            (token->data.operation == Operation::minus_minus)
+            );
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsOperationPlusEqual(const Token_t* tokensArr, const size_t* tp)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    const Token_t* token      = PickToken     (tokensArr, tp);
+    const Token_t* next_token = PickNextToken (tokensArr, tp);
+
+    return  (token->type == TokenType::TokenName_t) && 
+            (
             (token->data.operation == Operation::plus_equal ) ||
-            (token->data.operation == Operation::plus_equal )
+            (token->data.operation == Operation::mul_equal  ) ||
+            (token->data.operation == Operation::minus_equal) ||
+            (token->data.operation == Operation::div_equal  )
             );
 }
 
