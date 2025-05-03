@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include "tree/tree.hpp"
 #include "lib/lib.hpp"
-#include "tree/writeTree/writeTree.hpp"
+#include "tree/write-tree/write-tree.hpp"
 
 #ifdef _DEBUG
 #include "log/log.hpp"
-#include "tree/treeDump/treeDump.hpp"
+#include "tree/tree-dump/tree-dump.hpp"
 #endif
 
 int main()

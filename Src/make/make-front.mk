@@ -1,6 +1,3 @@
--include common.mk
--include local.mk
-
 ifeq ($(origin CC),default)
   CC = g++
 endif
@@ -39,32 +36,33 @@ endif
 
 OUT_O_DIR	   ?= bin
 EXECUTABLE_DIR ?= build
-COMMONINC 	    = -I./include
+INCLUDE 	    = -I./$(FRONT_DIR)/include $(COMMON_INC)
 SRC 			= src
 EXECUTABLE 	   ?= frontend
-FRONT_DIR      := frontend
 
 
-override CFLAGS += $(COMMONINC)
+-include make/common.mk
 
-CSRC =  $(FRONT_DIR)/main.cpp 					  			   			     \
-		$(FRONT_DIR)/src/tree/tree.cpp							             \
-		$(FRONT_DIR)/src/tree/nameTable/hash.cpp      				  	     \
-		$(FRONT_DIR)/src/tree/nameTable/nametable.cpp    				     \
-		$(FRONT_DIR)/src/tree/readTree/tokens/tokens.cpp 			         \
-		$(FRONT_DIR)/src/tree/readTree/fileread/fileread.cpp	             \
-		$(FRONT_DIR)/src/tree/readTree/syntaxErr/syntaxErr.cpp               \
-		$(FRONT_DIR)/src/tree/readTree/recursiveDescent/recursiveDescent.cpp \
-		$(COMMON_DIR)/src/lib/lib.cpp								         \
-		$(COMMON_DIR)/src/tree/writeTree/writeTree.cpp					     \
+override CFLAGS += $(INCLUDE)
+
+CSRC =  $(FRONT_DIR)/main.cpp 					  			   			    \
+		$(FRONT_DIR)/src/read-tree/tokens/tokens.cpp 			            \
+		$(FRONT_DIR)/src/read-tree/file-read/file-read.cpp	                \
+		$(FRONT_DIR)/src/read-tree/syntax-err/syntax-err.cpp                \
+		$(FRONT_DIR)/src/read-tree/recursive-descent/recursive-descent.cpp  \
+		$(COMMON_DIR)/src/tree/tree.cpp							            \
+		$(COMMON_DIR)/src/lib/lib.cpp								        \
+		$(COMMON_DIR)/src/tree/write-tree/write-tree.cpp			        \
+		# $(FRONT_DIR)/src/nameTable/hash.cpp      				  	        \
+		$(FRONT_DIR)/src/nameTable/nametable.cpp    				        \
 
 ifeq ($(BUILD_TYPE), debug)
 
-CSRC += $(FRONT_DIR)src/log/log.cpp								             \
-		$(FRONT_DIR)src/tree/treeDump/treeDump.cpp 				             \
-		$(FRONT_DIR)src/tree/treeDump/globalDump.cpp 				     	 \
-	    $(FRONT_DIR)src/tree/nameTable/nameTableLog/nameTableLog.cpp         \
-		$(FRONT_DIR)src/tree/readTree/tokens/tokensDump/tokensDump.cpp       \
+CSRC += $(COMMON_DIR)/src/log/log.cpp								       \
+		$(COMMON_DIR)/src/tree/tree-dump/tree-dump.cpp 				       \
+		$(COMMON_DIR)/src/dump/global-dump.cpp			                   \
+		$(FRONT_DIR)/src/read-tree/tokens/tokens-dump/tokens-dump.cpp       \
+	    # $(FRONT_DIR)/src/nameTable/nameTableLog/nameTableLog.cpp           \
 
 endif
 
@@ -123,7 +121,7 @@ clean_dot:
 f ?= main.cpp
 
 iwyu:
-	iwyu $(COMMONINC) $(f)
+	iwyu $(INCLUDE) $(f)
 
 #==================================================
 

@@ -18,7 +18,7 @@ BUILD_TYPE ?= debug
 
 ifeq ($(BUILD_TYPE), release)
 	CFLAGS += -D _NDEBUG -O3
-endif 
+endif
 
 ifeq ($(BUILD_TYPE), debug)
 	CFLAGS += -g -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ 								         \
@@ -43,8 +43,8 @@ endif
 
 OUT_O_DIR ?= bin
 EXECUTABLE_DIR ?= build
-COMMONINC = -I./include
-SRC = ./src
+COMMONINC = -I./$(BACK_DIR)/include
+SRC = ./s
 EXECUTABLE ?= backend
 
 
