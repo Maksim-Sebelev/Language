@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lib/lib.hpp"
-#include "read-tree/syntax-err/syntax-err.hpp"
-#include "read-tree/read-tree-global-include.hpp"
-#include "read-tree/tokens/token.hpp"
+#include "read-tree/tokens/tokens.hpp"
 #include "tree/node-and-token-types.hpp"
+#include "read-tree/file-read/file-read.hpp"
+#include "read-tree/syntax-err/syntax-err.hpp"
 
 
 #ifdef _DEBUG
@@ -77,23 +77,25 @@ static void CreateDefaultEndToken (Token_t* tokenArr, Pointers* pointer);
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* tokenArrSize)
+TokensArr ReadInputBuffer (const InputData* inputData)
 {
     assert(inputData);
     assert(inputData->buffer);
     assert(inputData->inputStream);
-    assert(tokenArrSize);
 
-    const char* input = inputData->buffer;
+    const char* input       = inputData->buffer;
+    size_t      buffer_size = inputData->size;
 
-    Token_t* tokenArr = (Token_t*) calloc(inputLen + 1, sizeof(*tokenArr));
-    assert(tokenArr);
+    Token_t* tokens = (Token_t*) calloc(buffer_size + 1, sizeof(*tokens));
+
+    if (!tokens)
+        EXIT(EXIT_FAILURE, "failed calloc memory for tokens array.");
 
     Pointers pointer = {0, 0, 1, 1};
 
-    while (pointer.ip < inputLen)
+    while (pointer.ip < buffer_size)
     {
-        while (pointer.ip < inputLen && IsPassSymbol(input[pointer.ip]))
+        while (pointer.ip < buffer_size && IsPassSymbol(input[pointer.ip]))
         {
             char tmp = input[pointer.ip];
 
@@ -114,14 +116,14 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         Operation operation = GetOperation(word, &wordSize);
         if (operation != Operation::undefined_operation)
         {
-            HandleOperation(tokenArr, &pointer, operation, wordSize);
+            HandleOperation(tokens, &pointer, operation, wordSize);
             continue;
         }
         
         Number number = GetNumber(word, &wordSize);
         if (number.type != Type::undefined_type)
         {
-            HandleNumber(tokenArr, &pointer, number, wordSize);
+            HandleNumber(tokens, &pointer, number, wordSize);
             continue;
         }
 
@@ -129,14 +131,14 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         Condition condition = GetCondition(word, &wordSize);
         if (condition != Condition::undefined_condition)
         {
-            HandleCondition(tokenArr, &pointer, condition, wordSize);
+            HandleCondition(tokens, &pointer, condition, wordSize);
             continue;
         }
     
         Type type = GetType(word, &wordSize);
         if (type != Type::undefined_type)
         {
-            HandleType(tokenArr, &pointer, type, wordSize);
+            HandleType(tokens, &pointer, type, wordSize);
             continue;
         }
 
@@ -144,7 +146,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         Cycle cycle = GetCycle(word, &wordSize);
         if (cycle != Cycle::undefined_cycle)
         {
-            HandleCycle(tokenArr, &pointer, cycle, wordSize);
+            HandleCycle(tokens, &pointer, cycle, wordSize);
             continue;
         }
 
@@ -152,21 +154,21 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         Bracket bracket = GetBracket(word, &wordSize);
         if (bracket != Bracket::undefined_bracket)
         {
-            HandleBracket(tokenArr, &pointer, bracket, wordSize);
+            HandleBracket(tokens, &pointer, bracket, wordSize);
             continue;
         }
 
         FunctionAttribute attribute = GetFunctionAttribute(word, &wordSize);
         if (attribute != FunctionAttribute::undefined_attribute)
         {
-            HandleFunctionAttribute(tokenArr, &pointer, attribute, wordSize);
+            HandleFunctionAttribute(tokens, &pointer, attribute, wordSize);
             continue;
         }
 
         Separator separator = GetSeparator(word, &wordSize);
         if (separator != Separator::undefined_separator)
         {
-            HandleSeparator(tokenArr, &pointer, separator, wordSize);
+            HandleSeparator(tokens, &pointer, separator, wordSize);
             continue;
         }
 
@@ -174,7 +176,7 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         Name name = GetName(word);
         if (name.name.len > 0)
         {
-            HandleName(tokenArr, &pointer, name);
+            HandleName(tokens, &pointer, name);
             continue;
         }
 
@@ -182,38 +184,31 @@ Token_t* ReadInputStr(const InputData* inputData, size_t inputLen, size_t* token
         SYNTAX_ERR(pointer.lp, pointer.sp, inputData, "undefined word.");
     }
 
-    CreateDefaultEndToken(tokenArr, &pointer);
+    CreateDefaultEndToken(tokens, &pointer);
+
+    size_t tokens_arr_size = pointer.tp;
+
+    tokens = (Token_t*) realloc(tokens, tokens_arr_size * sizeof(Token_t));
+    if (!tokens)
+        EXIT(EXIT_FAILURE, "failed realloc memory for tokens arr.");
 
 
-    size_t tp = pointer.tp;
+    TokensArr tokensArr = {};
+    tokensArr.arr  = tokens;
+    tokensArr.size = tokens_arr_size;
 
-    if ((tp == 0) || (tp == 1))
-    {
-        FREE(tokenArr);
-        return nullptr;
-    }
-
-
-    *tokenArrSize = pointer.tp;
-
-    assert(*tokenArrSize > 0);
-    assert(tokenArr); 
-  
-    tokenArr = (Token_t*) realloc(tokenArr, *tokenArrSize * sizeof(Token_t));
-
-    assert(tokenArr);
-
-    return tokenArr;
+    return tokensArr;
 }
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void TokenDtor(Token_t* tokenArr)
+void TokenDtor(TokensArr* tokenArr)
 {
     assert(tokenArr);
 
-    FREE(tokenArr);
+    FREE(tokenArr->arr);
+    tokenArr->size = 0;
 
     return;
 }

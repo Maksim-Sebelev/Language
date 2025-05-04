@@ -89,7 +89,6 @@ $(DEPS) : $(OUT_O_DIR)/%.d : %.cpp
 #======= run ==========================================
 
 run:
-	make clean_dot
 	./$(EXECUTABLE_DIR)/$(EXECUTABLE)
 
 rebuild:

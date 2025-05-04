@@ -36,13 +36,13 @@
 
 
 ON_IMG(
-const char* background_image = "../Src/include/log/backgrounds/anime_tyan.webp";
+const char* background_image = "common/include/log/backgrounds/anime_tyan.webp";
 )
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 FILE*       LogFile = nullptr;
-const char* LogName = "../Log/log.html";
+const char* LogName = "Log/log.html";
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ void OpenLog()
 {
     assert(LogName && "logName = nullptr");
 
-    int sys_return = system("mkdir -p ../Log/");
+    int sys_return = system("mkdir -p Log/");
     
     if (sys_return != 0)
         EXIT(EXIT_FAILURE, "failed build log dir.");

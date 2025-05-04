@@ -1,11 +1,10 @@
 #include <assert.h>
 #include "tree/tree.hpp"
 #include "lib/lib.hpp"
-#include "read-tree/tokens/token.hpp"
 
 #ifdef _DEBUG
-#include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
-#include "tree/treeDump/treeDump.hpp"
+#include "read-tree/tokens/tokens-dump/tokens-dump.hpp"
+#include "tree/tree-dump/tree-dump.hpp"
 #endif
 
 //======================================================================================================================================================================
@@ -22,39 +21,21 @@ static TreeErr AllNodeVerif                (const Node_t* node, size_t* treeSize
 
 //============================== Tree functions ============================================================================================================================
 
-TreeErr TreeCtor(Tree_t* tree, const char* inputFile)
-{
-    TreeErr err = {};
+// TreeErr TreeCtor(Tree_t* tree, const TokensArr* tokensArr, const InputData* input)
+// {
+//     assert(tree);
+//     assert(tokensArr);
 
-    size_t    inputLen  = 0;
-    InputData inputData = ReadFile(inputFile, &inputLen);
+//     TreeErr err = {};
 
-    tree->inputData = inputData;
+//     tree->root = GetTree(tokensArr, input);
 
-    size_t   tokenQuant = 0;
-    Token_t* token      = ReadInputStr(&inputData, inputLen, &tokenQuant);
+//     return TREE_VERIF(tree, err);
+// }
 
-    if (!token)
-    {
-        COLOR_PRINT(RED, "\nEmpty input file.\n\n");
-        exit(0); 
-    }
+// //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    ON_DEBUG(
-    TOKEN_GRAPHIC_DUMP  (token, tokenQuant);
-    TOKENS_LOG(token, tokenQuant, &inputData);
-    )
-
-    tree->root = GetTree(token, &inputData);
-
-    TokenDtor(token);
-
-    return TREE_VERIF(tree, err);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-TreeErr TreeDtor(Tree_t* tree)
+void TreeDtor(Tree_t* tree)
 {
     assert(tree);
     assert(tree->root);
@@ -64,9 +45,9 @@ TreeErr TreeDtor(Tree_t* tree)
     TREE_ASSERT(NodeAndUnderTreeDtor(tree->root));
     tree->root = nullptr;
 
-    InputDataDtor(&tree->inputData);
+    // InputDataDtor(&tree->inputData);
 
-    return TREE_VERIF(tree, Err);
+    return;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

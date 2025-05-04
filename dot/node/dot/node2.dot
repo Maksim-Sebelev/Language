@@ -1,0 +1,37 @@
+digraph G{
+rankdir=TB
+graph [bgcolor="#000000"];
+place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [common/src/tree/write-tree/write-tree.cpp] | line: [483] | func: [PrintReturn] } "color = "#000000"];
+node0x507000000db0[shape=Mrecord, style=filled, fillcolor="#FF0080"label = "return", color = "#777777"];
+node0x507000000d40[shape=Mrecord, style=filled, fillcolor="#931807"label = "call function", color = "#777777"];
+node0x507000000720[shape=Mrecord, style=filled, fillcolor="#f31807"label = "foo", color = "#777777"];
+node0x507000000cd0[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000790[shape=Mrecord, style=filled, fillcolor="#f31807"label = "c", color = "#777777"];
+node0x507000000c60[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000800[shape=Mrecord, style=filled, fillcolor="#f31807"label = "b", color = "#777777"];
+node0x507000000bf0[shape=Mrecord, style=filled, fillcolor="#00ca2c"label = "\+", color = "#777777"];
+node0x507000000b10[shape=Mrecord, style=filled, fillcolor="#931807"label = "call function", color = "#777777"];
+node0x507000000870[shape=Mrecord, style=filled, fillcolor="#f31807"label = "foo", color = "#777777"];
+node0x507000000aa0[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x5070000008e0[shape=Mrecord, style=filled, fillcolor="#f31807"label = "a", color = "#777777"];
+node0x507000000a30[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000950[shape=Mrecord, style=filled, fillcolor="#f31807"label = "b", color = "#777777"];
+node0x5070000009c0[shape=Mrecord, style=filled, fillcolor="#f31807"label = "c", color = "#777777"];
+node0x507000000b80[shape=Mrecord, style=filled, fillcolor="#1cb9ff"label = "2", color = "#777777"];
+edge[color="#373737"];
+node0x507000000db0->node0x507000000d40;
+node0x507000000d40->node0x507000000720;
+node0x507000000720->node0x507000000cd0;
+node0x507000000cd0->node0x507000000790;
+node0x507000000cd0->node0x507000000c60;
+node0x507000000c60->node0x507000000800;
+node0x507000000c60->node0x507000000bf0;
+node0x507000000bf0->node0x507000000b10;
+node0x507000000b10->node0x507000000870;
+node0x507000000870->node0x507000000aa0;
+node0x507000000aa0->node0x5070000008e0;
+node0x507000000aa0->node0x507000000a30;
+node0x507000000a30->node0x507000000950;
+node0x507000000a30->node0x5070000009c0;
+node0x507000000bf0->node0x507000000b80;
+}

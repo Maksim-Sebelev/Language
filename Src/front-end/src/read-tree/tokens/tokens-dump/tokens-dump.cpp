@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include "tree/treeDump/globalDump.hpp"
-#include "tree/readTree/tokens/token.hpp"
-#include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
+#include "dump/global-dump.hpp"
+#include "read-tree/tokens/tokens.hpp"
+#include "read-tree/tokens/tokens-dump/tokens-dump.hpp"
 #include "log/log.hpp"
 
 
 
-static void TokenGraphicDumpHelper(const Token_t* tokenArr, size_t arrSize, const char* dotFileName, const char* file, const int line, const char* func);
+static void TokenGraphicDumpHelper(const TokensArr* tokensArr, const char* dotFileName, const char* file, const int line, const char* func);
 
 static void DotTokenBegin    (FILE* dotFile);
-static void CreateAllTokens  (const Token_t* tokenArr, size_t arrSize, FILE* dotFile);
+static void CreateAllTokens  (const TokensArr* tokensArr, FILE* dotFile);
 static void CreateToken      (const Token_t* token,    size_t pointer, FILE* dotFile);
 
 static const char* GetTokenColor     (const Token_t* token);
@@ -24,9 +24,9 @@ static const char* GetTokenDataInStr (const Token_t* token);
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void TokensLog(const Token_t* tokens, size_t tokensQuant, const InputData* inputData)
+void TokensLog(const TokensArr* tokensArr, const InputData* inputData)
 {
-    assert(tokens);
+    assert(tokensArr);
     assert(inputData);
 
     LOG_PRINT(Red, "Tokens Dump\n");
@@ -36,10 +36,13 @@ void TokensLog(const Token_t* tokens, size_t tokensQuant, const InputData* input
     LOG_PLACE(White);
 
 
-    for (size_t i = 0; i < tokensQuant; i++)
+    size_t size = tokensArr->size;
+    Token_t* arr = tokensArr->arr;
+
+    for (size_t i = 0; i < size; i++)
     {
         LOG_PRINT(Green, "token[%lu] = \n{\n", i);
-        TokenLog(tokens + i, inputData);
+        TokenLog(arr + i, inputData);
         LOG_PRINT(Green, "}\n\n");
     }
 
@@ -48,15 +51,15 @@ void TokensLog(const Token_t* tokens, size_t tokensQuant, const InputData* input
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void TokenLog(const Token_t* token, const InputData* inputData)
+void TokenLog(const Token_t* token, const InputData* input)
 {
     assert(token);
-    assert(inputData);
+    assert(input);
 
     TokenType token_type = token->type;
     FilePlace place      = token->place;
     
-    LOG_PRINT(White, "%s:%lu:%lu\n", inputData->inputStream, place.line, place.placeInLine);
+    LOG_PRINT(White, "%s:%lu:%lu\n", input->inputStream, place.line, place.placeInLine);
     
     const char* token_type_str = GetTokenTypeInStr(token);
 
@@ -101,9 +104,9 @@ void TokenLog(const Token_t* token, const InputData* inputData)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void TokenGraphicDump(const Token_t* tokenArr, size_t arrSize, const char* file, const int line, const char* func)
+void TokenGraphicDump(const TokensArr* tokensArr, const char* file, const int line, const char* func)
 {
-    assert(tokenArr);
+    assert(tokensArr);
     assert(file);
     assert(func);
 
@@ -122,7 +125,7 @@ void TokenGraphicDump(const Token_t* tokenArr, size_t arrSize, const char* file,
     char dotFileName[MaxBufferLen] = {};
     snprintf(dotFileName, MaxBufferLen, "../dot/tokens/dot/tokens%lu.dot", ImgQuant);
     
-    TokenGraphicDumpHelper(tokenArr, arrSize, dotFileName, file, line, func);
+    TokenGraphicDumpHelper(tokensArr, dotFileName, file, line, func);
 
 
     static const size_t MaxCommandLen = 512;
@@ -136,9 +139,9 @@ void TokenGraphicDump(const Token_t* tokenArr, size_t arrSize, const char* file,
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void TokenGraphicDumpHelper(const Token_t* tokenArr, size_t arrSize, const char* dotFileName, const char* file, const int line, const char* func)
+static void TokenGraphicDumpHelper(const TokensArr* tokensArr, const char* dotFileName, const char* file, const int line, const char* func)
 {
-    assert(tokenArr);
+    assert(tokensArr);
     assert(file);
     assert(func);
 
@@ -149,7 +152,7 @@ static void TokenGraphicDumpHelper(const Token_t* tokenArr, size_t arrSize, cons
 
     DotCreateDumpPlace(dotFile, file, line, func);
 
-    CreateAllTokens(tokenArr, arrSize, dotFile);
+    CreateAllTokens(tokensArr, dotFile);
     DotEnd(dotFile);
 
     fclose(dotFile);
@@ -168,14 +171,16 @@ static void DotTokenBegin(FILE* dotFile)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void CreateAllTokens(const Token_t* tokenArr, size_t arrSize, FILE* dotFile)
+static void CreateAllTokens(const TokensArr* tokensArr, FILE* dotFile)
 {
-    assert(tokenArr);
+    assert(tokensArr);
     assert(dotFile);
 
-    for (size_t i = 0; i < arrSize; i++)
+    size_t size = tokensArr->size;
+    Token_t* arr = tokensArr->arr;
+    for (size_t i = 0; i < size; i++)
     {
-        CreateToken(&tokenArr[i], i, dotFile);
+        CreateToken(arr + i, i, dotFile);
     }
 
     return;
