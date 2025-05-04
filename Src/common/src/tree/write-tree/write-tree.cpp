@@ -13,7 +13,7 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// #define _TAB
+#define _TAB
 
 #ifdef _TAB
     #define ON_TAB(...) __VA_ARGS__
@@ -678,9 +678,12 @@ static void PrintCallFunction(FILE* outstream, const Node_t* node ON_TAB(, size_
     PrintLeftBracket      (outstream                       ON_TAB(, nTabBefore    ));
 
     PrintName             (outstream, node->left           ON_TAB(, nTabBefore + 1));
+    ON_TAB(PrintSlashN    (outstream                                              ));
     
     PrintCallFunctionArgs (outstream, node->left->left     ON_TAB(, nTabBefore + 1));
     PrintRightBracket     (outstream                       ON_TAB(, nTabBefore    )); 
+
+    ON_TAB(PrintSlashN    (outstream                                              ));
 
     return;
 }
@@ -695,15 +698,6 @@ static void PrintCallFunctionArgs(FILE* outstream, const Node_t* node ON_TAB(, s
     assert(outstream);
 
     if (!node) return;
-
-    NodeArgType type = node->type;
-
-    if (type == NodeArgType::connect)
-    {
-        PrintCallFunctionArgs(outstream, node->left  ON_TAB(, nTabBefore));
-        PrintCallFunctionArgs(outstream, node->right ON_TAB(, nTabBefore));
-        return;
-    }
 
     PrintBefore      (outstream                       ON_TAB(, nTabBefore    ));
     fprintf          (outstream, "CALL_FUNCTION_ARGS"                         );

@@ -1,11 +1,10 @@
-
-#ifndef TOKEN_HPP
-#define TOKEN_HPP
+#ifndef TOKENS_HPP
+#define TOKENS_HPP
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#include "tree/tree.hpp"
 #include "tree/node-and-token-types.hpp"
+#include "read-tree/file-read/file-read.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -20,6 +19,7 @@ struct FilePlace
 union TokenData
 {
     FunctionAttribute attribute;
+    DefaultFunction   function;
     Condition         condition;
     Separator         separator;
     Operation         operation;
@@ -35,17 +35,18 @@ union TokenData
 
 enum TokenType
 {
-    TokenType_t      ,
-    TokenNumber_t    ,
-    TokenName_t      ,`
-    TokenOperation_t ,
-    TokenFunction_t  ,
-    TokenBracket_t   ,
-    TokenSeparator_t ,
-    TokenEndSymbol_t ,
-    TokenCycle_t     ,
-    TokenCondition_t ,
-    TokenFuncAttr_t  ,
+    TokenType_t       ,
+    TokenNumber_t     ,
+    TokenName_t       ,
+    TokenOperation_t  ,
+    TokenFunction_t   ,
+    TokenBracket_t    ,
+    TokenSeparator_t  ,
+    TokenEndSymbol_t  ,
+    TokenCycle_t      ,
+    TokenCondition_t  ,
+    TokenFuncAttr_t   ,
+    TokenDefaultFunc_t,
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -59,9 +60,17 @@ struct Token_t
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Token_t* ReadInputStr (const InputData* InputData, size_t inputLen, size_t* tokenArrSize);
-void     TokenDtor    (Token_t* tokenArr);
+struct TokensArr
+{
+    Token_t* arr;
+    size_t   size;
+};
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#endif
+TokensArr ReadInputBuffer (const InputData* InputData);
+void      TokenDtor       (TokensArr* tokenArr);
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#endif //TOKENS_HPP

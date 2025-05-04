@@ -2,42 +2,50 @@
 #include <stdlib.h>
 #include "tree/tree.hpp"
 #include "lib/lib.hpp"
+#include "read-tree/file-read/file-read.hpp"
+#include "read-tree/tokens/tokens.hpp"
+#include "read-tree/recursive-descent/recursive-descent.hpp"
 #include "tree/write-tree/write-tree.hpp"
+
+#define _DEBUG
 
 #ifdef _DEBUG
 #include "log/log.hpp"
 #include "tree/tree-dump/tree-dump.hpp"
+#include "read-tree/tokens/tokens-dump/tokens-dump.hpp"
 #endif
 
 int main()
 {
     ON_DEBUG(
     COLOR_PRINT(GREEN, "FRONTEND START\n\n");
-    )
-
-    ON_DEBUG(
     OPEN_LOG();
     )
 
-    const char* input = "../../programm/programm.cpp";
-    Tree_t tree = {};
 
-    TREE_ASSERT(TreeCtor(&tree, input));
+    const char* input  = "programm/programm.cpp";
+    const char* output = "tree/tree.ast";
 
-    ON_DEBUG(
-    TREE_GRAPHIC_DUMP(&tree);
-    )
+    InputData buffer    = ReadFile(input);
 
-    const char* output = "../tree/tree.ast";
+    TokensArr tokensArr = ReadInputBuffer(&buffer);
+
+    ON_DEBUG(TOKEN_GRAPHIC_DUMP(&tokensArr));
+
+    Tree_t    tree      = {};
+    tree.root           = GetTree(&tokensArr, &buffer);
+
+    ON_DEBUG(TREE_GRAPHIC_DUMP(&tree));
+
     PrintTree(&tree, output);
 
-    TREE_ASSERT(TreeDtor(&tree));
+    InputDataDtor(&buffer);
+    TokenDtor    (&tokensArr);
+    TreeDtor     (&tree);
+    
 
     ON_DEBUG(
     CLOSE_LOG();
-    )
-
-    ON_DEBUG(
     COLOR_PRINT(GREEN, "\nFRONTEND END\n");
     )
 

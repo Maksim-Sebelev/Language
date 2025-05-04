@@ -2,17 +2,17 @@
 #include <stdio.h>
 #include <assert.h>
 #include "tree/tree.hpp"
-#include "read-tree/tokens/token.hpp"
+#include "read-tree/tokens/tokens.hpp"
 #include "read-tree/syntax-err/syntax-err.hpp"
-#include "read-tree/read-tree-global-include.hpp"
+#include "read-tree/file-read/file-read.hpp"
 #include "read-tree/recursive-descent/recursive-descent.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #ifdef _DEBUG
 #include "log/log.hpp"
-#include "tree/treeDump/treeDump.hpp"
-#include "tree/readTree/tokens/tokensDump/tokenDump.hpp"
+#include "tree/tree-dump/tree-dump.hpp"
+#include "read-tree/tokens/tokens-dump/tokens-dump.hpp"
 #endif
 
 //------------ Recusrsive Descent function  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -107,14 +107,14 @@ const Token_t* PickNextToken                      (const Token_t* tokenArr, cons
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Node_t* GetTree(const Token_t* tokensArr, const InputData* inputData)
+Node_t* GetTree(const TokensArr* tokensArr, const InputData* inputData)
 {
     assert(tokensArr);
 
     size_t  tp   = 0;
-    Node_t* node = GetDefFunc(tokensArr, &tp, inputData);
+    Node_t* node = GetDefFunc(tokensArr->arr, &tp, inputData);
 
-    const Token_t* token = ConsumeToken(tokensArr, &tp);
+    const Token_t* token = ConsumeToken(tokensArr->arr, &tp);
     if (!IsTokenEnd(token))
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '\\0' ");
 
@@ -341,14 +341,11 @@ static Node_t* GetElseIfCondition(const Token_t* tokensArr, size_t* tp, const In
     if (!IsTokenLeftRoundBracket(token))
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected '('");
 
-    
-
     Node_t* bool_node = GetAssign(tokensArr, tp, inputData);
 
     token = ConsumeToken(tokensArr, tp);
     if (!IsTokenRightRoundBracket(token))
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ')'");
-
     
     token = ConsumeToken(tokensArr, tp);
     if (!IsTokenLeftCurlyBracket(token))

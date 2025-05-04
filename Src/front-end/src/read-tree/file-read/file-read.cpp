@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 #include <malloc.h>
 #include "lib/lib.hpp"
-#include "read-tree/read-tree-global-include.hpp"
 #include "read-tree/file-read/file-read.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -19,37 +18,36 @@ static size_t CalcFileSize(const char* file);
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-InputData ReadFile(const char* inputFile, size_t* inputLen)
+InputData ReadFile(const char* inputFile)
 {
     assert(inputFile);
 
     FILE* inputStream = fopen(inputFile, "rb");
+
     if (!inputStream)
-    {
-        COLOR_PRINT(RED, "failed open: ");
-        COLOR_PRINT(WHITE, "'%s'\n", inputFile);
-        COLOR_PRINT(CYAN, "\nexit in 3, 2, 1...");
-        exit(EXIT_FAILURE);
-    }
+        EXIT(EXIT_FAILURE, "failed open: '%s'\n", inputFile);
 
     size_t fileSize = CalcFileSize(inputFile);
 
     char* buffer = (char*) calloc(fileSize + 1, sizeof(char));
-    assert(buffer);
+    
+    if (!buffer)
+        EXIT(EXIT_FAILURE, "failer calloc memory for buffer for input file");
 
     size_t freadReturn = fread(buffer, sizeof(char), fileSize, inputStream);
-    assert(freadReturn == fileSize);
+    if (freadReturn != fileSize)
+        EXIT(EXIT_FAILURE, "falied read buffer with input programm");
 
     fclose(inputStream);
 
     buffer[fileSize] = '\0';
 
-    *inputLen = fileSize;
-
+    
     InputData inputData = {};
-
+    
     inputData.inputStream = inputFile;
-    inputData.buffer    = buffer;
+    inputData.buffer      = buffer;
+    inputData.size        = fileSize;
 
     return inputData;
 }

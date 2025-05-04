@@ -9,6 +9,7 @@
 #include "lib/lib.hpp"
 #include "tree/node-and-token-types.hpp"
 
+
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum class TreeErrorType
@@ -65,6 +66,7 @@ enum class NodeArgType
 
 union NodeData_t
 {
+    DefaultFunction   function;
     Initialisation    init;
     FunctionAttribute attribute;
     Condition         condition;
@@ -88,24 +90,15 @@ struct Node_t
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-struct InputData
-{
-    const char* inputStream;
-    char*       buffer;
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 struct Tree_t
 {
     Node_t*     root;
-    InputData   inputData;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TreeErr TreeCtor               (Tree_t*  tree, const char* input);
-TreeErr TreeDtor               (Tree_t*  root);
+// TreeErr TreeCtor               (Tree_t*  tree, const TokensArr* tokensArr, const InputData* input);
+void    TreeDtor               (Tree_t*  tree);
 TreeErr NodeCtor               (Node_t** node, NodeArgType type, NodeData_t data, Node_t* left, Node_t* right);
 TreeErr NodeDtor               (Node_t*  node);
 TreeErr NodeAndUnderTreeDtor   (Node_t*  node);

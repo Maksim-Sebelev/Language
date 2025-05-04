@@ -1,6 +1,6 @@
 // #include <stdio.h>
 #include <assert.h>
-#include "dump/globalDump.hpp"
+#include "dump/global-dump.hpp"
 #include "log/log.hpp"
 
 //=============================== GLobal Graphic Dump Function ==============================================================================================================================
