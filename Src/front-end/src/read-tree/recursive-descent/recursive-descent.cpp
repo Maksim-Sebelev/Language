@@ -29,6 +29,9 @@ static Node_t*   GetCycle                       (const Token_t* tokensArr, size_
 static Node_t*   GetWhile                       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 static Node_t*   GetFor                         (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
+static Node_t*   GetPrint                       (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+static Node_t*   GetPrintArgs                   (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
+
 static Node_t*   GetReturn                      (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
 
 static Node_t*   GetDefVariable                 (const Token_t* tokensArr, size_t* tp, const InputData* inputData);
@@ -65,7 +68,7 @@ static bool      IsTokenEnd                       (const Token_t* token);
 static bool      IsTokenNum                       (const Token_t* token);
 static bool      IsTokenName                      (const Token_t* token);
 static bool      IsTokenType                      (const Token_t* token);
-static bool      IsTokenFunction                  (const Token_t* token);
+static bool      IsTokenDefaultFunction                  (const Token_t* token);
 static bool      IsTokenOperation                 (const Token_t* token);
 
 static bool      IsTokenSeparatorComma            (const Token_t* token);
@@ -90,6 +93,7 @@ static bool      IsTokenCycleFor                  (const Token_t* token);
 static bool      IsTokenFuncAttrCall              (const Token_t* token);
 static bool      IsTokenFuncAttrReturn            (const Token_t* token);
 static bool      IsTokenOperationPlusEquale       (const Token_t* token);
+static bool      IsTokenPrint                     (const Token_t* token);
 static bool      IsCallFunction                   (const Token_t* tokensArr, const size_t* tp);
 static bool      IsNotAssignOperationBeforeMinus  (const Token_t* tokensArr, size_t tp);
 static bool      IsOperationPlusPlus              (const Token_t* tokensArr, const size_t* tp);
@@ -419,7 +423,7 @@ static Node_t* GetCycle(const Token_t* tokensArr, size_t* tp, const InputData* i
     if (IsTokenCycleWhile(token))
         return GetWhile(tokensArr, tp, inputData);
 
-    return GetReturn(tokensArr, tp, inputData);
+    return GetPrint(tokensArr, tp, inputData);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -517,6 +521,59 @@ static Node_t* GetFor(const Token_t* tokensArr, size_t* tp, const InputData* inp
     _FOR(&for_node, connect_node_2, condition_node);
 
     return for_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+static Node_t* GetPrint(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    Node_t* print_node = {};
+    const Token_t* token = PickToken(tokensArr, tp);
+
+    if (!IsTokenPrint(token))
+        return GetReturn(tokensArr, tp, inputData);
+    
+    (*tp)++;
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenLeftRoundBracket(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expeted '(");
+    
+    
+    Node_t* print_args_node = GetPrintArgs(tokensArr, tp, inputData);
+    _PRINT(&print_node, print_args_node);
+
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenRightRoundBracket(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expeted ')");
+    
+
+    token = ConsumeToken(tokensArr, tp);
+    if (!IsTokenSemicolon(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected ';'");
+
+    return print_node;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static Node_t* GetPrintArgs(const Token_t* tokensArr, size_t* tp, const InputData* inputData)
+{
+    assert(tokensArr);
+    assert(tp);
+
+    Node_t* print_node = {};
+    const Token_t* token = PickToken(tokensArr, tp);
+    if (!IsTokenName(token))
+        SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected name like 'print' arg");
+
+
+    return GetName(tokensArr, tp, inputData);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -853,7 +910,7 @@ static Node_t* GetCallFunctionArgs(const Token_t* tokensArr, size_t* tp, const I
 
     size_t old_tp = *tp;
     Node_t* next_name_node = GetCallFunctionArgs(tokensArr, tp, inputData);
-    
+
     token = PickToken(tokensArr, tp);
     if (old_tp == *tp)
         SYNTAX_ERR_FOR_TOKEN(token, inputData, "expected some expression");
@@ -1079,10 +1136,10 @@ static bool IsTokenType(const Token_t* token)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool IsTokenFunction(const Token_t* token)
-{   
+static bool IsTokenDefaultFunction(const Token_t* token)
+{
     assert(token);
-    return (token->type == TokenType::TokenFunction_t);
+    return (token->type == TokenType::TokenDefaultFunc_t);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1134,7 +1191,7 @@ static bool IsTokenOperation(const Token_t* token)
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static bool IsAddSub(const Token_t* token)
-{   
+{
     assert(token);
     RETURN_IF_FALSE(token->type == TokenType::TokenOperation_t, false);
 
@@ -1159,7 +1216,7 @@ static bool IsMulDiv(const Token_t* token)
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static bool IsPow(const Token_t* token)
-{   
+{
     assert(token);
     RETURN_IF_FALSE(token->type == TokenType::TokenOperation_t, false);
 
@@ -1329,6 +1386,15 @@ static bool IsTokenFuncAttrReturn(const Token_t* token)
     assert(token);
     return  (token->type == TokenType::TokenFuncAttr_t) &&
             (token->data.attribute == FunctionAttribute::ret);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static bool IsTokenPrint(const Token_t* token)
+{
+    assert(token);
+    return  (token->type == TokenType::TokenDefaultFunc_t) &&
+            (token->data.function == DFunction::print);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

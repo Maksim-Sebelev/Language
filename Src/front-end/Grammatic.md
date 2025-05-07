@@ -14,7 +14,10 @@ Cycle         ::=   While | For | Return ';'
 While         ::=   'while' '(' Assign ')'                            '{' Condition '}'
 For           ::=   'for'   '(' DefVariable ';' Assign ';' Assign ')' '{' Condition '}'
 
-Return        ::=   'return'  BoolOperation ';' | DefVariable
+Return        ::=   'return'  BoolOperation ';' | Print
+
+Print         ::=  'print' '(' PrintArgs ')' | DefVariable
+PrintArgs     ::=   '"' { char } + '"'       | Name
 
 DefVariable   ::=   Type Name '=' BoolOperation | Assign
 Assign        ::=        Name '=' BoolOperation | PpMM
@@ -27,8 +30,9 @@ AddSub        ::=   MulDiv   { ['+' '-']                          MulDiv   } *
 MulDiv        ::=   Pow      { ['*' '/']                          Pow      } *
 Pow           ::=   CallFunc { '^'                                CallFunc } *
 
-CallFunc      ::    Name '(' Args ')' | Minus
-CallFuncArgs  ::=   Assign ? { ',' Assign } *
+
+CallFunc      ::    Name '(' CallFuncArgs ')' | Minus      # maybe default function
+CallFuncArgs  ::=   BoolOperation ? { ',' BoolOperation } *
 
 Minus         ::=   '-' MulDiv | Not
 Not           ::=   '!' MulDiv | Bracket

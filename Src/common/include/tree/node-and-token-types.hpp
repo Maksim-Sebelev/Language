@@ -76,8 +76,9 @@ struct DefaultOperation
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define AND              "&&"
-#define OR               "||"
+#define NOT              "not"
+#define AND              "and"
+#define OR               "or"
 #define GREATER_OR_EQUAL ">="
 #define LESS_OR_EQUAL    "<="
 #define EQUAL            "=="
@@ -96,14 +97,15 @@ struct DefaultOperation
 #define ASSIGN           "="
 #define GREATER          ">"
 #define LESS             "<"
-#define NOT              "not"
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const static DefaultOperation DefaultOperations[] =
 {
-    {AND             , STRLEN(AND)             , Operation::bool_and         },    // name len = 2
-    {OR              , STRLEN(OR)              , Operation::bool_or          },
+    {NOT             , STRLEN(NOT)             , Operation::bool_not         },    // name len = 3
+    {AND             , STRLEN(AND)             , Operation::bool_and         },
+
+    {OR              , STRLEN(OR)              , Operation::bool_or          },     // name len = 2
     {GREATER_OR_EQUAL, STRLEN(GREATER_OR_EQUAL), Operation::greater_or_equal },
     {LESS_OR_EQUAL   , STRLEN(LESS_OR_EQUAL)   , Operation::less_or_equal    },
     {EQUAL           , STRLEN(EQUAL)           , Operation::equal            },
@@ -123,8 +125,6 @@ const static DefaultOperation DefaultOperations[] =
     {ASSIGN          , STRLEN(ASSIGN)          , Operation::assign           },
     {GREATER         , STRLEN(GREATER)         , Operation::greater          },
     {LESS            , STRLEN(LESS)            , Operation::less             },
-    {NOT             , STRLEN(NOT)             , Operation::bool_not         },
-
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -181,6 +181,10 @@ const size_t DefaultFunctionsQuant = sizeof(DefaultFunctions) / sizeof(DefaultFu
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+typedef NameInfo StringLiteral;
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 //=============== Type of variables and functions returns ============================================================================================================================
 
 enum class Type
@@ -197,7 +201,8 @@ enum class Type
 struct DefaultType
 {
     NameInfo nameInfo;
-    Type        value;
+    Type     value;
+    size_t   size;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -211,10 +216,10 @@ struct DefaultType
 
 const static DefaultType DefaultTypes[] =
 {
-    {INT    , STRLEN(INT)   , Type::int_type   },
-    {CHAR   , STRLEN(CHAR)  , Type::char_type  },
-    {DOUBLE , STRLEN(DOUBLE), Type::double_type},
-    {VOID   , STRLEN(VOID)  , Type::void_type  },
+    {INT    , STRLEN(INT)   , Type::int_type   , 4},
+    {CHAR   , STRLEN(CHAR)  , Type::char_type  , 1},
+    {DOUBLE , STRLEN(DOUBLE), Type::double_type, 8},
+    {VOID   , STRLEN(VOID)  , Type::void_type  , 0},
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -415,6 +420,7 @@ enum class Separator
     point              ,
     colon              ,
     semicolon          ,
+    quotation_marks    ,
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -431,15 +437,17 @@ struct DefaultSeparator
 #define COMMA     ","
 #define POINT     "."
 #define COLON     ":"
+#define QUOT_MARK "\""
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static const DefaultSeparator DefaultSeparators[] =
 {
-    {SEMICOLON, STRLEN(SEMICOLON), Separator::semicolon},
-    {COMMA    , STRLEN(COMMA)    , Separator::comma    },
-    {POINT    , STRLEN(POINT)    , Separator::point    },
-    {COLON    , STRLEN(COLON)    , Separator::colon    },
+    {SEMICOLON, STRLEN(SEMICOLON), Separator::semicolon       },
+    {COMMA    , STRLEN(COMMA)    , Separator::comma           },
+    {POINT    , STRLEN(POINT)    , Separator::point           },
+    {COLON    , STRLEN(COLON)    , Separator::colon           },
+    {QUOT_MARK, STRLEN(QUOT_MARK), Separator::quotation_marks },
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -503,7 +511,7 @@ union NameData
 
 struct Name
 {
-    size_t   id;
+    size_t   ram_id;
 
     NameInfo name;
     NameType type;
@@ -584,6 +592,7 @@ enum class Initialisation
     def_variable            ,
     assign_variable         ,
     call_function           ,
+    call_default_function   ,
     get_variable            ,
 };
 

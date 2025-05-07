@@ -19,7 +19,7 @@ struct FilePlace
 union TokenData
 {
     FunctionAttribute attribute;
-    DefaultFunction   function;
+    DFunction         function;
     Condition         condition;
     Separator         separator;
     Operation         operation;
@@ -35,18 +35,18 @@ union TokenData
 
 enum TokenType
 {
-    TokenType_t       ,
-    TokenNumber_t     ,
-    TokenName_t       ,
-    TokenOperation_t  ,
-    TokenFunction_t   ,
-    TokenBracket_t    ,
-    TokenSeparator_t  ,
-    TokenEndSymbol_t  ,
-    TokenCycle_t      ,
-    TokenCondition_t  ,
-    TokenFuncAttr_t   ,
-    TokenDefaultFunc_t,
+    TokenType_t          ,
+    TokenNumber_t        ,
+    TokenName_t          ,
+    TokenOperation_t     ,
+    TokenBracket_t       ,
+    TokenSeparator_t     ,
+    TokenEndSymbol_t     ,
+    TokenCycle_t         ,
+    TokenCondition_t     ,
+    TokenFuncAttr_t      ,
+    TokenDefaultFunc_t   ,
+    TokenStringLiteral_t ,
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

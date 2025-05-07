@@ -756,7 +756,7 @@ static void PrintName(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBe
     PrintBefore(outstream ON_TAB(, nTabBefore));
 
     if (node->type != NodeArgType::name)
-        EXIT(EXIT_FAILURE, "here must be node with type 'name'\n");
+        EXIT(EXIT_FAILURE, "here must be node with type 'name'");
 
     fprintf(outstream, "NAME: ");
 

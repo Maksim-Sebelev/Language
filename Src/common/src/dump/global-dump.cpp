@@ -96,6 +96,17 @@ const char* GetFuncAttrInStr(FunctionAttribute attribute)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+const char* GetFuncInStr(DFunction function)
+{
+    for (size_t i = 0; i < DefaultFunctionsQuant; i++)
+        RETURN_IF_TRUE(function == DefaultFunctions[i].value, DefaultFunctions[i].nameInfo.name);
+
+    assert(0 && "you forgot about some operation.");
+    return "wtf?";
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 const char* GetConditionInStr(Condition condition)
 {
     for (size_t i = 0; i < DefaultConditionsQuant; i++)

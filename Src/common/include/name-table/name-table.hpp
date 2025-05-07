@@ -6,9 +6,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "lib/colorPrint.hpp"
 #include "lib/lib.hpp"
-#include "tree/NodesAndTokensTypes.hpp"
+#include "lib/lib.hpp"
+// #include "tree/NodesAndTokensTypes.hpp"
+#include "tree/node-and-token-types.hpp"
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -162,9 +164,6 @@ bool           NameCmp                     (const Name* name1, const Name* name2
 
 
 Name           NameCtor                    (const char* nameName, size_t len);
-NameInfo       NameInfoCtor                (const char* name, size_t len);
-Function       FunctionCtor                (Type type);
-Variable       VariableCtor                (Type type, void* value);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

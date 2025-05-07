@@ -50,18 +50,18 @@ CSRC =  $(FRONT_DIR)/main.cpp 					  			   			    \
 		$(FRONT_DIR)/src/read-tree/file-read/file-read.cpp	                \
 		$(FRONT_DIR)/src/read-tree/syntax-err/syntax-err.cpp                \
 		$(FRONT_DIR)/src/read-tree/recursive-descent/recursive-descent.cpp  \
-		$(COMMON_DIR)/src/tree/tree.cpp							            \
 		$(COMMON_DIR)/src/lib/lib.cpp								        \
+		$(COMMON_DIR)/src/tree/tree.cpp							            \
+		$(COMMON_DIR)/src/name-table/hash.cpp      				  	        \
+		$(COMMON_DIR)/src/name-table/name-table.cpp    				        \
 		$(COMMON_DIR)/src/tree/write-tree/write-tree.cpp			        \
-		# $(FRONT_DIR)/src/nameTable/hash.cpp      				  	        \
-		$(FRONT_DIR)/src/nameTable/nametable.cpp    				        \
 
 ifeq ($(BUILD_TYPE), debug)
 
 CSRC += $(COMMON_DIR)/src/log/log.cpp								       \
-		$(COMMON_DIR)/src/tree/tree-dump/tree-dump.cpp 				       \
 		$(COMMON_DIR)/src/dump/global-dump.cpp			                   \
-		$(FRONT_DIR)/src/read-tree/tokens/tokens-dump/tokens-dump.cpp       \
+		$(COMMON_DIR)/src/tree/tree-dump/tree-dump.cpp 				       \
+		$(FRONT_DIR)/src/read-tree/tokens/tokens-dump/tokens-dump.cpp      \
 	    # $(FRONT_DIR)/src/nameTable/nameTableLog/nameTableLog.cpp           \
 
 endif

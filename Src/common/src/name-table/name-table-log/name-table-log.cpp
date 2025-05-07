@@ -1,6 +1,6 @@
 #include <assert.h>
 #include "log/log.hpp"
-#include "tree/nameTable/nameTableLog/nameTableLog.hpp"
+#include "name-table/name-table-log/name-table-log.hpp"
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ void LogName(Name name)
     LogPrint    (Green,  "name = "); LogNameName(name            );
     LogTextColor(Green                                           );
     LogAdcPrint (        "type = '%s'"   , GetNameTypeInStr(name));
-    LogAdcPrint (        "id   = '%lu'\n", name.id               );
+    // LogAdcPrint (        "id   = '%lu'\n", name.id               );
 
     LogPrint    (Yellow, "}\n\n"                                 );
 }
@@ -50,7 +50,7 @@ static void LogNameWithPointer(Name name, size_t pointer)
     LogPrint    (Green,  "name = "); LogNameName(name            );
     LogTextColor(Green                                           );
     LogAdcPrint (        "type = '%s'"   , GetNameTypeInStr(name));
-    LogAdcPrint (        "id   = '%lu'\n", name.id               );
+    // LogAdcPrint (        "id   = '%lu'\n", name.id               );
 
     LogPrint    (Yellow, "}\n\n"                                 );
 }

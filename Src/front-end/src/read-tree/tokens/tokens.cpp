@@ -36,6 +36,7 @@ static void HandleBracket            (Token_t* tokenArr, Pointers* pointer, Brac
 static void HandleSeparator          (Token_t* tokenArr, Pointers* pointer, Separator    separator, size_t wordSize);
 static void HandleOperation          (Token_t* tokenArr, Pointers* pointer, Operation    operation, size_t wordSize);
 static void HandleCondition          (Token_t* tokenArr, Pointers* pointer, Condition    condition, size_t wordSize);
+static void HandleDefaultFunction    (Token_t* tokenArr, Pointers* pointer, DFunction    function , size_t wordSize);
 static void HandleFunctionAttribute  (Token_t* tokenArr, Pointers* pointer, FunctionAttribute attribute, size_t wordSize);
 
 
@@ -61,6 +62,7 @@ static bool IsUnderLineSymbol                  (char c);
 static bool IsLetterOrUnderLineSymbol          (char c);
 
 static Name              GetName              (const char* word                  );
+static DFunction         GetDefaultFucntion   (const char* word, size_t* wordSize);
 static Number            GetInt               (const char* word, size_t* wordSize);
 static Operation         GetOperation         (const char* word, size_t* wordSize);
 static Separator         GetSeparator         (const char* word, size_t* wordSize);
@@ -119,7 +121,14 @@ TokensArr ReadInputBuffer (const InputData* inputData)
             HandleOperation(tokens, &pointer, operation, wordSize);
             continue;
         }
-        
+
+        DFunction function = GetDefaultFucntion(word, &wordSize);
+        if (function != DFunction::undefined_function)
+        {
+            HandleDefaultFunction(tokens, &pointer, function, wordSize);
+            continue;
+        }
+
         Number number = GetNumber(word, &wordSize);
         if (number.type != Type::undefined_type)
         {
@@ -227,17 +236,17 @@ static void TokenCtor(Token_t* token, TokenType type, void* value, size_t fileLi
 
     switch (type)
     {
-        case TokenType::TokenType_t:      token->data.type      = *(Type             *) value; break;
-        case TokenType::TokenName_t:      token->data.name      = *(Name             *) value; break;
-        case TokenType::TokenNumber_t:    token->data.number    = *(Number           *) value; break;
-        case TokenType::TokenOperation_t: token->data.operation = *(Operation        *) value; break;
-        case TokenType::TokenSeparator_t: token->data.separator = *(Separator        *) value; break;
-        case TokenType::TokenBracket_t:   token->data.bracket   = *(Bracket          *) value; break;
-        case TokenType::TokenEndSymbol_t: token->data.end       = *(EndSymbol        *) value; break;
-        case TokenType::TokenCondition_t: token->data.condition = *(Condition        *) value; break;
-        case TokenType::TokenCycle_t:     token->data.cycle     = *(Cycle            *) value; break;
-        case TokenType::TokenFuncAttr_t:  token->data.attribute = *(FunctionAttribute*) value; break;
-        case TokenType::TokenFunction_t:
+        case TokenType::TokenType_t:        token->data.type      = *(Type             *) value; break;
+        case TokenType::TokenName_t:        token->data.name      = *(Name             *) value; break;
+        case TokenType::TokenNumber_t:      token->data.number    = *(Number           *) value; break;
+        case TokenType::TokenOperation_t:   token->data.operation = *(Operation        *) value; break;
+        case TokenType::TokenSeparator_t:   token->data.separator = *(Separator        *) value; break;
+        case TokenType::TokenBracket_t:     token->data.bracket   = *(Bracket          *) value; break;
+        case TokenType::TokenEndSymbol_t:   token->data.end       = *(EndSymbol        *) value; break;
+        case TokenType::TokenCondition_t:   token->data.condition = *(Condition        *) value; break;
+        case TokenType::TokenCycle_t:       token->data.cycle     = *(Cycle            *) value; break;
+        case TokenType::TokenFuncAttr_t:    token->data.attribute = *(FunctionAttribute*) value; break;
+        case TokenType::TokenDefaultFunc_t: token->data.function  = *(DFunction        *) value; break;
         default:                          assert(0 && "undefined token type symbol."); break;
     }
 
@@ -252,6 +261,20 @@ static void UpdatePointer(Pointers* pointer, size_t wordSize)
     pointer->ip += wordSize;
     pointer->sp += wordSize;
     pointer->tp++;
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void HandleDefaultFunction(Token_t* tokenArr, Pointers* pointer, DFunction function, size_t wordSize)
+{
+    assert(tokenArr);
+    assert(pointer);
+
+    TokenCtor(&tokenArr[pointer->tp], TokenType::TokenDefaultFunc_t, &function, pointer->lp, pointer->sp);
+
+    UpdatePointer(pointer, wordSize);
 
     return;
 }
@@ -385,6 +408,28 @@ static void HandleFunctionAttribute(Token_t* tokenArr, Pointers* pointer, Functi
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static DFunction GetDefaultFucntion(const char* word, size_t* wordSize)
+{
+    assert(word);
+    assert(wordSize);
+
+    for (size_t dfunction_i = 0; dfunction_i < DefaultFunctionsQuant; dfunction_i++)
+    {
+        DefaultFunction dfunction = DefaultFunctions[dfunction_i];
+
+        bool flag = GetFlagPattern(word, dfunction.nameInfo.name, dfunction.nameInfo.len);
+        RETURN_IF_TRUE(flag, dfunction.value, *wordSize = dfunction.nameInfo.len);
+    }
+
+    return DFunction::undefined_function;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static Number GetNumber(const char* word, size_t* wordSize)
