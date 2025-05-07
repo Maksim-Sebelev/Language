@@ -8,6 +8,7 @@
 
 #include "lib/lib.hpp"
 #include "tree/node-and-token-types.hpp"
+#include "name-table/name-table.hpp"
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -58,6 +59,7 @@ enum class NodeArgType
     type          ,
     condition     ,
     cycle         ,
+    dfunction     ,
     attribute     ,
     initialisation,
 };
@@ -66,7 +68,7 @@ enum class NodeArgType
 
 union NodeData_t
 {
-    DefaultFunction   function;
+    DFunction         function;
     Initialisation    init;
     FunctionAttribute attribute;
     Condition         condition;
@@ -92,7 +94,8 @@ struct Node_t
 
 struct Tree_t
 {
-    Node_t*     root;
+    Node_t*      root;
+    NameTable_t* main_name_table;
 };
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -165,6 +168,7 @@ TreeErr NodeVerif              (const Node_t* node, TreeErr* err, const char* fi
 #define _ELIF(node, left, right            ) do { NodeData_t data = {.condition = Condition::else_if_t};            TREE_ASSERT(NodeCtor(node, NodeArgType::condition      , data, left,           right));  }         while(0)
 #define _ELSE(node,       right            ) do { NodeData_t data = {.condition = Condition::else_t};               TREE_ASSERT(NodeCtor(node, NodeArgType::condition      , data, nullptr,        right));  }         while(0)
 #define _RET( node, left                   ) do { NodeData_t data = {.attribute = FunctionAttribute::ret};          TREE_ASSERT(NodeCtor(node, NodeArgType::attribute      , data, left,           nullptr));}         while(0)
+#define _PRINT(node, left                  ) do { NodeData_t data = {.function = DFunction::print};                 TREE_ASSERT(NodeCtor(node, NodeArgType::dfunction      , data, left,           nullptr));}         while(0)
 
 
 #define _SET_MUL( node, left, right        ) do { NodeData_t data = {.oper = Operation::mul};                       TREE_ASSERT(SetNode (node, NodeArgType::operation       , data, left,          right)); }          while(0)

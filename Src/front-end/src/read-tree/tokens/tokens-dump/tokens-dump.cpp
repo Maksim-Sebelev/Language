@@ -257,7 +257,7 @@ static const char* GetTokenColor(const Token_t* token)
         case TokenType::TokenNumber_t:      return "#1cb9ff";
         case TokenType::TokenName_t:        return "#f31807";
         case TokenType::TokenOperation_t:   return "#00ca2c";
-        case TokenType::TokenFunction_t:    return "#0cf108";
+        case TokenType::TokenDefaultFunc_t: return "#0cf108";
         case TokenType::TokenBracket_t:     return "#e69c0c";
         case TokenType::TokenSeparator_t:   return "#fdc500";
         case TokenType::TokenEndSymbol_t:   return "#ffffff";
@@ -295,16 +295,16 @@ static const char* GetTokenTypeInStr(const Token_t* token)
                 default: assert(0 && "undefined num type"); return "number/undefined";
             }
         }
-        case TokenType::TokenType_t:      return "type";
-        case TokenType::TokenOperation_t: return "operation";
-        case TokenType::TokenFunction_t:  return "function";
-        case TokenType::TokenBracket_t:   return "bracket";
-        case TokenType::TokenSeparator_t: return "separator";
-        case TokenType::TokenEndSymbol_t: return "end";
-        case TokenType::TokenName_t:      return "name";
-        case TokenType::TokenCondition_t: return "condition";
-        case TokenType::TokenCycle_t:     return "cycle";
-        case TokenType::TokenFuncAttr_t:  return "function attribute";
+        case TokenType::TokenType_t:        return "type";
+        case TokenType::TokenOperation_t:   return "operation";
+        case TokenType::TokenDefaultFunc_t: return "function";
+        case TokenType::TokenBracket_t:     return "bracket";
+        case TokenType::TokenSeparator_t:   return "separator";
+        case TokenType::TokenEndSymbol_t:   return "end";
+        case TokenType::TokenName_t:        return "name";
+        case TokenType::TokenCondition_t:   return "condition";
+        case TokenType::TokenCycle_t:       return "cycle";
+        case TokenType::TokenFuncAttr_t:    return "function attribute";
         default: assert(0 && "nudefindef type."); return "undefined";
     }
 
@@ -380,7 +380,12 @@ static const char* GetTokenDataInStr(const Token_t* token)
             return GetFuncAttrInStr(attribute);
         }
 
-        case TokenType::TokenFunction_t:
+        case TokenType::TokenDefaultFunc_t:
+        {
+            DFunction function = token->data.function;
+            return GetFuncInStr(function);
+        }
+
         default: assert(0 && "undefined type."); return "undefined";
     }
 

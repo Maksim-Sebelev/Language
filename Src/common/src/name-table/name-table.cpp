@@ -4,9 +4,10 @@
 #include <assert.h>
 #include <string.h>
 #include "lib/lib.hpp"
-#include "lib/colorPrint.hpp"
-#include "tree/nameTable/nametable.hpp"
-#include "tree/nameTable/hash.hpp"
+#include "lib/lib.hpp"
+#include "name-table/name-table.hpp"
+#include "name-table/hash.hpp"
+#include "tree/node-and-token-types.hpp"
 
 
 static const size_t MinCapacity = 1<<3;
@@ -85,45 +86,45 @@ static void           PrintError  (StackErrorType Error);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Function FunctionCtor(Type type)
-{
-    Function function = {};
-    function.type = type;
-    return function;
-}
+// Function FunctionCtor(Type type)
+// {
+//     Function function = {};
+//     function.type = type;
+//     return function;
+// }
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Variable VariableCtor(Type type, void* value)
-{
-    Variable variable = {};
-    variable.type = type;
-    switch (type)
-    {
-        case Type::int_type:    variable.value.int_val    = *(int*   ) value; break;
-        case Type::char_type:   variable.value.char_val   = *(char*  ) value; break;
-        case Type::double_type: variable.value.double_val = *(double*) value; break;
-        case Type::void_type:
-        case Type::undefined_type:
-        default: assert(0 && "something went wrong");
-    }
+// Variable VariableCtor(Type type, void* value)
+// {
+//     Variable variable = {};
+//     variable.type = type;
+//     switch (type)
+//     {
+//         case Type::int_type:    variable.value.int_val    = *(int*   ) value; break;
+//         case Type::char_type:   variable.value.char_val   = *(char*  ) value; break;
+//         case Type::double_type: variable.value.double_val = *(double*) value; break;
+//         case Type::void_type:
+//         case Type::undefined_type:
+//         default: assert(0 && "something went wrong");
+//     }
 
-    return variable;
-}
+//     return variable;
+// }
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-NameInfo NameInfoCtor(const char* name, size_t len)
-{
-    assert(name);
-    NameInfo nameInfo = {};
-    nameInfo.name = name;
-    nameInfo.len  = len; 
+// NameInfo NameInfoCtor(const char* name, size_t len)
+// {
+//     assert(name);
+//     NameInfo nameInfo = {};
+//     nameInfo.name = name;
+//     nameInfo.len  = len; 
 
-    return nameInfo;
-}
+//     return nameInfo;
+// }
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Name NameCtor(const char* nameName, size_t len)
 {

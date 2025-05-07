@@ -18,6 +18,7 @@ const char* GetCycleInStr      (Cycle cycle);
 const char* GetConditionInStr  (Condition condition);
 const char* GetFuncAttrInStr   (FunctionAttribute attr);
 const char* GetInitInStr       (Initialisation init);
+const char* GetFuncInStr       (DFunction function);
 
 bool        IsDoubleEqual      (double firstNum, double secondNum, double epss);
 

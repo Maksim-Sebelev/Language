@@ -276,6 +276,7 @@ static const char* GetNodeColor(const Node_t* node)
         case NodeArgType::cycle:          return "#CFFC5C";
         case NodeArgType::attribute:      return "#FF0080";
         case NodeArgType::initialisation: return "#931807";
+        case NodeArgType::dfunction:      return "#031807";
         case NodeArgType::undefined:      return "red";
         default:
             assert(0 && "undefined situation in GetColorType.\n");
@@ -398,6 +399,12 @@ static const char* GetNodeDataInStr(const Node_t* node)
         {
             Initialisation init = node->data.init;
             return GetInitInStr(init);
+        }
+
+        case NodeArgType::dfunction:
+        {
+            DFunction function = node->data.function;
+            return GetFuncInStr(function);
         }
 
         default:
