@@ -32,7 +32,7 @@ ifeq ($(BUILD_TYPE), debug)
 	LDFLAGS += -fsanitize=address,undefined -lasan -lubsan
 endif
 
-
+-include make/common.mk
 
 OUT_O_DIR	   ?= bin
 EXECUTABLE_DIR ?= build
@@ -41,7 +41,6 @@ SRC 			= src
 EXECUTABLE 	   ?= frontend
 
 
--include make/common.mk
 
 override CFLAGS += $(INCLUDE)
 

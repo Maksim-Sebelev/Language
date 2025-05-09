@@ -1,7 +1,3 @@
--include common.mk
--include local.mk
-
-
 ifeq ($(origin CC),default)
   CC = g++
 endif
@@ -33,35 +29,42 @@ ifeq ($(BUILD_TYPE), debug)
 			  -Wsuggest-override -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused           \
 			  -Wuseless-cast -Wvariadic-macros -Wno-literal-suffix -Wno-missing-field-initializers -Wno-narrowing          \
 			  -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector         \
-			  -pie -fPIE -Werror=vla 																		                  \
+			  -pie -fPIE -Werror=vla 																		                 \
 			  -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr \
 
 
 	LDFLAGS += -fsanitize=address,undefined -lasan -lubsan
 endif
 
+-include make/common.mk
 
-OUT_O_DIR ?= bin
+OUT_O_DIR       ?= bin
 EXECUTABLE_DIR ?= build
-COMMONINC = -I./$(BACK_DIR)/include
-SRC = ./s
-EXECUTABLE ?= backend
+INCLUDE 	    = -I./$(BACK_DIR)/include $(COMMON_INC)
+SRC 		    = ./src
+EXECUTABLE     ?= backend
 
 
-override CFLAGS += $(COMMONINC)
+override CFLAGS += $(INCLUDE)
 
-CSRC =  main.cpp 					\
-		src/lib/lib.cpp  			 \
-		src/stack/hash.cpp   		  \
-		src/stack/stack.cpp 		   \
-		src/fileread/fileread.cpp       \
-		src/console/consoleCmd.cpp       \
-		src/assembler/assembler.cpp       \
-		src/processor/processor.cpp        \
+CSRC =  $(BACK_DIR)/main.cpp                      \
+		$(BACK_DIR)/src/stack/hash.cpp             \
+		$(BACK_DIR)/src/stack/stack.cpp             \
+		$(BACK_DIR)/src/console/consoleCmd.cpp       \
+		$(BACK_DIR)/src/assembler/assembler.cpp       \
+		$(BACK_DIR)/src/processor/processor.cpp        \
+		$(COMMON_DIR)/src/lib/lib.cpp                   \
+		$(COMMON_DIR)/src/read-file/read-file.cpp        \
+		$(COMMON_DIR)/src/tree/read-tree/read-tree.cpp    \
+
 
 
 ifeq ($(BUILD_TYPE), debug)
-	CSRC += src/log/log.cpp
+	CSRC += $(COMMON_DIR)/src/log/log.cpp                 \
+			$(COMMON_DIR)/src/dump/global-dump.cpp         \
+			$(COMMON_DIR)/src/tree/tree-dump/tree-dump.cpp  \
+
+
 endif
 
 COBJ := $(addprefix $(OUT_O_DIR)/,$(CSRC:.cpp=.o))

@@ -3,7 +3,6 @@
     {
       "name": "linux-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/Src/**",
         "${workspaceFolder}/Src/common/include/**",
         "${workspaceFolder}/Src/front-end/include/**",
         "${workspaceFolder}/Src/midle-end/include/**",

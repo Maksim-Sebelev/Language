@@ -6,10 +6,11 @@
 #include "processor/processor.hpp"
 #include "stack/stack.hpp"
 #include "common/globalInclude.hpp"
-#include "lib/colorPrint.hpp"
 #include "lib/lib.hpp"
-#include "log/log.hpp"
 
+#ifdef _DEBUG
+#include "log/log.hpp"
+#endif // _DEBUG
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 struct Code
@@ -1067,7 +1068,7 @@ static ProcessorErr ReadCodeFromFile(SPU* spu, FILE* codeFilePtr)
     }
 
     ON_DEBUG(
-    LOG_ALL_INT_ARRAY(Yellow, spu->code.code, spu->code.size);
+    LOG_ALL_INT_ARRAY(Yellow, spu->code.code, spu->code.size, 1);
     )
     return PROCESSOR_VERIF(spu, err);
 }

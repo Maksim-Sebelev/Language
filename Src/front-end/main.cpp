@@ -19,11 +19,11 @@ int main()
 {
     ON_DEBUG(
     COLOR_PRINT(GREEN, "FRONTEND START\n\n");
-    OPEN_LOG();
+    LOG_OPEN();
     )
 
 
-    const char* input  = "programm/programm.cpp";
+    const char* input  = "programm/programm.asm";
     const char* output = "tree/tree.ast";
 
     InputData buffer    = ReadFile(input);
@@ -45,7 +45,7 @@ int main()
     
 
     ON_DEBUG(
-    CLOSE_LOG();
+    LOG_CLOSE();
     COLOR_PRINT(GREEN, "\nFRONTEND END\n");
     )
 

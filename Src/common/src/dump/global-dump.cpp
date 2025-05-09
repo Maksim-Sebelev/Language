@@ -122,11 +122,12 @@ const char* GetInitInStr(Initialisation init)
 {
     switch (init)
     {
-        case Initialisation::def_function: return "def function";
-        case Initialisation::def_variable: return "def variable";
-        case Initialisation::assign_variable: return "assign variable";
-        case Initialisation::call_function:   return "call function";
-        case Initialisation::get_variable: return "get variable";
+        case Initialisation::def_function:            return "def function";
+        case Initialisation::def_variable:            return "def variable";
+        case Initialisation::assign_variable:         return "assign variable";
+        case Initialisation::call_function:           return "call function";
+        case Initialisation::get_variable:            return "get variable";
+        case Initialisation::call_default_function:   return "call default function";
         case Initialisation::undefined_initialisation:
         default: assert(0 && "undef init type"); return "undef init";
     }
