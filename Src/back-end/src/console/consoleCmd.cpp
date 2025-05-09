@@ -5,7 +5,6 @@
 #include "assembler/assembler.hpp"
 #include "processor/processor.hpp"
 #include "common/globalInclude.hpp"
-#include "lib/colorPrint.hpp"
 #include "lib/lib.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

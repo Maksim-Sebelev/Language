@@ -1,9 +1,0 @@
-digraph G{
-rankdir=TB
-graph [bgcolor="#000000"];
-place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [common/src/tree/write-tree/write-tree.cpp] | line: [483] | func: [PrintReturn] } "color = "#000000"];
-node0x507000001fa0[shape=Mrecord, style=filled, fillcolor="#FF0080"label = "return", color = "#777777"];
-node0x507000001f30[shape=Mrecord, style=filled, fillcolor="#1cb9ff"label = "2", color = "#777777"];
-edge[color="#373737"];
-node0x507000001fa0->node0x507000001f30;
-}

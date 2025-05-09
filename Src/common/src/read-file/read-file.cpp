@@ -3,8 +3,8 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <string.h>
-#include "fileread/fileread.hpp"
-#include "lib/colorPrint.hpp"
+#include "read-file/read-file.hpp"
+#include "lib/lib.hpp"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -36,6 +36,105 @@ static bool   IsSpace                (const char c);
 static bool   IsSlashN               (const char c);
 static bool   IsSlashR               (const char c);
 static bool   IsSlashT               (const char c);
+
+//============================ Read File ==============================================================================================================
+
+WordArray ReadBufferFromFile(const char* file)
+{
+    assert(file);
+
+    COLOR_PRINT(CYAN, "tree.ast = '%s'\nptr = %p\n\n", file, file);
+
+    FILE* filePtr = fopen(file, "rb");
+
+
+    if (!filePtr)
+        EXIT(EXIT_FAILURE, "failed open '%s'", file);
+
+
+    size_t bufferLen     = CalcFileLen(file);
+    size_t realBufferLen = bufferLen + 2;
+
+    char* buffer = (char*) calloc (realBufferLen, sizeof(*buffer));
+    Word* words  = (Word*) calloc (realBufferLen, sizeof(*words));
+
+    assert(buffer);
+    assert(words);
+
+    Fread(buffer, bufferLen, filePtr);
+    fclose(filePtr);
+
+    buffer[bufferLen    ] = ' ';
+    buffer[bufferLen + 1] = '\0';
+
+
+    SetNullWord(&words, buffer);
+
+    Pointer pointer = 
+    {
+        .wp  = 0,
+        .lp  = 1,
+        .sp  = 1,
+        .bp  = 0,
+        .wbp = 0,
+    };
+
+
+    if (!IsPassSymbol(buffer[0]))
+        SetWordAndFilePosition(words, &buffer[0], &pointer);
+
+    for (; pointer.bp < realBufferLen; pointer.bp++)
+    {
+        if (!IsPassSymbolAndChangePointer(buffer[pointer.bp], &pointer))
+        {
+            pointer.sp++;
+            continue;
+        }
+
+        size_t previousWordLen = GetPreviousWordLen(&pointer);
+
+        do
+        {
+            buffer[pointer.bp] = '\0';  
+            pointer.bp++;
+        } while (IsPassSymbolAndChangePointer(buffer[pointer.bp], &pointer));
+        
+        SetPreviousWordLen(words, &pointer, previousWordLen);
+        SetWordAndFilePosition(words, &buffer[pointer.bp], &pointer);
+
+        pointer.sp++;
+        pointer.wbp = pointer.bp;
+    }
+
+    size_t wordsQuant = pointer.wp - 1;
+
+    WordArray wordArray = {words, wordsQuant ON_WORD_POINTER_POINTER(, .pointer = 0) ON_WORD_SAVE_INPUT_STREAM(, .input_stream = file)};
+
+    ReadBufRealloc(&wordArray);
+
+
+    return wordArray;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void BufferDtor(WordArray* wordArray)
+{
+    assert(wordArray);
+    assert(wordArray->words);
+
+    wordArray->size = 0;
+
+    wordArray->words--;
+    assert(wordArray->words);
+
+    FREE(wordArray->words[0].word);
+    FREE(wordArray->words);
+
+    return;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -94,110 +193,6 @@ double WordToDouble(const Word* word)
     return res;
 }
 
-//============================ Read File ==============================================================================================================
-
-WordArray ReadBufferFromFile(const char* file)
-{
-    assert(file);
-
-    FILE* filePtr = fopen(file, "rb");
-
-    if (!filePtr)
-    {
-        fprintf(stderr, "failed open '%s'.\n", file);
-        return {};
-    }
-
-    size_t bufferLen     = CalcFileLen(file);
-    size_t realBufferLen = bufferLen + 2;
-
-    char* buffer = (char*) calloc (realBufferLen, sizeof(*buffer));
-    Word* words  = (Word*) calloc (realBufferLen, sizeof(*words));
-
-    assert(buffer);
-    assert(words);
-
-    Fread(buffer, bufferLen, filePtr);
-    fclose(filePtr);
-
-    buffer[bufferLen    ] = ' ';
-    buffer[bufferLen + 1] = '\0';
-
-
-    SetNullWord(&words, buffer);
-
-    Pointer pointer = 
-    {
-        .wp  = 0,
-        .lp  = 1,
-        .sp  = 1,
-        .bp  = 0,
-        .wbp = 0,
-    };
-
-
-    if (!IsPassSymbol(buffer[0]))
-        SetWordAndFilePosition(words, &buffer[0], &pointer);
-
-    for (; pointer.bp < realBufferLen; pointer.bp++)
-    {
-        if (!IsPassSymbolAndChangePointer(buffer[pointer.bp], &pointer))
-        {
-            pointer.sp++;
-            continue;
-        }
-
-        size_t previousWordLen = GetPreviousWordLen(&pointer);
-
-        do
-        {
-            buffer[pointer.bp] = '\0';  
-            pointer.bp++;
-        } while (IsPassSymbolAndChangePointer(buffer[pointer.bp], &pointer));
-        
-        SetPreviousWordLen(words, &pointer, previousWordLen);
-        SetWordAndFilePosition(words, &buffer[pointer.bp], &pointer);
-
-        pointer.sp++;
-        pointer.wbp = pointer.bp;
-    }
-
-    size_t wordsQuant = pointer.wp - 1;
-
-    WordArray wordArray = {words, wordsQuant ON_WORD_POINTER_POINTER(, .pointer = 0)};
-
-    ReadBufRealloc(&wordArray);
-
-    return wordArray;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static size_t GetPreviousWordLen(const Pointer* pointer)
-{
-    assert(pointer);
-
-    return pointer->bp - pointer->wbp;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-void BufferDtor(WordArray* wordArray)
-{
-    assert(wordArray);
-    assert(wordArray->words);
-
-    wordArray->size = 0;
-
-    wordArray->words--;
-    assert(wordArray->words);
-
-    FREE(wordArray->words[0].word);
-    FREE(wordArray->words);
-
-    return;
-}
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void Fread(char* buffer, size_t bufferLen, FILE* filePtr)
@@ -206,7 +201,10 @@ static void Fread(char* buffer, size_t bufferLen, FILE* filePtr)
     assert(filePtr);
 
     size_t freadReturn = fread(buffer, sizeof(char), bufferLen, filePtr);
-    assert(freadReturn == bufferLen);
+    
+    if (freadReturn != bufferLen)
+        EXIT(EXIT_FAILURE, "Bad fread.");
+
     return;
 }
 
@@ -269,11 +267,20 @@ static void SetPreviousWordLen(Word* split_buffer, const Pointer* pointer, size_
 
     size_t wordPointer = pointer->wp;
 
-    wordPointer = (wordPointer == 0) ? 0 : wordPointer - 1;
+    wordPointer = (wordPointer != 0) ? wordPointer - 1 : 0;
 
     split_buffer[wordPointer].len = wordLen;
 
     return;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static size_t GetPreviousWordLen(const Pointer* pointer)
+{
+    assert(pointer);
+
+    return pointer->bp - pointer->wbp;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

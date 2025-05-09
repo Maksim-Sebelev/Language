@@ -22,4 +22,22 @@ DEF_FUNC
 
 	BODY
 	{
-		
+		RETURN
+		{
+			CALL_FUNCTION
+			{
+				NAME: foo
+
+				CALL_FUNCTION_ARGS
+				{
+					NAME: a
+					NAME: b
+					NAME: c
+				}
+			}
+
+		}
+
+	}
+}
+

@@ -16,11 +16,16 @@ token9[shape=Mrecord, style=filled, fillcolor="#CD5C5C",label = " { type | int |
 token10[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | c |  token[10] |  input:1:27 } ", color = "#777777"];
 token11[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \) |  token[11] |  input:1:28 } ", color = "#777777"];
 token12[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \{ |  token[12] |  input:2:1 } ", color = "#777777"];
-token13[shape=Mrecord, style=filled, fillcolor="#0cf108",label = " { function | print |  token[13] |  input:3:5 } ", color = "#777777"];
-token14[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \( |  token[14] |  input:3:10 } ", color = "#777777"];
-token15[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | name |  token[15] |  input:3:11 } ", color = "#777777"];
-token16[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \) |  token[16] |  input:3:15 } ", color = "#777777"];
-token17[shape=Mrecord, style=filled, fillcolor="#fdc500",label = " { separator | \; |  token[17] |  input:3:16 } ", color = "#777777"];
-token18[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \} |  token[18] |  input:4:1 } ", color = "#777777"];
-token19[shape=Mrecord, style=filled, fillcolor="#ffffff",label = " { end | \\0 |  token[19] |  input:4:2 } ", color = "#777777"];
+token13[shape=Mrecord, style=filled, fillcolor="#01f0af",label = " { function attribute | return |  token[13] |  input:3:5 } ", color = "#777777"];
+token14[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | foo |  token[14] |  input:3:12 } ", color = "#777777"];
+token15[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \( |  token[15] |  input:3:15 } ", color = "#777777"];
+token16[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | a |  token[16] |  input:3:16 } ", color = "#777777"];
+token17[shape=Mrecord, style=filled, fillcolor="#fdc500",label = " { separator | \, |  token[17] |  input:3:17 } ", color = "#777777"];
+token18[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | b |  token[18] |  input:3:19 } ", color = "#777777"];
+token19[shape=Mrecord, style=filled, fillcolor="#fdc500",label = " { separator | \, |  token[19] |  input:3:20 } ", color = "#777777"];
+token20[shape=Mrecord, style=filled, fillcolor="#f31807",label = " { name | c |  token[20] |  input:3:22 } ", color = "#777777"];
+token21[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \) |  token[21] |  input:3:23 } ", color = "#777777"];
+token22[shape=Mrecord, style=filled, fillcolor="#fdc500",label = " { separator | \; |  token[22] |  input:3:24 } ", color = "#777777"];
+token23[shape=Mrecord, style=filled, fillcolor="#e69c0c",label = " { bracket | \} |  token[23] |  input:4:1 } ", color = "#777777"];
+token24[shape=Mrecord, style=filled, fillcolor="#ffffff",label = " { end | \\0 |  token[24] |  input:4:2 } ", color = "#777777"];
 }
