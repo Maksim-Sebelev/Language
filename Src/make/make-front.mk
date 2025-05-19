@@ -11,7 +11,7 @@ BUILD_TYPE ?= debug
 
 
 ifeq ($(BUILD_TYPE), release)
-	CFLAGS += -D _NDEBUG -O3
+	CFLAGS += -D _NDEBUG -O3 -ffast-math -flto
 endif 
 
 ifeq ($(BUILD_TYPE), debug)

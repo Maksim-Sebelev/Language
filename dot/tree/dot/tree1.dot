@@ -1,0 +1,45 @@
+digraph G{
+rankdir=TB
+graph [bgcolor="#000000"];
+place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [front-end/main.cpp] | line: [40] | func: [main] } "color = "#000000"];
+node0x5070000008e0[shape=Mrecord, style=filled, fillcolor="#931807"label = "def function", color = "#777777"];
+node0x507000000090[shape=Mrecord, style=filled, fillcolor="#CD5C5C"label = "int", color = "#777777"];
+node0x507000000100[shape=Mrecord, style=filled, fillcolor="#f31807"label = "foo", color = "#777777"];
+node0x507000000250[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000170[shape=Mrecord, style=filled, fillcolor="#CD5C5C"label = "int", color = "#777777"];
+node0x5070000001e0[shape=Mrecord, style=filled, fillcolor="#f31807"label = "a", color = "#777777"];
+node0x5070000003a0[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x5070000002c0[shape=Mrecord, style=filled, fillcolor="#CD5C5C"label = "int", color = "#777777"];
+node0x507000000330[shape=Mrecord, style=filled, fillcolor="#f31807"label = "b", color = "#777777"];
+node0x5070000004f0[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000410[shape=Mrecord, style=filled, fillcolor="#CD5C5C"label = "int", color = "#777777"];
+node0x507000000480[shape=Mrecord, style=filled, fillcolor="#f31807"label = "c", color = "#777777"];
+node0x507000000870[shape=Mrecord, style=filled, fillcolor="#FF0080"label = "return", color = "#777777"];
+node0x507000000800[shape=Mrecord, style=filled, fillcolor="#931807"label = "call function", color = "#777777"];
+node0x507000000560[shape=Mrecord, style=filled, fillcolor="#f31807"label = "foo", color = "#777777"];
+node0x507000000790[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x5070000005d0[shape=Mrecord, style=filled, fillcolor="#f31807"label = "a", color = "#777777"];
+node0x507000000720[shape=Mrecord, style=filled, fillcolor="#FFFACD"label = "connect", color = "#777777"];
+node0x507000000640[shape=Mrecord, style=filled, fillcolor="#f31807"label = "b", color = "#777777"];
+node0x5070000006b0[shape=Mrecord, style=filled, fillcolor="#f31807"label = "c", color = "#777777"];
+edge[color="#373737"];
+node0x5070000008e0->node0x507000000090;
+node0x507000000090->node0x507000000100;
+node0x507000000100->node0x507000000250;
+node0x507000000250->node0x507000000170;
+node0x507000000170->node0x5070000001e0;
+node0x507000000250->node0x5070000003a0;
+node0x5070000003a0->node0x5070000002c0;
+node0x5070000002c0->node0x507000000330;
+node0x5070000003a0->node0x5070000004f0;
+node0x5070000004f0->node0x507000000410;
+node0x507000000410->node0x507000000480;
+node0x507000000100->node0x507000000870;
+node0x507000000870->node0x507000000800;
+node0x507000000800->node0x507000000560;
+node0x507000000560->node0x507000000790;
+node0x507000000790->node0x5070000005d0;
+node0x507000000790->node0x507000000720;
+node0x507000000720->node0x507000000640;
+node0x507000000720->node0x5070000006b0;
+}

@@ -1,48 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h> // for LogTitle only
 #include <assert.h>
+#include <time.h>
 #include "log/log.hpp"
 #include "lib/lib.hpp"
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _IMG_BACKGROUND  // if you want to see your image on background
-
-#ifdef _IMG_BACKGROUND
-    #define ON_IMG(...) __VA_ARGS__
-    #define OFF_IMG(...)
-
-    #define ON_GRADIENT(...) 
-    #define OFF_GRADIENT(...)
-
-#else
-    #define ON_IMG(...)
-    #define OFF_IMG(...) __VA_ARGS__
-
-    // #define _GRADIENT  // if you want to see color gradient on background
- 
-    #ifdef _GRADIENT
-        #define ON_GRADIENT(...) __VA_ARGS__
-        #define OFF_GRADIENT(...)
-        
-    #else
-        #define ON_GRADIENT(...)
-        #define OFF_GRADIENT(...) __VA_ARGS__
-
-    #endif
-    
-#endif
-
-
-ON_IMG(
-const char* background_image = "common/include/log/backgrounds/anime_tyan.webp";
-)
+const char* LogName = "../Log/log.html";
+FILE*       LogFile = nullptr;
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-FILE*       LogFile = nullptr;
-const char* LogName = "Log/log.html";
+ON_IMG(
+const char* background_image = "../Src/common/src/log/backgrounds/anime_tyan_2.webp";
+)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -72,8 +46,8 @@ static void fprintfTextSection              ();
 static void fprintfTextSectionEnd           ();
 static void fprintfH1                       ();
 static void fprintfH1End                    ();
-// static void fprintfH2                       ();
-// static void fprintfH2End                    ();
+static void fprintfH2                       ();
+static void fprintfH2End                    ();
 static void fprintfP                        ();
 static void fprintfPEnd                     ();
 static void fprintfPtext                    ();
@@ -106,56 +80,34 @@ static void makeP                    (                        size_t nTabBefore)
 static void makeColor                (                        size_t nTabBefore);
 static void makeColorP               (                        size_t nTabBefore);
 static void makeH1                   (                        size_t nTabBefore);
-// static void makeH2                   (                        size_t nTabBefore);
+static void makeH2                   (                        size_t nTabBefore);
+static void LogDate                  (                        size_t nTabBefore);
 
 
-//=== background color ===//
-const char* black_background     = "body { background-color: #121212; }                                                                          \n";
-const char* gradient1_background = "body { background: linear-gradient(to right,  #0f2027, #203a43, #2c5364);}                               \n";
-const char* gradient2_background = "body { background: linear-gradient(to bottom, #ffffff,#ffffff, #1948ff, #1948ff, #f92b03, #f92b03);} \n";
-
-//=== text color ===//
-
-const char* red_text_html_name    = "red_text";
-const char* green_text_html_name  = "green_text";
-const char* pink_text_html_name   = "pink_text";
-const char* yellow_text_html_name = "yellow_text";
-const char* blue_text_html_name   = "blue_text";
-const char* black_text_html_name  = "black_text";
-const char* white_text_html_name  = "white_text";
-
-
-const char* red_text_rgb    = " { color: #ff4444; } \n";
-const char* green_text_rgb  = " { color: #0bf80b; } \n";
-const char* pink_text_rgb   = " { color: #f605c7; } \n";
-const char* yellow_text_rgb = " { color: #ecc40b; } \n";
-const char* blue_text_rgb   = " { color: #0c89e8; } \n"; 
-const char* black_text_rgb  = " { color: #000000; } \n";
-const char* white_text_rgb  = " { color: #ffffff; } \n";
-
-//=== ===//
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void OpenLog()
 {
     assert(LogName && "logName = nullptr");
 
-    int sys_return = system("mkdir -p Log/");
+    int sys_return = system("mkdir -p ../Log/");
     
     if (sys_return != 0)
-        EXIT(EXIT_FAILURE, "failed build log dir.");
-
+        EXIT(EXIT_FAILURE, "failed create log dir.");
 
     LogFile = fopen(LogName, "w");
-
     if (!LogFile)
-        EXIT(EXIT_FAILURE, "failed open log file.");
-
+        EXIT(EXIT_FAILURE, "failed open log file: '%s'\n", LogName);
 
     fprintfHtml(); fprintfNS();
 
     makeStyle(ON_IMG(background_image,) 1);
 
     makeTextClass(0);
+
+    LogDate(3);
+
+    LogPrint(White, "\n");
 
     return;
 }
@@ -164,6 +116,10 @@ void OpenLog()
 
 void CloseLog()
 {
+    assert(LogFile);
+
+    LogDate(3);
+
     fclose(LogFile);
     LogFile = nullptr;
 
@@ -175,16 +131,18 @@ void CloseLog()
 void LogTextColor(LogColor color)
 {
     static bool WasUsed = false;
+
     if (WasUsed)
     {
         LogTextColorEnd();
         WasUsed = false;
     }
+
     else
     {
         WasUsed = true;
     }
-    
+
     const char* color_html = GetHtmlColor(color);
 
     fprintfNTab(3);
@@ -212,9 +170,9 @@ void LogAdcPrint(const char* format, ...)
     fprintfNTab(4); fprintfPtext(); vfprintf(LogFile, format, args); fprintfPtextEnd(); fprintfNS();
 
     fflush(LogFile);
-    
+
     va_end(args);
-    
+
     return;
 }
 
@@ -222,6 +180,7 @@ void LogAdcPrint(const char* format, ...)
 
 void LogPrint(LogColor color, const char* format, ...)
 {
+    assert(LogFile);
     assert(format);
 
     va_list args;
@@ -230,15 +189,77 @@ void LogPrint(LogColor color, const char* format, ...)
     const char* color_html = GetHtmlColor(color);
     fprintfNTab(3);
     fprintfSpanWithArgs("class=\"color %s\"", color_html); fprintfNS();
-    
+
     fprintfNTab(4); fprintfPtext(); vfprintf(LogFile, format, args); fprintfPtextEnd(); fprintfNS();
     
     fflush(LogFile);
-    
+
     va_end(args);
-    
+
     fprintfNTab(3);
     fprintfSpanEnd(); fprintfNS();
+
+    return;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void LogTitle(LogColor color, const char* title)
+{
+    assert(LogFile);
+    assert(title);
+
+    static const size_t ScreenSize = 45; //count in char's, that size is like h2
+    size_t title_len = strlen(title) + 2;
+
+    size_t free_place_len = 0;
+    if (title_len < ScreenSize - 2) free_place_len = (ScreenSize - (title_len + 2)) / 2;
+
+    if (free_place_len > 0 && (ScreenSize - title_len) % 2 == 0) --free_place_len;
+
+    LogTextColor(color);
+
+    fprintfNTab(3);
+    fprintfH2();
+
+    for (size_t i = 0; i < free_place_len; i++)
+        fprintfInHtml("=");
+
+    fprintfInHtml(" ");
+    fprintfInHtml(title);
+    fprintfInHtml(" ");
+
+    for (size_t i = 0; i < free_place_len; i++)
+        fprintfInHtml("=");
+
+    
+    fprintfH2End(); fprintfNS();
+
+    LogTextColorEnd();
+
+    return;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void LogDate(size_t nTabBefore)
+{
+    assert(LogFile);
+    assert(LogName);
+
+    time_t raw_time;
+    struct tm *time_info;
+    static const size_t date_len = 64;
+    char date[date_len] = {};
+
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    strftime(date, date_len, "%H:%M:%S %Y-%m-%d", time_info);
+
+        fprintfNTab(nTabBefore + 1);
+            LogTitle(White, date);
+
+    return;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -268,6 +289,7 @@ static void makeStyle(ON_IMG(const char* wayToImage,) size_t nTabBefore)
     )
             makeTextSection         (nTabBefore + 2);
             makeH1                  (nTabBefore + 2);
+            makeH2                  (nTabBefore + 2);
             makeP                   (nTabBefore + 2);
             makeColor               (nTabBefore + 2);
             makeColorP              (nTabBefore + 2);
@@ -320,17 +342,17 @@ static void makeBodyBefore(size_t nTabBefore)
         fprintfInHtml("bottom: 0;\n");
 
     fprintfNTab(nTabBefore + 1);
-        fprintfInHtml("background: rgba(0, 0, 0, 0.6);\n");
+        fprintfInHtml("background: rgba(0, 0, 0, 0.5);\n");
 
     fprintfNTab(nTabBefore + 1);
-        fprintfInHtml("z-index: -1;");
+        fprintfInHtml("z-index: -1;\n");
 
     fprintfNTab(nTabBefore + 1);
         fprintfInHtml("pointer-events: none;\n");
 
 
     fprintfNTab(nTabBefore);
-    fprintfBodyBeforeEnd();
+    fprintfBodyBeforeEnd(); fprintfNS();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -357,7 +379,7 @@ static void makeBackGround(size_t nTabBefore)
         
         ON_GRADIENT
         (
-            fprintfInHtml("background: linear-gradient(135deg, #000000, #000000, #6600ff, #0de612, #0de612);\n");
+            fprintfInHtml("background: linear-gradient(135deg, #000000, #000000, #6600ff, #6600ff);\n");
             // fprintfInHtml("background: linear-gradient(135deg, #ffffff, #ffffff, #ffffff, #0644f6, #0644f6, #0644f6, #ea2b0b, #ea2b0b, #ea2b0b);\n");
         )
         OFF_GRADIENT
@@ -387,8 +409,6 @@ static void makeBackGround(size_t nTabBefore)
 
     fprintfNTab(nTabBefore);
     fprintfBodyWithBracketEnd(); fprintfNNS(2);
-
-    return;
 }
 )
 
@@ -409,7 +429,6 @@ static void makeBackGroundGradient(size_t nTabBefore)
         fprintfNTab(nTabBefore + 1);
             fprintfCloseBracket(); fprintfNS();
 
-
         fprintfNTab(nTabBefore + 1);
             fprintfInHtml("50%% {\n");
 
@@ -418,7 +437,6 @@ static void makeBackGroundGradient(size_t nTabBefore)
 
         fprintfNTab(nTabBefore + 1);
                 fprintfCloseBracket(); fprintfNS();
-
 
         fprintfNTab(nTabBefore + 1);
             fprintfInHtml("100%% {\n");
@@ -526,19 +544,19 @@ static void makeH1(size_t nTabBefore)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// static void makeH2(size_t nTabBefore)
-// {
-//     fprintfNTab(nTabBefore);
-//     fprintfH2(); fprintfNS();
+static void makeH2(size_t nTabBefore)
+{
+    fprintfNTab(nTabBefore);
+    fprintfInHtml("h2 {"); fprintfNS();
     
-//     fprintfNTab(nTabBefore + 1); 
-//         fprintfInHtml("text-align: center;\n");
-//     fprintfNTab(nTabBefore + 1); 
-//         fprintfInHtml("margin-bottom: 5px;\n");
+    // fprintfNTab(nTabBefore + 1); 
+        // fprintfInHtml("text-align: center;\n");
+    fprintfNTab(nTabBefore + 1); 
+        fprintfInHtml("margin-bottom: 5px;\n");
 
-//     fprintfNTab(nTabBefore);
-//     fprintfH2End(); fprintfNNS(2);
-// }
+    fprintfNTab(nTabBefore);
+    fprintfInHtml("}"); fprintfNNS(2);
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -565,30 +583,24 @@ static void makeP(size_t nTabBefore)
 static void makeTextColor(size_t nTabBefore)
 {
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", red_text_html_name    , red_text_rgb    );
+    fprintfInHtml(".red_text { color: #ff4444; }\n");
 
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", green_text_html_name  , green_text_rgb  );
+    fprintfInHtml(".green_text { color: #0bf80b; }\n");
     
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", yellow_text_html_name , yellow_text_rgb );
+    fprintfInHtml(".pink_text { color: #f605c7; }\n");
     
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", blue_text_html_name   , blue_text_rgb   );
+    fprintfInHtml(".yellow_text { color: #ecc40b; }\n");
 
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", black_text_html_name  , black_text_rgb  );
+    fprintfInHtml(".blue_text { color: #0c89e8; }\n");
 
     fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", white_text_html_name  , white_text_rgb  );
-    
+    fprintfInHtml(".black_text { color: #000000; }");
 
-    fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", pink_text_html_name   , pink_text_rgb   );
-
-    fprintfNTab(nTabBefore);
-    fprintfInHtml(".%s %s", red_text_html_name    , red_text_rgb    );
-
+    fprintfNS();
     fprintfNS();
 }
 
@@ -642,6 +654,8 @@ static void makeColorP(size_t nTabBefore)
 
     fprintfNTab(nTabBefore);
     fprintfInHtml("}"); fprintfNNS(2);
+
+    return;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -655,6 +669,8 @@ static void fprintfInHtml(const char* format, ...)
     fflush(LogFile);
 
     va_end(args);
+
+    return;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -868,19 +884,19 @@ static void fprintfH1End()
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// static void fprintfH2()
-// {
-//     fprintfInHtml("h2 {");
-// }
-
-// //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-// static void fprintfH2End()
-// {
-//     fprintfInHtml("}");
-// }
+static void fprintfH2()
+{
+    fprintfInHtml("<h2>");
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void fprintfH2End()
+{
+    fprintfInHtml("</h2>");
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void fprintfP()
 {
@@ -914,13 +930,13 @@ static const char* GetHtmlColor(LogColor color)
 {
     switch (color)
     {
-        case LogColor::Red:    return red_text_html_name;
-        case LogColor::Green:  return green_text_html_name;
-        case LogColor::Pink:   return pink_text_html_name;
-        case LogColor::Yellow: return yellow_text_html_name;
-        case LogColor::Black:  return black_text_html_name;
-        case LogColor::Blue:   return blue_text_html_name;
-        case LogColor::White:  return white_text_html_name;
+        case LogColor::Red:    return "red_text";
+        case LogColor::Green:  return "green_text";
+        case LogColor::Pink:   return "pink_text";
+        case LogColor::Yellow: return "yellow_text";
+        case LogColor::Black:  return "black_text";
+        case LogColor::Blue:   return "blue_text";
+        case LogColor::White:  return "";
         default:               assert(0 && "undef color in log");
     }
 

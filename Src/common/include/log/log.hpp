@@ -3,19 +3,48 @@
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#include <stdio.h>
+#include <stddef.h>
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define _IMG_BACKGROUND  // if you want to see your image on background
+
+#ifdef _IMG_BACKGROUND
+    #define ON_IMG(...) __VA_ARGS__
+    #define OFF_IMG(...)
+
+    #define ON_GRADIENT(...) 
+    #define OFF_GRADIENT(...)
+
+#else
+    #define ON_IMG(...)
+    #define OFF_IMG(...) __VA_ARGS__
+
+    // #define _GRADIENT  // if you want to see color gradient on background
+ 
+    #ifdef _GRADIENT
+        #define ON_GRADIENT(...) __VA_ARGS__
+        #define OFF_GRADIENT(...)
+        
+    #else
+        #define ON_GRADIENT(...)
+        #define OFF_GRADIENT(...) __VA_ARGS__
+
+    #endif
+    
+#endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 enum LogColor : char
 {
-    White, 
-    Red, 
-    Green,
-    Pink,
+    White ,
+    Red   ,
+    Green ,
+    Pink  ,
     Yellow,
-    Black,
-    Blue,
+    Black ,
+    Blue  ,
 };
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -25,7 +54,7 @@ void CloseLog();
 void LogAdcPrint(const char* format, ...);
 void LogTextColor(LogColor color);
 void LogTextColorEnd();
-
+void LogTitle(LogColor color, const char* title);
 void LogPrint(LogColor color, const char* format, ...);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -35,15 +64,16 @@ void LogPrint(LogColor color, const char* format, ...);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_COLOR(color)      LogTextColor (color)
-#define LOG_ADC_PRINT(...)    LogAdcPrint  (       __VA_ARGS__)
-#define LOG_PRINT(color, ...) LogPrint     (color, __VA_ARGS__)
+#define LOG_COLOR(color)        LogTextColor (color)
+#define LOG_ADC_PRINT(...)      LogAdcPrint  (       __VA_ARGS__)
+#define LOG_PRINT(color, ...)   LogPrint     (color, __VA_ARGS__)
+#define LOG_TITLE(color, title) LogTitle(color, title)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_PLACE(color)                                LogPrint(color, "%s:%d\nin function '%s'\n"        ,       __FILE__,       __LINE__,      __func__ )
-#define LOG_PRINT_PLACE(color, file, line, func)        LogPrint(color, "file [%s]\nline [%d]\nfunc [%s]\n",         file  ,         line  ,        func   )
-#define LOG_PRINT_STRUCT_PLACE(color, file, line, func) LogPrint(color, "file [%s]\nline [%d]\nfunc [%s]\n", (place).file  , (place).line  , (place).func  )
+#define LOG_PLACE(color)                                LogPrint(color, "%s:%d\nin '%s'\n",       __FILE__,       __LINE__,      __func__ )
+#define LOG_PRINT_PLACE(color, file, line, func)        LogPrint(color, "%s:%d\nin '%s'\n",         file  ,         line  ,        func   )
+#define LOG_PRINT_STRUCT_PLACE(color, file, line, func) LogPrint(color, "%s:%d\nin '%s'\n", (place).file  , (place).line  , (place).func  )
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -52,65 +82,51 @@ void LogPrint(LogColor color, const char* format, ...);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_INT_ARRAY(color, array, iterator, alignment)    LogPrint(color, #array "[%"#alignment"lu] = '%d'\n", iterator, array[iterator])
-#define LOG_CHAR_ARRAY(color, array, iterator, alignment)   LogPrint(color, #array "[%"#alignment"lu] = '%c'\n", iterator, array[iterator])
-#define LOG_DOUBLE_ARRAY(color, array, iterator, alignment) LogPrint(color, #array "[%"#alignment"lu] = '%f'\n", iterator, array[iterator])
-#define LOG_STRING_ARRAY(color, array, iterator, alignment) LogPrint(color, #array "[%"#alignment"lu] = '%s'\n", iterator, array[iterator])
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#define LOG_ALL_STRING_ARRAY(color, array, size, aligment) do                                                            \
+#define LOG_ALL_STRING_ARRAY(color, array, size) do                                                                      \
 {                                                                                                                         \
     LogTextColor(color);                                                                                                   \
     for (size_t log_string_all_array_iterator = 0; log_string_all_array_iterator < size; log_string_all_array_iterator++)   \
     {                                                                                                                        \
-        LogAdcPrint(#array "[%"#aligment"lu] = '%s'\n", log_string_all_array_iterator, array[log_string_all_array_iterator]); \
+        LogAdcPrint(#array "[%2lu] = '%s'\n", log_string_all_array_iterator, array[log_string_all_array_iterator]);           \
     }                                                                                                                          \
     LogTextColorEnd();                                                                                                          \
 } while (0)                                                                                                                      \
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_ALL_CHAR_ARRAY(color, array, size, aligment) do                                                              \
+#define LOG_ALL_CHAR_ARRAY(color, array, size) do                                                                        \
 {                                                                                                                         \
     LogTextColor(color);                                                                                                   \
     for (size_t log_char_all_array_iterator = 0; log_char_all_array_iterator < size; log_char_all_array_iterator++)         \
     {                                                                                                                        \
-        LogAdcPrint(#array "[%"#aligment"lu] = '%c'\n", log_char_all_array_iterator, array[log_char_all_array_iterator]);     \
+        LogAdcPrint(#array "[%2lu] = '%c'\n", log_char_all_array_iterator, array[log_char_all_array_iterator]);               \
     }                                                                                                                          \
     LogTextColorEnd();                                                                                                          \
 } while (0)                                                                                                                      \
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_ALL_DOUBLE_ARRAY(color, array, size, aligment) do                                                            \
+#define LOG_ALL_DOUBLE_ARRAY(color, array, size) do                                                                      \
 {                                                                                                                         \
     LogTextColor(color);                                                                                                   \
     for (size_t log_double_all_array_iterator = 0; log_double_all_array_iterator < size; log_double_all_array_iterator++)   \
     {                                                                                                                        \
-        LogAdcPrint(#array "[%"#aligment"lu] = '%f'\n", log_double_all_array_iterator, array[log_double_all_array_iterator]); \
+        LogAdcPrint(#array "[%2lu] = '%f'\n", log_double_all_array_iterator, array[log_double_all_array_iterator]);           \
     }                                                                                                                          \
     LogTextColorEnd();                                                                                                          \
 } while (0)                                                                                                                      \
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_ALL_INT_ARRAY(color, array, size, aligment) do                                                               \
+#define LOG_ALL_INT_ARRAY(color, array, size) do                                                                         \
 {                                                                                                                         \
     LogTextColor(color);                                                                                                   \
     for (size_t log_int_all_array_iterator = 0; log_int_all_array_iterator < size; log_int_all_array_iterator++)            \
     {                                                                                                                        \
-        LogAdcPrint(#array "[%"#aligment"lu] = '%d'\n", log_int_all_array_iterator, array[log_int_all_array_iterator]);       \
+        LogAdcPrint(#array "[%2lu] = '%d'\n", log_int_all_array_iterator, array[log_int_all_array_iterator]);                 \
     }                                                                                                                          \
     LogTextColorEnd();                                                                                                          \
 } while (0)                                                                                                                      \
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#define LOG_ADC_INT_ARRAY(array, iterator, alignment)    LogAdcPrint(#array "[%"#alignment"lu] = '%d'", iterator, array[iterator])
-#define LOG_ADC_CHAR_ARRAY(array, iterator, alignment)   LogAdcPrint(#array "[%"#alignment"lu] = '%c'", iterator, array[iterator])
-#define LOG_ADC_DOUBLE_ARRAY(array, iterator, alignment) LogAdcPrint(#array "[%"#alignment"lu] = '%f'", iterator, array[iterator])
-#define LOG_ADC_STRING_ARRAY(array, iterator, alignment) LogAdcPrint(#array "[%"#alignment"lu] = '%s'", iterator, array[iterator])
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

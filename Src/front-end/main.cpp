@@ -7,7 +7,7 @@
 #include "read-tree/recursive-descent/recursive-descent.hpp"
 #include "tree/write-tree/write-tree.hpp"
 
-#define _DEBUG
+// #define _DEBUG
 
 #ifdef _DEBUG
 #include "log/log.hpp"
@@ -22,20 +22,23 @@ int main()
     LOG_OPEN();
     )
 
-
-    const char* input  = "programm/programm.asm";
-    const char* output = "tree/tree.ast";
+    const char* input   = "programm/programm.asm";
+    const char* output  = "tree/tree.ast";
 
     InputData buffer    = ReadFile(input);
 
     TokensArr tokensArr = ReadInputBuffer(&buffer);
 
-    ON_DEBUG(TOKEN_GRAPHIC_DUMP(&tokensArr));
+    ON_DEBUG(
+    TOKEN_GRAPHIC_DUMP(&tokensArr)
+    );
 
     Tree_t    tree      = {};
     tree.root           = GetTree(&tokensArr, &buffer);
 
-    ON_DEBUG(TREE_GRAPHIC_DUMP(&tree));
+    ON_DEBUG(
+    TREE_GRAPHIC_DUMP(&tree)
+    );
 
     PrintTree(&tree, output);
 

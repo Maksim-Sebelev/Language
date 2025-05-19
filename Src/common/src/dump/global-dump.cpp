@@ -138,6 +138,26 @@ const char* GetInitInStr(Initialisation init)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+// void FprintNumber(FILE* dotFile, Number number)
+// {
+//     assert(dotFile);
+    
+//     Type type = number.type;
+
+//     switch (type)
+//     {
+//         case Type::int_type:    fprintf(dotFile, "%d", *(int   *) (number.value)); break;
+//         case Type::double_type: fprintf(dotFile, "%f", *(double*) (number.value)); break;
+//         case Type::char_type:   fprintf(dotFile, "%c", *(char  *) (number.value)); break;
+//         case Type::void_type:
+//         case Type::undefined_type:
+//         default: assert(0 && "something went wrong");
+//     }
+//     return;
+// }
+
+// //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 void FprintNumber(FILE* dotFile, Number number)
 {
     assert(dotFile);

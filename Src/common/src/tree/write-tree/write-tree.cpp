@@ -13,7 +13,7 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _TAB
+// #define _TAB
 
 #ifdef _TAB
     #define ON_TAB(...) __VA_ARGS__
@@ -727,13 +727,23 @@ static void PrintNumber(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
     fprintf(outstream, "NUM: ");
 
     Type        num_type = node->data.num.type;
-    NumberValue num      = node->data.num.value;
+    NumberValue value    = node->data.num.value;
+
+    // switch (num_type)
+    // {
+    //     case Type::int_type:    fprintf(outstream, "%d", *(int   *) value); break;
+    //     case Type::char_type:   fprintf(outstream, "%c", *(char  *) value); break;
+    //     case Type::double_type: fprintf(outstream, "%f", *(double*) value); break;
+    //     case Type::void_type:
+    //     case Type::undefined_type:
+    //     default: EXIT(EXIT_FAILURE, "undef num type.");
+    // }
 
     switch (num_type)
     {
-        case Type::int_type:    fprintf(outstream, "%d", num.int_val   ); break;
-        case Type::char_type:   fprintf(outstream, "%c", num.char_val  ); break;
-        case Type::double_type: fprintf(outstream, "%f", num.double_val); break;
+        case Type::int_type:    fprintf(outstream, "%d", value.int_val);    break;
+        case Type::char_type:   fprintf(outstream, "%c", value.char_val);   break;
+        case Type::double_type: fprintf(outstream, "%f", value.double_val); break;
         case Type::void_type:
         case Type::undefined_type:
         default: EXIT(EXIT_FAILURE, "undef num type.");

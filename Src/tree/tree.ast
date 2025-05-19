@@ -3,41 +3,4 @@ name: ast txt format
 autor: Sebelev M. M.
 version: 1.0
 
-DEF_FUNC
-{
-	TYPE: int
-	NAME: foo
-
-	ARGS
-	{
-		TYPE: int
-		NAME: a
-
-		TYPE: int
-		NAME: b
-
-		TYPE: int
-		NAME: c
-	}
-
-	BODY
-	{
-		RETURN
-		{
-			CALL_FUNCTION
-			{
-				NAME: foo
-
-				CALL_FUNCTION_ARGS
-				{
-					NAME: a
-					NAME: b
-					NAME: c
-				}
-			}
-
-		}
-
-	}
-}
-
+DEF_FUNC { TYPE: int NAME: foo ARGS { TYPE: int NAME: a TYPE: int NAME: b TYPE: int NAME: c } BODY { RETURN { CALL_FUNCTION { NAME: foo CALL_FUNCTION_ARGS { NAME: a NAME: b NAME: c } } } } } 
