@@ -5,7 +5,8 @@ Src/front-end/.vscode/
 Src/midle-end/.vscode/
 Src/back-end/.vscode/
 
-Makefile
+# my bash scripts for comfortable work with projects 
+bash/
 
 # graphic dump of tree and tokens
 dot/
