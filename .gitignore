@@ -18,13 +18,12 @@ Log/
 programm/
 
 # object files
-Scr/bin/
+Src/bin/
 
 # executable file
-Scr/build/
+Src/build/
 
 
 # my local makefile settings
 Src/make/local.mk
-
 
