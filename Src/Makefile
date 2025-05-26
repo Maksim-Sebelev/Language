@@ -1,10 +1,8 @@
-MAKE_DIR := make
+MAKE_DIR   := make
 
 FRONT_MAKE := $(MAKE_DIR)/make-front.mk
 MIDLE_MAKE := $(MAKE_DIR)/make-midle.mk
 BACK_MAKE  := $(MAKE_DIR)/make-back.mk
-
-
 
 all:
 	make front
