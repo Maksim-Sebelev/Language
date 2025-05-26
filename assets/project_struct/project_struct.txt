@@ -1,0 +1,139 @@
+.
+├── assets
+│   ├── project_struct
+│   │   └── project_struct.txt
+│   └── readme_images
+├── examples
+│   └── Readme.md
+├── README.md
+└── Src
+    ├── back-end
+    │   ├── include
+    │   │   ├── assembler
+    │   │   │   └── assembler.hpp
+    │   │   ├── common
+    │   │   │   └── globalInclude.hpp
+    │   │   ├── console
+    │   │   │   └── consoleCmd.hpp
+    │   │   ├── processor
+    │   │   │   └── processor.hpp
+    │   │   └── stack
+    │   │       ├── hash.hpp
+    │   │       └── stack.hpp
+    │   ├── main.cpp
+    │   └── src
+    │       ├── assembler
+    │       │   └── assembler.cpp
+    │       ├── console
+    │       │   └── consoleCmd.cpp
+    │       ├── processor
+    │       │   └── processor.cpp
+    │       └── stack
+    │           ├── hash.cpp
+    │           └── stack.cpp
+    ├── common
+    │   ├── include
+    │   │   ├── dump
+    │   │   │   └── global-dump.hpp
+    │   │   ├── flags
+    │   │   │   └── flasg.hpp
+    │   │   ├── lib
+    │   │   │   └── lib.hpp
+    │   │   ├── log
+    │   │   │   └── log.hpp
+    │   │   ├── name-table
+    │   │   │   ├── hash.hpp
+    │   │   │   ├── name-table.hpp
+    │   │   │   ├── name-table-log
+    │   │   │   │   └── name-table-log.hpp
+    │   │   │   └── treeDump
+    │   │   │       └── treeDump.hpp
+    │   │   ├── read-file
+    │   │   │   └── read-file.hpp
+    │   │   └── tree
+    │   │       ├── node-and-token-types.hpp
+    │   │       ├── read-write-tree
+    │   │       │   ├── read-tree
+    │   │       │   │   └── read-tree.hpp
+    │   │       │   ├── read-write-tree-global
+    │   │       │   │   └── read-write-tree-global.hpp
+    │   │       │   └── write-tree
+    │   │       │       └── write-tree.hpp
+    │   │       ├── tree-dump
+    │   │       │   └── tree-dump.hpp
+    │   │       └── tree.hpp
+    │   └── src
+    │       ├── dump
+    │       │   └── global-dump.cpp
+    │       ├── flags
+    │       ├── lib
+    │       │   ├── dump
+    │       │   │   └── globalDump.cpp
+    │       │   └── lib.cpp
+    │       ├── log
+    │       │   ├── backgrounds
+    │       │   │   ├── anime_tyan_1.webp
+    │       │   │   ├── anime_tyan_2.webp
+    │       │   │   ├── anime_tyan_3.png
+    │       │   │   └── anime_tyan_main.jpg
+    │       │   └── log.cpp
+    │       ├── name-table
+    │       │   ├── hash.cpp
+    │       │   ├── name-table.cpp
+    │       │   └── name-table-log
+    │       │       └── name-table-log.cpp
+    │       ├── read-file
+    │       │   └── read-file.cpp
+    │       └── tree
+    │           ├── read-write-tree
+    │           │   ├── read-tree
+    │           │   │   └── read-tree.cpp
+    │           │   └── write-tree
+    │           │       └── write-tree.cpp
+    │           ├── tree.cpp
+    │           └── tree-dump
+    │               └── tree-dump.cpp
+    ├── front-end
+    │   ├── Grammatic.md
+    │   ├── include
+    │   │   └── read-tree
+    │   │       ├── file-read
+    │   │       │   └── file-read.hpp
+    │   │       ├── recursive-descent
+    │   │       │   └── recursive-descent.hpp
+    │   │       ├── syntax-err
+    │   │       │   └── syntax-err.hpp
+    │   │       └── tokens
+    │   │           ├── tokens-dump
+    │   │           │   └── tokens-dump.hpp
+    │   │           └── tokens.hpp
+    │   ├── main.cpp
+    │   └── src
+    │       └── read-tree
+    │           ├── file-read
+    │           │   └── file-read.cpp
+    │           ├── recursive-descent
+    │           │   └── recursive-descent.cpp
+    │           ├── syntax-err
+    │           │   └── syntax-err.cpp
+    │           └── tokens
+    │               ├── tokens.cpp
+    │               └── tokens-dump
+    │                   └── tokens-dump.cpp
+    ├── main.cpp
+    ├── make
+    │   ├── common.mk
+    │   ├── local.mk
+    │   ├── make-back.mk
+    │   ├── make-front.mk
+    │   └── make-midle.mk
+    ├── Makefile
+    ├── midle-end
+    │   ├── include
+    │   └── src
+    ├── programm
+    │   └── programm.asm
+    └── tree
+        └── tree.ast
+
+70 directories, 67 files
