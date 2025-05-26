@@ -1068,7 +1068,7 @@ static ProcessorErr ReadCodeFromFile(SPU* spu, FILE* codeFilePtr)
     }
 
     ON_DEBUG(
-    LOG_ALL_INT_ARRAY(Yellow, spu->code.code, spu->code.size, 1);
+    LOG_ALL_INT_ARRAY(Yellow, spu->code.code, spu->code.size);
     )
     return PROCESSOR_VERIF(spu, err);
 }

@@ -2,7 +2,8 @@
 #include <assert.h>
 #include "lib/lib.hpp"
 #include "tree/tree.hpp"
-#include "tree/write-tree/write-tree.hpp"
+#include "tree/read-write-tree/write-tree/write-tree.hpp"
+#include "tree/read-write-tree/read-write-tree-global/read-write-tree-global.hpp"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -13,7 +14,7 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// #define _TAB
+#define _TAB
 
 #ifdef _TAB
     #define ON_TAB(...) __VA_ARGS__
@@ -81,12 +82,14 @@ void PrintTree(const Tree_t* tree, const char* outstream)
 
     assert(tree);
     assert(outstream);
+
     FILE* out = fopen(outstream, "wb");
 
-    if (!out) EXIT(EXIT_FAILURE, "failed open '%s'", outstream);
+    if (!out)
+        EXIT(EXIT_FAILURE, "failed open '%s'", outstream);
 
     PrintSignature(out);
-    PrintDefFunc(out, tree->root ON_TAB(, 0));
+    PrintDefFunc  (out, tree->root ON_TAB(, 0));
 
     return;
 }
@@ -95,13 +98,19 @@ void PrintTree(const Tree_t* tree, const char* outstream)
 
 static void PrintSignature(FILE* outstream)
 {
+    WHERE_PRINT_TREE_IS();
+
     assert(outstream);
 
-    fprintf(outstream,  "file signature:\n"
-                        "name: ast txt format\n"
-                        "autor: Sebelev M. M.\n"
-                         "version: 1.0\n"
-                         "\n"
+    fprintf(outstream,  "%s\n"
+                        "%s\n"
+                        "%s\n"
+                        "%s\n"
+                        "\n",
+                        ast_file_signature,
+                        ast_file_signature_name,
+                        ast_file_signature_autor,
+                        ast_file_signature_version
                     );
 
 }
@@ -126,33 +135,32 @@ static void PrintDefFunc(FILE* outstream, const Node_t* node ON_TAB(, size_t nTa
     if (node->type != NodeArgType::initialisation || node->data.init != Initialisation::def_function)
         EXIT(EXIT_FAILURE, "here must be def func node");
 
-
-    const Node_t* type = node->left;
-    const Node_t* name = node->left->left;
-    const Node_t* args = node->left->left->left;
-    const Node_t* body = node->left->left->right;
+    const Node_t* type_node = node->left;
+    const Node_t* name_node = node->left->left;
+    const Node_t* args_node = node->left->left->left;
+    const Node_t* body_node = node->left->left->right;
 
     PrintBefore       (outstream              ON_TAB(, nTabBefore    ));
-    fprintf           (outstream, "DEF_FUNC"                          );
+    fprintf           (outstream, "%s",       def_func                );
     PrintAfter        (outstream                                      );
     PrintLeftBracket  (outstream              ON_TAB(, nTabBefore    ));
 
-    PrintType         (outstream, type        ON_TAB(, nTabBefore + 1));
-    PrintName         (outstream, name        ON_TAB(, nTabBefore + 1));
+    PrintType         (outstream, type_node   ON_TAB(, nTabBefore + 1));
+    PrintName         (outstream, name_node   ON_TAB(, nTabBefore + 1));
     ON_TAB(PrintSlashN(outstream                                     ));
 
     PrintBefore       (outstream              ON_TAB(, nTabBefore + 1));
-    fprintf           (outstream, "ARGS"                              );
+    fprintf           (outstream, "%s",       arguments               );
     PrintAfter        (outstream                                      );
     PrintLeftBracket  (outstream              ON_TAB(, nTabBefore + 1));
-    PrintDefFuncArg   (outstream, args        ON_TAB(, nTabBefore + 2));
+    PrintDefFuncArg   (outstream, args_node   ON_TAB(, nTabBefore + 2));
     PrintRightBracket (outstream              ON_TAB(, nTabBefore + 1));
     ON_TAB(PrintSlashN(outstream                                     ));
     PrintBefore       (outstream              ON_TAB(, nTabBefore + 1));
-    fprintf           (outstream, "BODY"                              );
+    fprintf           (outstream, "%s",       body                    );
     PrintAfter        (outstream                                      );
     PrintLeftBracket  (outstream              ON_TAB(, nTabBefore + 1));
-    PrintCondition     (outstream, body        ON_TAB(, nTabBefore + 2));
+    PrintCondition    (outstream, body_node   ON_TAB(, nTabBefore + 2));
     PrintRightBracket (outstream              ON_TAB(, nTabBefore + 1));
 
     PrintRightBracket (outstream              ON_TAB(, nTabBefore    ));
@@ -174,7 +182,6 @@ static void PrintDefFuncArg(FILE* outstream, const Node_t* node ON_TAB(, size_t 
 
     PrintType(outstream, node->left       ON_TAB(, nTabBefore));
     PrintName(outstream, node->left->left ON_TAB(, nTabBefore));
-    
     
     if (!node->right) return;
     
@@ -215,7 +222,6 @@ static void PrintCondition(FILE* outstream, const Node_t* node ON_TAB(, size_t n
     if (type == NodeArgType::condition && data.condition == Condition::if_t)
         return PrintConditionIf(outstream, node ON_TAB(, nTabBefore));
 
-
     else if (type == NodeArgType::condition && data.condition == Condition::else_if_t)
         return PrintConditionElseIf(outstream, node ON_TAB(, nTabBefore));
 
@@ -239,12 +245,12 @@ static void PrintConditionIf(FILE* outstream, const Node_t* node ON_TAB(, size_t
         EXIT(EXIT_FAILURE, "here must be connect node (left = if; right = else(if))'");
 
     PrintBefore      (outstream                 ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CONDITION: if"                        );
+    fprintf          (outstream, "%s",          condition_if            );
     PrintAfter       (outstream                                         );
     PrintLeftBracket (outstream                 ON_TAB(, nTabBefore    ));
     
     PrintBefore      (outstream                 ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "CONDITION"                            );
+    fprintf          (outstream, "%s",          condition               );
     PrintAfter       (outstream                                         );
     PrintLeftBracket (outstream                 ON_TAB(, nTabBefore + 1));
     PrintAssign      (outstream, node->left     ON_TAB(, nTabBefore + 2));
@@ -252,7 +258,7 @@ static void PrintConditionIf(FILE* outstream, const Node_t* node ON_TAB(, size_t
     ON_TAB(PrintSlashN(outstream                                       ));
 
     PrintBefore      (outstream                 ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "BODY"                                 );
+    fprintf          (outstream, "%s",          body                    );
     PrintAfter       (outstream                                         );
     PrintLeftBracket (outstream                 ON_TAB(, nTabBefore + 1));
     PrintCondition   (outstream, node->right    ON_TAB(, nTabBefore + 2));
@@ -284,12 +290,12 @@ static void PrintConditionElseIf(FILE* outstream, const Node_t* node ON_TAB(, si
     }
 
     PrintBefore      (outstream                   ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CONDITION: else_if"                     );
+    fprintf          (outstream, "%s",            condition_else_if       );
     PrintAfter       (outstream                                           );
     PrintLeftBracket (outstream                   ON_TAB(, nTabBefore    ));
     
     PrintBefore      (outstream                   ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "CONDITION"                              );
+    fprintf          (outstream, "%s",            condition               );
     PrintAfter       (outstream                                           );
     PrintLeftBracket (outstream                   ON_TAB(, nTabBefore + 1));
     PrintAssign      (outstream, node->left       ON_TAB(, nTabBefore + 2));
@@ -297,7 +303,7 @@ static void PrintConditionElseIf(FILE* outstream, const Node_t* node ON_TAB(, si
     ON_TAB(PrintSlashN(outstream                                         ));
 
     PrintBefore      (outstream                   ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "BODY"                                   );
+    fprintf          (outstream, "%s",            body                    );
     PrintAfter       (outstream                                           );
     PrintLeftBracket (outstream                   ON_TAB(, nTabBefore + 1));
     PrintCondition   (outstream, node->right      ON_TAB(, nTabBefore + 2));
@@ -325,12 +331,12 @@ static void PrintConditionElse(FILE* outstream, const Node_t* node ON_TAB(, size
         EXIT(EXIT_FAILURE, "here must be condition 'else'");
 
     PrintBefore      (outstream               ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CONDITION: else"                    );
+    fprintf          (outstream, "%s",        condition_else          );
     PrintAfter       (outstream                                       );
     PrintLeftBracket (outstream               ON_TAB(, nTabBefore    ));
     
     PrintBefore      (outstream               ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "BODY"                               );
+    fprintf          (outstream, "%s",        body                    );
     PrintAfter       (outstream                                       );
     PrintLeftBracket (outstream               ON_TAB(, nTabBefore + 1));
     PrintCondition    (outstream, node->right ON_TAB(, nTabBefore + 2));
@@ -394,11 +400,11 @@ static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t 
         EXIT(EXIT_FAILURE, "here must be cycle 'while'");
 
     PrintBefore      (outstream             ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CYCLE: WHILE"                     );
+    fprintf          (outstream, "%s",      cycle_while             );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore    ));
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "CYCLE_CONDITION"                  );
+    fprintf          (outstream, "%s",      cycle_condition         );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintAssign      (outstream, node->left ON_TAB(, nTabBefore + 2));
@@ -407,7 +413,7 @@ static void PrintCycleWhile(FILE* outstream, const Node_t* node ON_TAB(, size_t 
     ON_TAB(PrintSlashN(outstream                                   ));
 
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "BODY"                             );
+    fprintf          (outstream, "%s",      body                     );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
@@ -443,11 +449,11 @@ static void PrintCycleFor(FILE* outstream, const Node_t* node ON_TAB(, size_t nT
         EXIT(EXIT_FAILURE, "here must be cycle 'for'");
 
     PrintBefore      (outstream             ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CYCLE: FOR"                       );
+    fprintf          (outstream, "%s",      cycle_for               );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore    ));
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "CYCLE_CONDITION"                  );
+    fprintf          (outstream, "%s",      cycle_condition         );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintDefVariable (outstream, node->left ON_TAB(, nTabBefore + 2));
@@ -456,7 +462,7 @@ static void PrintCycleFor(FILE* outstream, const Node_t* node ON_TAB(, size_t nT
     ON_TAB(PrintSlashN(outstream                                   ));
 
     PrintBefore      (outstream             ON_TAB(, nTabBefore + 1));
-    fprintf          (outstream, "BODY"                             );
+    fprintf          (outstream, "%s",      body                    );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore + 1));
     PrintCondition   (outstream, node->right ON_TAB(, nTabBefore + 2));
@@ -496,7 +502,7 @@ static void PrintReturn(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
         return PrintDefVariable(outstream, node ON_TAB(, nTabBefore));
 
     PrintBefore      (outstream             ON_TAB(, nTabBefore    ));
-    fprintf          (outstream,            "RETURN"                );
+    fprintf          (outstream, "%s",      ret                     );
     PrintAfter       (outstream                                     );
     PrintLeftBracket (outstream             ON_TAB(, nTabBefore    ));
     PrintOperation   (outstream, node->left ON_TAB(, nTabBefore + 1));
@@ -531,19 +537,19 @@ static void PrintDefVariable(FILE* outstream, const Node_t* node ON_TAB(, size_t
 
 
     PrintBefore       (outstream                                ON_TAB(, nTabBefore    ));
-    fprintf           (outstream, "DEF_VAR"                                             );
+    fprintf           (outstream, "%s",                         define_variable         );
     PrintAfter        (outstream                                                        );
     PrintLeftBracket  (outstream                                ON_TAB(, nTabBefore    ));
     PrintType         (outstream, node->left                    ON_TAB(, nTabBefore + 1));
     PrintName         (outstream, node->left->left              ON_TAB(, nTabBefore + 1));
     ON_TAB(PrintSlashN(outstream                                                       ));
 
-    PrintBefore(outstream ON_TAB(, nTabBefore + 1));
-    fprintf(outstream, "ASSIGN");
-    PrintAfter(outstream);
-    PrintLeftBracket(outstream ON_TAB(, nTabBefore + 1));
-    PrintOperation    (outstream, node->right  ON_TAB(, nTabBefore + 2));
-    PrintRightBracket(outstream ON_TAB(, nTabBefore + 1));
+    PrintBefore       (outstream                                ON_TAB(, nTabBefore + 1));
+    fprintf           (outstream, "%s",                         assign                   );
+    PrintAfter        (outstream                                                        );
+    PrintLeftBracket  (outstream                                ON_TAB(, nTabBefore + 1));
+    PrintOperation    (outstream, node->right                   ON_TAB(, nTabBefore + 2));
+    PrintRightBracket (outstream                                ON_TAB(, nTabBefore + 1));
     
     PrintRightBracket (outstream                                ON_TAB(, nTabBefore    ));
     ON_TAB(PrintSlashN(outstream                                                       ));
@@ -575,12 +581,14 @@ static void PrintAssign(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
 
 
     PrintBefore      (outstream                         ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "ASGN"                                         );
+    fprintf          (outstream, "%s",                  assign                  );
     PrintAfter       (outstream                                                 );
     PrintLeftBracket (outstream                         ON_TAB(, nTabBefore    ));
     PrintName        (outstream, node->left             ON_TAB(, nTabBefore + 1));
     PrintOperation   (outstream, node->right            ON_TAB(, nTabBefore + 1));
     PrintRightBracket(outstream                         ON_TAB(, nTabBefore    ));
+
+    ON_TAB(PrintSlashN(outstream                                               ));
 
     return;
 }
@@ -609,33 +617,33 @@ static void PrintOperation(FILE* outstream, const Node_t* node ON_TAB(, size_t n
 
     PrintBefore(outstream ON_TAB(, nTabBefore));
 
-    fprintf(outstream, "OP: ");
+    fprintf(outstream, "%s ", operation);
 
     Operation operation = node->data.oper;
 
     switch (operation)
     {
-        case Operation::assign:            fprintf(outstream, "=" ); break;
-        case Operation::plus:              fprintf(outstream, "+" ); break;
-        case Operation::minus:             fprintf(outstream, "-" ); break;
-        case Operation::mul:               fprintf(outstream, "*" ); break;
-        case Operation::dive:              fprintf(outstream, "/" ); break;
-        case Operation::power:             fprintf(outstream, "^" ); break;
-        case Operation::equal:             fprintf(outstream, "=="); break;
-        case Operation::not_equal:         fprintf(outstream, ">="); break;
-        case Operation::greater:           fprintf(outstream, ">" ); break;
-        case Operation::greater_or_equal:  fprintf(outstream, ">="); break;
-        case Operation::less:              fprintf(outstream, "<" ); break;
-        case Operation::less_or_equal:     fprintf(outstream, "<="); break;
-        case Operation::bool_and:          fprintf(outstream, "&&"); break;
-        case Operation::bool_or:           fprintf(outstream, "||"); break;
-        case Operation::bool_not:          fprintf(outstream, "!" ); break;
-        case Operation::plus_plus:         fprintf(outstream, "++"); break; 
-        case Operation::minus_minus:       fprintf(outstream, "--"); break;
-        case Operation::plus_equal:        fprintf(outstream, "+="); break;
-        case Operation::minus_equal:       fprintf(outstream, "-="); break;
-        case Operation::mul_equal:         fprintf(outstream, "*="); break;
-        case Operation::div_equal:         fprintf(outstream, "/="); break;
+        case Operation::assign:            fprintf(outstream, "%s", assign_operation          ); break;
+        case Operation::plus:              fprintf(outstream, "%s", plus_operation            ); break;
+        case Operation::minus:             fprintf(outstream, "%s", minus_operation           ); break;
+        case Operation::mul:               fprintf(outstream, "%s", mul_operation             ); break;
+        case Operation::dive:              fprintf(outstream, "%s", div_operation             ); break;
+        case Operation::power:             fprintf(outstream, "%s", power_operation           ); break;
+        case Operation::equal:             fprintf(outstream, "%s", equal_operation           ); break;
+        case Operation::not_equal:         fprintf(outstream, "%s", not_equal_operation       ); break;
+        case Operation::greater:           fprintf(outstream, "%s", greater_operation         ); break;
+        case Operation::greater_or_equal:  fprintf(outstream, "%s", greater_or_equal_operation); break;
+        case Operation::less:              fprintf(outstream, "%s", less_operation            ); break;
+        case Operation::less_or_equal:     fprintf(outstream, "%s", less_or_equal_operation   ); break;
+        case Operation::bool_and:          fprintf(outstream, "%s", bool_and_operation        ); break;
+        case Operation::bool_or:           fprintf(outstream, "%s", bool_or_operation         ); break;
+        case Operation::bool_not:          fprintf(outstream, "%s", bool_not_operation        ); break;
+        case Operation::plus_plus:         fprintf(outstream, "%s", plus_plus_operation       ); break; 
+        case Operation::minus_minus:       fprintf(outstream, "%s", minus_minus_operation     ); break;
+        case Operation::plus_equal:        fprintf(outstream, "%s", plus_equal_operation      ); break;
+        case Operation::minus_equal:       fprintf(outstream, "%s", minus_minus_operation     ); break;
+        case Operation::mul_equal:         fprintf(outstream, "%s", mul_equal_operation       ); break;
+        case Operation::div_equal:         fprintf(outstream, "%s", div_equal_operation       ); break;
         case Operation::undefined_operation:
         default:  EXIT(EXIT_FAILURE, "undefined operation type.");
     }
@@ -673,7 +681,7 @@ static void PrintCallFunction(FILE* outstream, const Node_t* node ON_TAB(, size_
         return PrintNumber(outstream, node ON_TAB(, nTabBefore));
 
     PrintBefore           (outstream                       ON_TAB(, nTabBefore    ));
-    fprintf               (outstream, "CALL_FUNCTION"                              );
+    fprintf               (outstream, "%s",                call_function           );
     PrintAfter            (outstream                                               );
     PrintLeftBracket      (outstream                       ON_TAB(, nTabBefore    ));
 
@@ -700,7 +708,7 @@ static void PrintCallFunctionArgs(FILE* outstream, const Node_t* node ON_TAB(, s
     if (!node) return;
 
     PrintBefore      (outstream                       ON_TAB(, nTabBefore    ));
-    fprintf          (outstream, "CALL_FUNCTION_ARGS"                         );
+    fprintf          (outstream, "%s",                call_function_arguments );
     PrintAfter       (outstream                                               );
 
     PrintLeftBracket (outstream                       ON_TAB(, nTabBefore    ));
@@ -724,7 +732,7 @@ static void PrintNumber(FILE* outstream, const Node_t* node ON_TAB(, size_t nTab
 
     PrintBefore(outstream ON_TAB(, nTabBefore));
 
-    fprintf(outstream, "NUM: ");
+    fprintf(outstream, "%s ", number);
 
     Type        num_type = node->data.num.type;
     NumberValue value    = node->data.num.value;
@@ -768,13 +776,13 @@ static void PrintName(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBe
     if (node->type != NodeArgType::name)
         EXIT(EXIT_FAILURE, "here must be node with type 'name'");
 
-    fprintf(outstream, "NAME: ");
+    fprintf(outstream, "%s ", name);
 
-    const char* name    = node->data.name.name.name;
-    size_t      nameLen = node->data.name.name.len;
+    const char* node_name    = node->data.name.name.name;
+    size_t      node_name_len = node->data.name.name.len;
 
-    for (size_t i = 0; i < nameLen; i++)
-        fprintf(outstream, "%c", name[i]);
+    for (size_t i = 0; i < node_name_len; i++)
+        fprintf(outstream, "%c", node_name[i]);
 
     PrintAfter(outstream);
 
@@ -795,15 +803,15 @@ static void PrintType(FILE* outstream, const Node_t* node ON_TAB(, size_t nTabBe
     if (node->type != NodeArgType::type)
         EXIT(EXIT_FAILURE, "here node arg type must be 'type'");
 
-    fprintf(outstream, "TYPE: ");
+    fprintf(outstream, "%s ", type);
 
-    Type type = node->data.type;
-    switch (type)
+    Type node_type = node->data.type;
+    switch (node_type)
     {
-        case Type::int_type:       fprintf(outstream, "int"   ); break;
-        case Type::char_type:      fprintf(outstream, "char"  ); break;
-        case Type::double_type:    fprintf(outstream, "double"); break;
-        case Type::void_type:      fprintf(outstream, "void"  ); break;
+        case Type::int_type:       fprintf(outstream, "%s", int_type   ); break;
+        case Type::char_type:      fprintf(outstream, "%s", char_type  ); break;
+        case Type::double_type:    fprintf(outstream, "%s", double_type); break;
+        case Type::void_type:      fprintf(outstream, "%s", void_type  ); break;
         case Type::undefined_type:
         default: EXIT(EXIT_FAILURE, "undef type of node arg type");
     }

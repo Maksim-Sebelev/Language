@@ -1,0 +1,28 @@
+# my vs code settings
+.vscode/
+Src/.vscode/
+Src/front-end/.vscode/
+Src/midle-end/.vscode/
+Src/back-end/.vscode/
+
+Makefile
+
+# graphic dump of tree and tokens
+dot/
+
+# log file
+Log/
+
+# my programms (on my language) (examples in ~/exaples, not in ~/programm)
+programm/
+
+
+
+Scr/common/bin/
+Scr/common/build/
+
+
+Src/make/local.mk
+
+
+

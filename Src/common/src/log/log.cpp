@@ -15,7 +15,7 @@ FILE*       LogFile = nullptr;
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ON_IMG(
-const char* background_image = "../Src/common/src/log/backgrounds/anime_tyan_2.webp";
+const char* background_image = "../Src/common/src/log/backgrounds/anime_tyan_1.webp";
 )
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ static void fprintfKeyFramesGradient        ();
 static void fprintfKeyFramesGradientEnd     ();
 )
 
-static void makeBodyBefore    (                         size_t nTabBefore);
+static void makeBodyBefore           (                        size_t nTabBefore);
 
 ON_IMG(
 static void makeBackGroundImage      (const char* wayToImage, size_t nTabBefore);

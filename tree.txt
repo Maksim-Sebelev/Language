@@ -1,54 +1,13 @@
 .
 ├── assets
-├── dot
-│   ├── node
-│   │   ├── dot
-│   │   │   ├── node10.dot
-│   │   │   ├── node11.dot
-│   │   │   ├── node12.dot
-│   │   │   ├── node13.dot
-│   │   │   ├── node14.dot
-│   │   │   ├── node15.dot
-│   │   │   ├── node1.dot
-│   │   │   ├── node2.dot
-│   │   │   ├── node3.dot
-│   │   │   ├── node4.dot
-│   │   │   ├── node5.dot
-│   │   │   ├── node6.dot
-│   │   │   ├── node7.dot
-│   │   │   ├── node8.dot
-│   │   │   └── node9.dot
-│   │   └── img
-│   │       ├── node10.png
-│   │       ├── node11.png
-│   │       ├── node12.png
-│   │       ├── node13.png
-│   │       ├── node14.png
-│   │       ├── node15.png
-│   │       ├── node1.png
-│   │       ├── node2.png
-│   │       ├── node3.png
-│   │       ├── node4.png
-│   │       ├── node5.png
-│   │       ├── node6.png
-│   │       ├── node7.png
-│   │       ├── node8.png
-│   │       └── node9.png
-│   └── tree
-│       ├── dot
-│       │   └── tree1.dot
-│       └── img
-│           └── tree1.png
+├── bash
+│   └── tree.bash
 ├── examples
 │   └── Readme.md
-├── Log
-│   └── log.html
 ├── Makefile
 ├── README.md
 ├── Src
 │   ├── back-end
-│   │   ├── build
-│   │   │   └── backend
 │   │   ├── include
 │   │   │   ├── assembler
 │   │   │   │   └── assembler.hpp
@@ -56,215 +15,17 @@
 │   │   │   │   └── globalInclude.hpp
 │   │   │   ├── console
 │   │   │   │   └── consoleCmd.hpp
-│   │   │   ├── fileread
-│   │   │   │   └── fileread.hpp
-│   │   │   ├── lib
-│   │   │   │   ├── colorPrint.hpp
-│   │   │   │   └── lib.hpp
-│   │   │   ├── log
-│   │   │   │   ├── backgrounds
-│   │   │   │   │   └── 735.jpg
-│   │   │   │   └── log.hpp
 │   │   │   ├── processor
 │   │   │   │   └── processor.hpp
 │   │   │   └── stack
 │   │   │       ├── hash.hpp
 │   │   │       └── stack.hpp
-│   │   ├── Log
-│   │   │   └── log.html
-│   │   └── src
-│   │       ├── assembler
-│   │       │   └── assembler.cpp
-│   │       ├── console
-│   │       │   └── consoleCmd.cpp
-│   │       ├── fileread
-│   │       │   └── fileread.cpp
-│   │       ├── lib
-│   │       │   └── lib.cpp
-│   │       ├── log
-│   │       │   └── log.cpp
-│   │       ├── processor
-│   │       │   └── processor.cpp
-│   │       └── stack
-│   │           ├── hash.cpp
-│   │           └── stack.cpp
-│   ├── bin
-│   │   ├── common
-│   │   │   └── src
-│   │   │       ├── dump
-│   │   │       │   └── global-dump.d
-│   │   │       ├── lib
-│   │   │       │   └── lib.d
-│   │   │       ├── log
-│   │   │       │   └── log.d
-│   │   │       └── tree
-│   │   │           ├── tree.d
-│   │   │           ├── tree-dump
-│   │   │           │   └── tree-dump.d
-│   │   │           └── write-tree
-│   │   │               └── write-tree.d
-│   │   └── front-end
-│   │       ├── main.d
-│   │       ├── main.o
-│   │       └── src
-│   │           ├── nameTable
-│   │           │   └── nameTableLog
-│   │           │       └── nameTableLog.d
-│   │           └── read-tree
-│   │               ├── file-read
-│   │               │   └── file-read.d
-│   │               ├── recursive-descent
-│   │               │   └── recursive-descent.d
-│   │               ├── syntax-err
-│   │               │   └── syntax-err.d
-│   │               └── tokens
-│   │                   ├── tokens.d
-│   │                   └── tokens-dump
-│   │                       └── tokens-dump.d
-│   ├── build
-│   ├── common
-│   │   ├── include
-│   │   │   ├── dump
-│   │   │   │   └── global-dump.hpp
-│   │   │   ├── flags
-│   │   │   │   └── flasg.hpp
-│   │   │   ├── lib
-│   │   │   │   └── lib.hpp
-│   │   │   ├── log
-│   │   │   │   ├── backgrounds
-│   │   │   │   │   └── anime_tyan.webp
-│   │   │   │   └── log.hpp
-│   │   │   └── tree
-│   │   │       ├── file-read
-│   │   │       │   └── file-read.hpp
-│   │   │       ├── node-and-token-types.hpp
-│   │   │       ├── tree-dump
-│   │   │       │   └── tree-dump.hpp
-│   │   │       ├── tree.hpp
-│   │   │       └── write-tree
-│   │   │           └── write-tree.hpp
-│   │   └── src
-│   │       ├── dump
-│   │       │   └── global-dump.cpp
-│   │       ├── flags
-│   │       ├── lib
-│   │       │   ├── dump
-│   │       │   │   └── globalDump.cpp
-│   │       │   └── lib.cpp
-│   │       ├── log
-│   │       │   └── log.cpp
-│   │       └── tree
-│   │           ├── tokens
-│   │           │   ├── tokens.cpp
-│   │           │   └── tokens-dump
-│   │           │       └── tokens-dump.cpp
-│   │           ├── tree.cpp
-│   │           ├── tree-dump
-│   │           │   └── tree-dump.cpp
-│   │           └── write-tree
-│   │               └── write-tree.cpp
-│   ├── front-end
-│   │   ├── front-out
-│   │   │   └── tree.ast
-│   │   ├── Grammatic.md
-│   │   ├── include
-│   │   │   ├── nameTable
-│   │   │   │   ├── hash.hpp
-│   │   │   │   ├── nameTableDump
-│   │   │   │   ├── nametable.hpp
-│   │   │   │   ├── nameTableLog
-│   │   │   │   │   └── nameTableLog.hpp
-│   │   │   │   └── treeDump
-│   │   │   │       └── treeDump.hpp
-│   │   │   └── read-tree
-│   │   │       ├── file-read
-│   │   │       │   └── file-read.hpp
-│   │   │       ├── recursive-descent
-│   │   │       │   └── recursive-descent.hpp
-│   │   │       ├── syntax-err
-│   │   │       │   └── syntax-err.hpp
-│   │   │       └── tokens
-│   │   │           ├── tokens-dump
-│   │   │           │   └── tokens-dump.hpp
-│   │   │           └── tokens.hpp
 │   │   ├── main.cpp
 │   │   └── src
-│   │       ├── nameTable
-│   │       │   ├── hash.cpp
-│   │       │   ├── nametable.cpp
-│   │       │   ├── nameTableDump
-│   │       │   │   └── nameTableDump.cpp
-│   │       │   └── nameTableLog
-│   │       │       └── nameTableLog.cpp
-│   │       └── read-tree
-│   │           ├── file-read
-│   │           │   └── file-read.cpp
-│   │           ├── recursive-descent
-│   │           │   └── recursive-descent.cpp
-│   │           ├── syntax-err
-│   │           │   └── syntax-err.cpp
-│   │           └── tokens
-│   │               └── tokens.cpp
-│   ├── Log
-│   │   └── log.html
-│   ├── main.cpp
-│   ├── make
-│   │   ├── common.mk
-│   │   ├── local.mk
-│   │   ├── make-back.mk
-│   │   ├── make-front.mk
-│   │   └── make-midle.mk
-│   ├── Makefile
-│   ├── midle-end
-│   │   ├── include
-│   │   └── src
-│   ├── programm
-│   │   └── programm.cpp
-│   └── tree
-│       └── tree.ast
-└── tree.txt
-
-104 directories, 121 files
-.
-├── assets
-├── examples
-│   └── Readme.md
-├── Makefile
-├── README.md
-├── Src
-│   ├── back-end
-│   │   ├── include
-│   │   │   ├── assembler
-│   │   │   │   └── assembler.hpp
-│   │   │   ├── common
-│   │   │   │   └── globalInclude.hpp
-│   │   │   ├── console
-│   │   │   │   └── consoleCmd.hpp
-│   │   │   ├── fileread
-│   │   │   │   └── fileread.hpp
-│   │   │   ├── lib
-│   │   │   │   ├── colorPrint.hpp
-│   │   │   │   └── lib.hpp
-│   │   │   ├── log
-│   │   │   │   ├── backgrounds
-│   │   │   │   │   └── 735.jpg
-│   │   │   │   └── log.hpp
-│   │   │   ├── processor
-│   │   │   │   └── processor.hpp
-│   │   │   └── stack
-│   │   │       ├── hash.hpp
-│   │   │       └── stack.hpp
-│   │   └── src
 │   │       ├── assembler
 │   │       │   └── assembler.cpp
 │   │       ├── console
 │   │       │   └── consoleCmd.cpp
-│   │       ├── fileread
-│   │       │   └── fileread.cpp
-│   │       ├── lib
-│   │       │   └── lib.cpp
-│   │       ├── log
-│   │       │   └── log.cpp
 │   │       ├── processor
 │   │       │   └── processor.cpp
 │   │       └── stack
@@ -279,18 +40,28 @@
 │   │   │   ├── lib
 │   │   │   │   └── lib.hpp
 │   │   │   ├── log
-│   │   │   │   ├── backgrounds
-│   │   │   │   │   └── anime_tyan.webp
 │   │   │   │   └── log.hpp
+│   │   │   ├── name-table
+│   │   │   │   ├── hash.hpp
+│   │   │   │   ├── name-table.hpp
+│   │   │   │   ├── name-table-log
+│   │   │   │   │   └── name-table-log.hpp
+│   │   │   │   └── treeDump
+│   │   │   │       └── treeDump.hpp
+│   │   │   ├── read-file
+│   │   │   │   └── read-file.hpp
 │   │   │   └── tree
-│   │   │       ├── file-read
-│   │   │       │   └── file-read.hpp
 │   │   │       ├── node-and-token-types.hpp
+│   │   │       ├── read-write-tree
+│   │   │       │   ├── read-tree
+│   │   │       │   │   └── read-tree.hpp
+│   │   │       │   ├── read-write-tree-global
+│   │   │       │   │   └── read-write-tree-global.hpp
+│   │   │       │   └── write-tree
+│   │   │       │       └── write-tree.hpp
 │   │   │       ├── tree-dump
 │   │   │       │   └── tree-dump.hpp
-│   │   │       ├── tree.hpp
-│   │   │       └── write-tree
-│   │   │           └── write-tree.hpp
+│   │   │       └── tree.hpp
 │   │   └── src
 │   │       ├── dump
 │   │       │   └── global-dump.cpp
@@ -300,30 +71,31 @@
 │   │       │   │   └── globalDump.cpp
 │   │       │   └── lib.cpp
 │   │       ├── log
+│   │       │   ├── backgrounds
+│   │       │   │   ├── anime_tyan_1.webp
+│   │       │   │   ├── anime_tyan_2.webp
+│   │       │   │   ├── anime_tyan_3.png
+│   │       │   │   └── anime_tyan_main.jpg
 │   │       │   └── log.cpp
+│   │       ├── name-table
+│   │       │   ├── hash.cpp
+│   │       │   ├── name-table.cpp
+│   │       │   └── name-table-log
+│   │       │       └── name-table-log.cpp
+│   │       ├── read-file
+│   │       │   └── read-file.cpp
 │   │       └── tree
-│   │           ├── tokens
-│   │           │   ├── tokens.cpp
-│   │           │   └── tokens-dump
-│   │           │       └── tokens-dump.cpp
+│   │           ├── read-write-tree
+│   │           │   ├── read-tree
+│   │           │   │   └── read-tree.cpp
+│   │           │   └── write-tree
+│   │           │       └── write-tree.cpp
 │   │           ├── tree.cpp
-│   │           ├── tree-dump
-│   │           │   └── tree-dump.cpp
-│   │           └── write-tree
-│   │               └── write-tree.cpp
+│   │           └── tree-dump
+│   │               └── tree-dump.cpp
 │   ├── front-end
-│   │   ├── front-out
-│   │   │   └── tree.ast
 │   │   ├── Grammatic.md
 │   │   ├── include
-│   │   │   ├── nameTable
-│   │   │   │   ├── hash.hpp
-│   │   │   │   ├── nameTableDump
-│   │   │   │   ├── nametable.hpp
-│   │   │   │   ├── nameTableLog
-│   │   │   │   │   └── nameTableLog.hpp
-│   │   │   │   └── treeDump
-│   │   │   │       └── treeDump.hpp
 │   │   │   └── read-tree
 │   │   │       ├── file-read
 │   │   │       │   └── file-read.hpp
@@ -337,13 +109,6 @@
 │   │   │           └── tokens.hpp
 │   │   ├── main.cpp
 │   │   └── src
-│   │       ├── nameTable
-│   │       │   ├── hash.cpp
-│   │       │   ├── nametable.cpp
-│   │       │   ├── nameTableDump
-│   │       │   │   └── nameTableDump.cpp
-│   │       │   └── nameTableLog
-│   │       │       └── nameTableLog.cpp
 │   │       └── read-tree
 │   │           ├── file-read
 │   │           │   └── file-read.cpp
@@ -352,7 +117,9 @@
 │   │           ├── syntax-err
 │   │           │   └── syntax-err.cpp
 │   │           └── tokens
-│   │               └── tokens.cpp
+│   │               ├── tokens.cpp
+│   │               └── tokens-dump
+│   │                   └── tokens-dump.cpp
 │   ├── main.cpp
 │   ├── make
 │   │   ├── common.mk
@@ -365,9 +132,9 @@
 │   │   ├── include
 │   │   └── src
 │   ├── programm
-│   │   └── programm.cpp
+│   │   └── programm.asm
 │   └── tree
 │       └── tree.ast
 └── tree.txt
 
-73 directories, 71 files
+69 directories, 69 files

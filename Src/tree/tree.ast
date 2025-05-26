@@ -1,6 +1,96 @@
-file signature:
-name: ast txt format
-autor: Sebelev M. M.
-version: 1.0
+file_signature:
+name=ast_txt_format
+autor=Sebelev_M._M.
+version=1.0
 
-DEF_FUNC { TYPE: int NAME: foo ARGS { TYPE: int NAME: a TYPE: int NAME: b TYPE: int NAME: c } BODY { RETURN { CALL_FUNCTION { NAME: foo CALL_FUNCTION_ARGS { NAME: a NAME: b NAME: c } } } } } 
+DEF_FUNC
+{
+	TYPE: int
+	NAME: foo
+
+	ARGS
+	{
+		TYPE: int
+		NAME: a
+
+		TYPE: int
+		NAME: b
+
+		TYPE: int
+		NAME: c
+	}
+
+	BODY
+	{
+		RET
+		{
+			CALL_FUNC
+			{
+				NAME: foo
+
+				CALL_FUNC_ARGS
+				{
+					NAME: a
+					NAME: b
+					NAME: c
+				}
+			}
+
+		}
+
+	}
+}
+
+DEF_FUNC
+{
+	TYPE: void
+	NAME: main
+
+	ARGS
+	{
+		TYPE: int
+		NAME: argc
+
+		TYPE: char
+		NAME: argv
+	}
+
+	BODY
+	{
+		DEF_VAR
+		{
+			TYPE: int
+			NAME: a
+
+			ASGN
+			{
+				OP +
+				{
+					NAME: argc
+					NUM: 1
+				}
+			}
+		}
+
+		ASGN
+		{
+			NAME: a
+			OP +
+			{
+				NAME: a
+				NUM: 3
+			}
+		}
+
+		RET
+		{
+			OP +
+			{
+				NAME: a
+				NAME: argv
+			}
+		}
+
+	}
+}
+

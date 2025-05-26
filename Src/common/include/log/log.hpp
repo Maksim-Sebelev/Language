@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define _IMG_BACKGROUND  // if you want to see your image on background
+// #define _IMG_BACKGROUND  // if you want to see your image on background
 
 #ifdef _IMG_BACKGROUND
     #define ON_IMG(...) __VA_ARGS__

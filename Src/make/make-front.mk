@@ -11,7 +11,7 @@ BUILD_TYPE ?= debug
 
 
 ifeq ($(BUILD_TYPE), release)
-	CFLAGS += -D _NDEBUG -O3 -ffast-math -flto
+	CFLAGS += -DNDEBUG -O3 -ffast-math -flto -g0 -fvisibility=hidden -march=native -s
 endif 
 
 ifeq ($(BUILD_TYPE), debug)
@@ -53,7 +53,7 @@ CSRC =  $(FRONT_DIR)/main.cpp 					  			   			    \
 		$(COMMON_DIR)/src/tree/tree.cpp							            \
 		$(COMMON_DIR)/src/name-table/hash.cpp      				  	        \
 		$(COMMON_DIR)/src/name-table/name-table.cpp    				        \
-		$(COMMON_DIR)/src/tree/write-tree/write-tree.cpp			        \
+		$(COMMON_DIR)/src/tree/read-write-tree/write-tree/write-tree.cpp    \
 
 ifeq ($(BUILD_TYPE), debug)
 

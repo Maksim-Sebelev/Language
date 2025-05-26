@@ -7,7 +7,9 @@ BACK_MAKE  := $(MAKE_DIR)/make-back.mk
 
 
 all:
-	make front && midle && back
+	make front
+	make midle
+	make back
 
 
 front:
@@ -22,10 +24,8 @@ back:
 run:
 	make -f $(FRONT_MAKE) run
 	make -f $(MIDLE_MAKE) run
-	make -f $(BACK_MAKE) run
-
+	make -f $(BACK_MAKE)  run
 
 clean:
-	make -f $(FRONT_MAKE) clean
-	make -f $(MIDLE_MAKE) clean
-	make -f $(BACK_MAKE)  clean
+	rm -rf bin/
+	rm -rf build/

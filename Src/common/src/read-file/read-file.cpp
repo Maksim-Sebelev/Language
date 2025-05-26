@@ -43,10 +43,7 @@ WordArray ReadBufferFromFile(const char* file)
 {
     assert(file);
 
-    COLOR_PRINT(CYAN, "tree.ast = '%s'\nptr = %p\n\n", file, file);
-
     FILE* filePtr = fopen(file, "rb");
-
 
     if (!filePtr)
         EXIT(EXIT_FAILURE, "failed open '%s'", file);

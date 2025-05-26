@@ -13,7 +13,7 @@ BUILD_TYPE ?= debug
 
 
 ifeq ($(BUILD_TYPE), release)
-	CFLAGS += -D _NDEBUG -O3
+	CFLAGS += -DNDEBUG -O3 -ffast-math -flto -g0 -fvisibility=hidden -march=native -s
 endif
 
 ifeq ($(BUILD_TYPE), debug)
@@ -47,15 +47,15 @@ EXECUTABLE     ?= backend
 
 override CFLAGS += $(INCLUDE)
 
-CSRC =  $(BACK_DIR)/main.cpp                      \
-		$(BACK_DIR)/src/stack/hash.cpp             \
-		$(BACK_DIR)/src/stack/stack.cpp             \
-		$(BACK_DIR)/src/console/consoleCmd.cpp       \
-		$(BACK_DIR)/src/assembler/assembler.cpp       \
-		$(BACK_DIR)/src/processor/processor.cpp        \
-		$(COMMON_DIR)/src/lib/lib.cpp                   \
-		$(COMMON_DIR)/src/read-file/read-file.cpp        \
-		$(COMMON_DIR)/src/tree/read-tree/read-tree.cpp    \
+CSRC =  $(BACK_DIR)/main.cpp                                      \
+		$(BACK_DIR)/src/stack/hash.cpp                             \
+		$(BACK_DIR)/src/stack/stack.cpp                             \
+		$(BACK_DIR)/src/console/consoleCmd.cpp                       \
+		$(BACK_DIR)/src/assembler/assembler.cpp                       \
+		$(BACK_DIR)/src/processor/processor.cpp                        \
+		$(COMMON_DIR)/src/lib/lib.cpp                                   \
+		$(COMMON_DIR)/src/read-file/read-file.cpp                        \
+		$(COMMON_DIR)/src/tree/read-write-tree/read-tree/read-tree.cpp    \
 
 
 
