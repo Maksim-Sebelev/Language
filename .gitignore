@@ -17,7 +17,6 @@ Log/
 # my programms (on my language) (examples in ~/exaples, not in ~/programm)
 programm/
 
-
 # object files
 Scr/bin/
 
@@ -27,6 +26,5 @@ Scr/build/
 
 # my local makefile settings
 Src/make/local.mk
-
 
 
