@@ -1,0 +1,15 @@
+digraph G{
+rankdir=TB
+graph [bgcolor="#000000"];
+place[shape=Mrecord, style=filled, fillcolor="#1771a0", pos="0,1!",label = " { Dump place: | file: [common/src/tree/read-write-tree/write-tree/write-tree.cpp] | line: [489] | func: [PrintReturn] } "color = "#000000"];
+node0x5070000010c0[shape=Mrecord, style=filled, fillcolor="#931807"label = "assign variable", color = "#777777"];
+node0x507000000f00[shape=Mrecord, style=filled, fillcolor="#f31807"label = "a", color = "#777777"];
+node0x507000001050[shape=Mrecord, style=filled, fillcolor="#00ca2c"label = "\+", color = "#777777"];
+node0x507000000f70[shape=Mrecord, style=filled, fillcolor="#f31807"label = "a", color = "#777777"];
+node0x507000000fe0[shape=Mrecord, style=filled, fillcolor="#1cb9ff"label = "3", color = "#777777"];
+edge[color="#373737"];
+node0x5070000010c0->node0x507000000f00;
+node0x5070000010c0->node0x507000001050;
+node0x507000001050->node0x507000000f70;
+node0x507000001050->node0x507000000fe0;
+}

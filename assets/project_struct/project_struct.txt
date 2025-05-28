@@ -1,10 +1,13 @@
 .
 ├── assets
-│   ├── project_struct
-│   │   └── project_struct.txt
-│   └── readme_images
+│   └── project_struct
+│       └── project_struct.txt
 ├── examples
-│   └── Readme.md
+│   ├── factorial
+│   │   └── factorial.s
+│   ├── Readme.md
+│   └── square-solver
+│       └── square-solver.s
 ├── README.md
 └── Src
     ├── back-end
@@ -123,7 +126,6 @@
     ├── main.cpp
     ├── make
     │   ├── common.mk
-    │   ├── local.mk
     │   ├── make-back.mk
     │   ├── make-front.mk
     │   └── make-midle.mk
@@ -136,4 +138,4 @@
     └── tree
         └── tree.ast
 
-70 directories, 67 files
+71 directories, 68 files
