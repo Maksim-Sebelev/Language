@@ -9,7 +9,7 @@ Src/back-end/.vscode/
 bash/
 
 # graphic dump of tree and tokens
-# dot/
+dot/
 
 # log file
 Log/
@@ -24,4 +24,4 @@ Src/bin/
 Src/build/
 
 # my local makefile settings
-# Src/make/local.mk
+Src/make/local.mk
