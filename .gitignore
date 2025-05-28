@@ -23,7 +23,5 @@ Src/bin/
 # executable file
 Src/build/
 
-
 # my local makefile settings
 Src/make/local.mk
-
