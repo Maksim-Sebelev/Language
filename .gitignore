@@ -24,4 +24,4 @@ Src/bin/
 Src/build/
 
 # my local makefile settings
-Src/make/local.mk
+# Src/make/local.mk
